@@ -10,8 +10,10 @@
 //
 
 protocol HapticEngineProtocol {
+    // MARK: - Properties
     var isHapticsSupported: Bool { get }
-
+    
+    // MARK: - Methods
     func startSimpleHaptic()
     func startComplexHaptic()
 }
