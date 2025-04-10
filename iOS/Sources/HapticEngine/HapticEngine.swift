@@ -4,7 +4,7 @@ public class HapticEngine: ObservableObject, HapticEngineProtocol {
     // MARK: - Initialization
     @Published private var engine: CHHapticEngine?
 
-    init() {
+    public init() {
         guard isHapticsSupported else {
             return
         }
