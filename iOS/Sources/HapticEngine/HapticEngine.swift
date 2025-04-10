@@ -1,6 +1,6 @@
 import CoreHaptics
 
-class HapticEngine: ObservableObject, HapticEngineProtocol {
+public class HapticEngine: ObservableObject, HapticEngineProtocol {
     // MARK: - Initialization
     @Published private var engine: CHHapticEngine?
 
@@ -18,18 +18,18 @@ class HapticEngine: ObservableObject, HapticEngineProtocol {
     }
 
     // MARK: - Properties
-    var isHapticsSupported: Bool {
+    public var isHapticsSupported: Bool {
         CHHapticEngine.capabilitiesForHardware().supportsHaptics
     }
 }
 
 // MARK: - Methods
 extension HapticEngine {
-    func startSimpleHaptic() {
+    public func startSimpleHaptic() {
         print("Test startSimpleHaptic()")
     }
 
-    func startComplexHaptic() {
+    public func startComplexHaptic() {
         print("Test startComplexHaptic()")
     }
 }
