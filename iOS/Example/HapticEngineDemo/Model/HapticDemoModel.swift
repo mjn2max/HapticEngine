@@ -78,6 +78,10 @@ final class HapticDemoModel {
         AccessibilityNotification.Announcement("Playing \(pattern.title)").post()
     }
 
+    func deleteEntry(_ entry: LogEntry) {
+        log.removeAll { $0.id == entry.id }
+    }
+
     func clearLog() {
         log.removeAll()
     }

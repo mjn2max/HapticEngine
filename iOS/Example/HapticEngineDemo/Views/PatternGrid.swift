@@ -46,16 +46,28 @@ private struct PatternTile: View {
             .padding(.vertical, 14)
             .padding(.horizontal, 8)
             .frame(maxWidth: .infinity)
-            .background(Color(.secondarySystemGroupedBackground), in: .rect(cornerRadius: 20))
+            .background(isPlaying ? pattern.tint.opacity(0.08) : .clear)
             .overlay {
                 RoundedRectangle(cornerRadius: 20)
                     .strokeBorder(pattern.tint, lineWidth: isPlaying ? 2 : 0)
             }
         }
-        .buttonStyle(PressableStyle())
+        .buttonStyle(CardPressStyle())
         .animation(.snappy, value: isPlaying)
         .accessibilityHint(pattern.subtitle)
         .accessibilityValue(isPlaying ? "Playing" : "")
+    }
+}
+
+/// Highlights a card while pressed, like the rows in the list layout and on the Activity screen, so a
+/// pattern responds the same way in every layout. Draws the card's background too, so the highlight
+/// sits behind its content.
+struct CardPressStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .background(configuration.isPressed ? Color(.systemFill) : .clear)
+            .background(Color(.secondarySystemGroupedBackground))
+            .clipShape(.rect(cornerRadius: 20))
     }
 }
 

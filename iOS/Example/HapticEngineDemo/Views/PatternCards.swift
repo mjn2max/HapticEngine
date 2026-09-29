@@ -61,13 +61,13 @@ private struct PatternCard: View {
             }
             .padding(14)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color(.secondarySystemGroupedBackground), in: .rect(cornerRadius: 20))
+            .background(isPlaying ? pattern.tint.opacity(0.08) : .clear)
             .overlay {
                 RoundedRectangle(cornerRadius: 20)
                     .strokeBorder(pattern.tint, lineWidth: isPlaying ? 2 : 0)
             }
         }
-        .buttonStyle(PressableStyle())
+        .buttonStyle(CardPressStyle())
         .animation(.snappy, value: isPlaying)
         .accessibilityValue(isPlaying ? "Playing" : pattern.durationText)
     }

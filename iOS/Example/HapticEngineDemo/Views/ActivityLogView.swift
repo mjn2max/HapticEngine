@@ -6,11 +6,14 @@
 import HapticEngine
 import SwiftUI
 
-/// Patterns the user switched between, newest first. Tapping one plays it again without changing the list.
+/// Patterns the user switched between, newest first. Tapping one plays it again without changing the list;
+/// swiping one away deletes it.
 struct ActivityLogView: View {
     @Environment(HapticDemoModel.self) private var model
     @Environment(\.dismiss) private var dismiss
     @State private var isConfirmingClear = false
+    /// The row swiped open to show its delete button. Only one is open at a time.
+    @State private var openEntryID: HapticDemoModel.LogEntry.ID?
 
     var body: some View {
         Group {
@@ -51,11 +54,28 @@ struct ActivityLogView: View {
         ScrollView {
             VStack(spacing: 0) {
                 ForEach(model.log) { entry in
-                    ActivityRow(
-                        entry: entry,
-                        isPlaying: model.nowPlaying?.entryID == entry.id,
-                        onPlay: { model.replay(entry) }
-                    )
+                    SwipeToDelete(
+                        isOpen: Binding(
+                            get: { openEntryID == entry.id },
+                            set: { openEntryID = $0 ? entry.id : nil }
+                        ),
+                        onDelete: {
+                            withAnimation(.snappy) { model.deleteEntry(entry) }
+                        }
+                    ) {
+                        ActivityRow(
+                            entry: entry,
+                            isPlaying: model.nowPlaying?.entryID == entry.id,
+                            onPlay: {
+                                // A tap on an open row closes it, rather than playing it by surprise.
+                                if openEntryID != nil {
+                                    openEntryID = nil
+                                } else {
+                                    model.replay(entry)
+                                }
+                            }
+                        )
+                    }
                     if entry.id != model.log.last?.id {
                         Divider()
                             .padding(.leading, 64)
@@ -67,18 +87,124 @@ struct ActivityLogView: View {
             .padding()
             .animation(.snappy, value: model.log.first?.id)
         }
+        // Scrolling closes an open row, as in system lists.
+        .onScrollPhaseChange { _, phase in
+            if phase != .idle, openEntryID != nil { openEntryID = nil }
+        }
     }
 
     private var emptyState: some View {
-        ContentUnavailableView {
-            Label("No Activity Yet", systemImage: "clock.arrow.circlepath")
-        } description: {
-            Text("Patterns you switch between show up here, so you can play them again with one tap.")
-        } actions: {
-            Button("Browse Patterns") { dismiss() }
-                .buttonStyle(.borderedProminent)
-                .buttonBorderShape(.capsule)
+        ScrollView {
+            VStack(spacing: 28) {
+                VStack(spacing: 10) {
+                    EmptyActivityBadge()
+                        .padding(.bottom, 6)
+                    Text("No Activity Yet")
+                        .font(.title2.bold())
+                    Text("Patterns you play show up here, so you can feel them again with one tap.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: 300)
+                }
+
+                // Starts the log from here rather than sending the user back: playing one of these adds
+                // it, and the list below replaces this view with that entry already playing.
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Try one")
+                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                        .textCase(.uppercase)
+                        .padding(.leading, 12)
+                    VStack(spacing: 0) {
+                        ForEach(Self.suggestions, id: \.self) { pattern in
+                            SuggestionRow(pattern: pattern) {
+                                withAnimation(.snappy) { model.play(pattern) }
+                            }
+                            if pattern != Self.suggestions.last {
+                                Divider()
+                                    .padding(.leading, 64)
+                            }
+                        }
+                    }
+                    .background(Color(.secondarySystemGroupedBackground), in: .rect(cornerRadius: 20))
+                    .clipShape(.rect(cornerRadius: 20))
+                }
+
+                Button("See All Patterns") { dismiss() }
+                    .font(.subheadline.weight(.medium))
+            }
+            .padding(.horizontal)
+            .padding(.vertical, 32)
+            .frame(maxWidth: 500)
+            .frame(maxWidth: .infinity)
         }
+        // Centers the content vertically while it fits, and lets it scroll at large text sizes.
+        .defaultScrollAnchor(.center)
+        .scrollBounceBehavior(.basedOnSize)
+        .transition(.opacity)
+    }
+
+    /// One pattern from each category, so the suggestions feel distinct from one another.
+    private static let suggestions: [HapticPattern] = [.success, .heartbeat, .rumble]
+}
+
+/// The clock symbol inside soft rings, echoing a vibration spreading out.
+private struct EmptyActivityBadge: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
+        ZStack {
+            Circle()
+                .fill(.tint.opacity(0.06))
+                .frame(width: 128, height: 128)
+            Circle()
+                .fill(.tint.opacity(0.12))
+                .frame(width: 92, height: 92)
+            Image(systemName: "clock.arrow.circlepath")
+                .font(.system(size: 36, weight: .semibold))
+                .foregroundStyle(.tint)
+                .symbolEffect(.pulse, options: .repeat(2), isActive: !reduceMotion)
+        }
+        .accessibilityHidden(true)
+    }
+}
+
+/// A suggested pattern: its icon, name and feel, with a play affordance.
+private struct SuggestionRow: View {
+    let pattern: HapticPattern
+    let onPlay: () -> Void
+
+    var body: some View {
+        Button(action: onPlay) {
+            HStack(spacing: 12) {
+                PatternIcon(pattern: pattern, isPlaying: false, size: 40)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(pattern.title)
+                        .font(.headline)
+                        .foregroundStyle(.primary)
+                    Text(pattern.subtitle)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+
+                Spacer(minLength: 8)
+
+                Image(systemName: "play.circle.fill")
+                    .font(.title2)
+                    .symbolRenderingMode(.hierarchical)
+                    .foregroundStyle(pattern.tint)
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 10)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .contentShape(.rect)
+        }
+        .buttonStyle(RowPressStyle())
+        .accessibilityLabel("Play \(pattern.title)")
+        .accessibilityHint(pattern.subtitle)
     }
 }
 
