@@ -22,7 +22,8 @@ public protocol HapticEngineProtocol {
     /// system couldn't create a haptic engine.
     var isHapticsSupported: Bool { get }
 
-    /// Plays a built-in pattern. Does nothing when ``isHapticsSupported`` is `false`.
+    /// Plays a built-in pattern, stopping any pattern that is still playing.
+    /// Does nothing when ``isHapticsSupported`` is `false`.
     func play(_ pattern: HapticPattern)
 }
 

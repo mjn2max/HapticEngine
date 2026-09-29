@@ -28,6 +28,9 @@ public final class HapticEngine: HapticEngineProtocol {
     /// Every pattern, built once up front since they never change. Empty without an engine.
     private let patterns: [HapticPattern: CHHapticPattern]
 
+    /// The player for the last pattern played, kept so the next `play(_:)` can stop it.
+    private var currentPlayer: CHHapticPatternPlayer?
+
     public init() {
         engine = Self.makeEngine()
         patterns = engine == nil ? [:] : Self.makePatterns()
@@ -37,14 +40,20 @@ public final class HapticEngine: HapticEngineProtocol {
         engine != nil
     }
 
+    /// Plays `pattern`, stopping any pattern that is still playing, as Android's vibrator does.
     public func play(_ pattern: HapticPattern) {
         guard let engine, let hapticPattern = patterns[pattern] else { return }
+
+        // Throws if the player already finished or the engine was reset since; either way it's silent.
+        try? currentPlayer?.stop(atTime: CHHapticTimeImmediate)
+        currentPlayer = nil
 
         do {
             // Starting a running engine is a no-op; this also recovers after a stop or reset.
             try engine.start()
             let player = try engine.makePlayer(with: hapticPattern)
             try player.start(atTime: CHHapticTimeImmediate)
+            currentPlayer = player
         } catch {
             Self.logger.error("Failed to play haptic pattern \(pattern.rawValue, privacy: .public): \(error.localizedDescription, privacy: .public)")
         }
