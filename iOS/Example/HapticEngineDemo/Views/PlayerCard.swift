@@ -19,11 +19,13 @@ struct PlayerCard: View {
 
     private var pattern: HapticPattern? { playback?.pattern ?? lastPlayed }
     private var isPlaying: Bool { playback != nil }
-    private var tint: Color { pattern?.tint ?? .accentColor }
+    /// Without haptic hardware nothing can play, so the card becomes a warning instead of a prompt.
+    private var isUnavailable: Bool { !isHapticsSupported && pattern == nil }
+    private var tint: Color { pattern?.tint ?? (isUnavailable ? .orange : .accentColor) }
 
     var body: some View {
         HStack(spacing: 12) {
-            Image(systemName: pattern?.systemImage ?? "hand.tap")
+            Image(systemName: pattern?.systemImage ?? (isUnavailable ? "iphone.slash" : "hand.tap"))
                 .font(.title3.weight(.semibold))
                 .foregroundStyle(isPlaying ? .white : tint)
                 .frame(width: 44, height: 44)
@@ -36,7 +38,7 @@ struct PlayerCard: View {
                 .symbolEffect(.bounce, value: playback?.id)
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(pattern?.title ?? "Tap a pattern")
+                Text(pattern?.title ?? (isUnavailable ? "Haptics unavailable" : "Tap a pattern"))
                     .font(.headline)
                     .lineLimit(1)
                 Text(subtitle)
@@ -61,7 +63,17 @@ struct PlayerCard: View {
             }
         }
         .padding(12)
-        .background(Color(.secondarySystemGroupedBackground), in: .rect(cornerRadius: 20))
+        .background {
+            ZStack {
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(Color(.secondarySystemGroupedBackground))
+                if isUnavailable {
+                    // A tint over the card color, so the warning stands out from the pattern tiles.
+                    RoundedRectangle(cornerRadius: 20)
+                        .fill(tint.opacity(0.12))
+                }
+            }
+        }
         .overlay(alignment: .bottom) {
             if let playback {
                 PlaybackProgress(playback: playback, tint: tint)
@@ -71,7 +83,7 @@ struct PlayerCard: View {
         }
         .overlay {
             RoundedRectangle(cornerRadius: 20)
-                .strokeBorder(tint, lineWidth: isPlaying ? 2 : 0)
+                .strokeBorder(tint, lineWidth: isPlaying ? 2 : isUnavailable ? 1.5 : 0)
         }
         .animation(.snappy, value: playback?.id)
         .animation(.snappy, value: pattern)
@@ -80,7 +92,9 @@ struct PlayerCard: View {
 
     private var subtitle: String {
         if let pattern { return pattern.subtitle }
-        return isHapticsSupported ? "Haptics are on" : "No haptic hardware on this device"
+        return isUnavailable
+            ? "No haptic hardware here. Run on an iPhone to feel the patterns."
+            : "Haptics are on"
     }
 }
 

@@ -6,31 +6,22 @@
 import HapticEngine
 import SwiftUI
 
-/// Every pattern as a compact tile, grouped by category.
+/// Patterns as compact tiles: the grid layout of ``PatternsView``.
 struct PatternGrid: View {
+    let patterns: [HapticPattern]
     let nowPlaying: HapticDemoModel.Playback?
     let onPlay: (HapticPattern) -> Void
 
     private let columns = [GridItem(.adaptive(minimum: 100), spacing: 12)]
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            ForEach(HapticPattern.Category.allCases, id: \.self) { category in
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(category.title)
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(.secondary)
-                        .padding(.leading, 4)
-                    LazyVGrid(columns: columns, spacing: 12) {
-                        ForEach(category.patterns, id: \.self) { pattern in
-                            PatternTile(
-                                pattern: pattern,
-                                isPlaying: nowPlaying?.pattern == pattern,
-                                onPlay: { onPlay(pattern) }
-                            )
-                        }
-                    }
-                }
+        LazyVGrid(columns: columns, spacing: 12) {
+            ForEach(patterns, id: \.self) { pattern in
+                PatternTile(
+                    pattern: pattern,
+                    isPlaying: nowPlaying?.pattern == pattern,
+                    onPlay: { onPlay(pattern) }
+                )
             }
         }
     }
@@ -45,14 +36,7 @@ private struct PatternTile: View {
     var body: some View {
         Button(action: onPlay) {
             VStack(spacing: 8) {
-                Image(systemName: pattern.systemImage)
-                    .font(.title3.weight(.semibold))
-                    .foregroundStyle(isPlaying ? .white : pattern.tint)
-                    .frame(width: 44, height: 44)
-                    .background(
-                        isPlaying ? AnyShapeStyle(pattern.tint) : AnyShapeStyle(pattern.tint.opacity(0.15)),
-                        in: .rect(cornerRadius: 12)
-                    )
+                PatternIcon(pattern: pattern, isPlaying: isPlaying)
                 Text(pattern.title)
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(.primary)

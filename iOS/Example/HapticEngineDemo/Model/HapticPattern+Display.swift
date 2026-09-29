@@ -71,6 +71,15 @@ extension HapticPattern {
         }
     }
 
+    /// `duration` for display, such as "Instant", "250 ms" or "6 s".
+    var durationText: String {
+        switch duration {
+        case ..<0.05: "Instant"
+        case ..<1: "\(Int((duration * 1000).rounded())) ms"
+        default: "\(duration.formatted(.number.precision(.fractionLength(0...1)))) s"
+        }
+    }
+
     /// Groups related patterns by color: feedback in traffic-light colors, rhythms in warm tones.
     var tint: Color {
         switch self {

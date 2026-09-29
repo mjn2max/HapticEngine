@@ -7,12 +7,11 @@ import SwiftUI
 
 struct ContentView: View {
     @Environment(HapticDemoModel.self) private var model
-    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         NavigationStack {
             ScrollView {
-                PatternGrid(nowPlaying: model.nowPlaying) { model.play($0) }
+                PatternsView(nowPlaying: model.nowPlaying, canPlay: model.isHapticsSupported) { model.play($0) }
                     .padding([.horizontal, .bottom])
                     .padding(.top, 8)
             }
@@ -47,6 +46,10 @@ struct ContentView: View {
                     }
                     .buttonStyle(PressableStyle())
                     .accessibilityLabel("Activity")
+                    // Nothing can be played without haptic hardware, so there's no activity to show.
+                    // Dimmed to match the disabled patterns.
+                    .disabled(!model.isHapticsSupported)
+                    .opacity(model.isHapticsSupported ? 1 : 0.4)
                 }
                 // Lets the button match the card's height.
                 .fixedSize(horizontal: false, vertical: true)
@@ -58,9 +61,6 @@ struct ContentView: View {
             // Still names the Activity screen's back button.
             .navigationTitle("HapticEngine")
             .toolbar(.hidden, for: .navigationBar)
-        }
-        .onChange(of: scenePhase) { _, phase in
-            model.record("Scene phase: \(String(describing: phase))")
         }
     }
 }
