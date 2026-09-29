@@ -3,26 +3,27 @@
 // HapticEngineDemo
 //
 
+import HapticEngine
 import SwiftUI
 
 struct PresetsSection: View {
-    let onPlay: (HapticPreset) -> Void
+    let onPlay: (HapticPattern) -> Void
 
     var body: some View {
         Section("Presets") {
-            ForEach(HapticPreset.allCases) { preset in
+            ForEach(HapticPattern.allCases, id: \.self) { pattern in
                 Button {
-                    onPlay(preset)
+                    onPlay(pattern)
                 } label: {
                     Label {
                         VStack(alignment: .leading) {
-                            Text(preset.title)
-                            Text(preset.subtitle)
+                            Text(pattern.title)
+                            Text(pattern.subtitle)
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
                     } icon: {
-                        Image(systemName: preset.systemImage)
+                        Image(systemName: pattern.systemImage)
                     }
                 }
             }

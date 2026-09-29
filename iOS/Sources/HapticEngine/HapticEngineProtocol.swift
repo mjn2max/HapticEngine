@@ -13,16 +13,49 @@
 ///
 /// Depend on this protocol rather than ``HapticEngine`` so you can substitute a
 /// mock in tests and SwiftUI previews, where haptic hardware is unavailable.
-/// The Android library exposes the same members on its `HapticEngine` interface.
+/// A conforming type only needs ``isHapticsSupported`` and ``play(_:)``; the
+/// `start…Haptic()` methods are provided for you.
 public protocol HapticEngineProtocol {
-    /// Whether the current device has haptic hardware.
+    /// Whether haptics can play on this device.
     ///
-    /// This is `false` in the Simulator, on most Macs, and on iPads.
+    /// This is `false` in the Simulator, on most Macs, and on iPads, and also if the
+    /// system couldn't create a haptic engine.
     var isHapticsSupported: Bool { get }
 
-    /// Plays one sharp tap followed by nine taps of rising strength over about one second.
-    func startSimpleHaptic()
+    /// Plays a built-in pattern. Does nothing when ``isHapticsSupported`` is `false`.
+    func play(_ pattern: HapticPattern)
+}
 
-    /// Plays four 1.5 second segments: medium, hard, soft, hard.
-    func startComplexHaptic()
+// Shorthands for each pattern. Android's `HapticEngine` interface has `startSimpleHaptic()` and
+// `startComplexHaptic()`; the rest are iOS only for now.
+public extension HapticEngineProtocol {
+    /// Plays ``HapticPattern/simple``.
+    func startSimpleHaptic() { play(.simple) }
+
+    /// Plays ``HapticPattern/complex``.
+    func startComplexHaptic() { play(.complex) }
+
+    /// Plays ``HapticPattern/tick``.
+    func startTickHaptic() { play(.tick) }
+
+    /// Plays ``HapticPattern/success``.
+    func startSuccessHaptic() { play(.success) }
+
+    /// Plays ``HapticPattern/warning``.
+    func startWarningHaptic() { play(.warning) }
+
+    /// Plays ``HapticPattern/error``.
+    func startErrorHaptic() { play(.error) }
+
+    /// Plays ``HapticPattern/heartbeat``.
+    func startHeartbeatHaptic() { play(.heartbeat) }
+
+    /// Plays ``HapticPattern/knock``.
+    func startKnockHaptic() { play(.knock) }
+
+    /// Plays ``HapticPattern/rumble``.
+    func startRumbleHaptic() { play(.rumble) }
+
+    /// Plays ``HapticPattern/pulse``.
+    func startPulseHaptic() { play(.pulse) }
 }

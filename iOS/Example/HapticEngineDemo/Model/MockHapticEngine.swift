@@ -9,6 +9,5 @@ import HapticEngine
 struct MockHapticEngine: HapticEngineProtocol {
     var isHapticsSupported: Bool = true
 
-    func startSimpleHaptic() {}
-    func startComplexHaptic() {}
+    func play(_ pattern: HapticPattern) {}
 }

@@ -16,18 +16,42 @@ import os
 ///
 /// ```swift
 /// let haptics = HapticEngine()
-/// haptics.startSimpleHaptic()
+/// haptics.play(.success)
 /// ```
 public final class HapticEngine: HapticEngineProtocol {
+    // Messages mark their values `.public`: none are user data, and the default `.private` hides them in
+    // release logs, which is where they are needed.
     private static let logger = Logger(subsystem: "dev.codepassion.HapticEngine", category: "HapticEngine")
 
     private let engine: CHHapticEngine?
 
+    /// Every pattern, built once up front since they never change. Empty without an engine.
+    private let patterns: [HapticPattern: CHHapticPattern]
+
     public init() {
-        guard CHHapticEngine.capabilitiesForHardware().supportsHaptics else {
-            engine = nil
-            return
+        engine = Self.makeEngine()
+        patterns = engine == nil ? [:] : Self.makePatterns()
+    }
+
+    public var isHapticsSupported: Bool {
+        engine != nil
+    }
+
+    public func play(_ pattern: HapticPattern) {
+        guard let engine, let hapticPattern = patterns[pattern] else { return }
+
+        do {
+            // Starting a running engine is a no-op; this also recovers after a stop or reset.
+            try engine.start()
+            let player = try engine.makePlayer(with: hapticPattern)
+            try player.start(atTime: CHHapticTimeImmediate)
+        } catch {
+            Self.logger.error("Failed to play haptic pattern \(pattern.rawValue, privacy: .public): \(error.localizedDescription, privacy: .public)")
         }
+    }
+
+    private static func makeEngine() -> CHHapticEngine? {
+        guard CHHapticEngine.capabilitiesForHardware().supportsHaptics else { return nil }
 
         do {
             let engine = try CHHapticEngine()
@@ -35,43 +59,29 @@ public final class HapticEngine: HapticEngineProtocol {
             // Let the system shut the engine down when idle to save power; `play(_:)` restarts it.
             engine.isAutoShutdownEnabled = true
             engine.stoppedHandler = { reason in
-                Self.logger.info("Haptic engine stopped (reason \(reason.rawValue))")
+                logger.info("Haptic engine stopped (reason \(reason.rawValue))")
             }
             engine.resetHandler = {
                 // The system reset the haptic server, e.g. after the app was backgrounded.
                 // Nothing to rebuild: `play(_:)` starts the engine and creates a new player each time.
-                Self.logger.info("Haptic engine reset")
+                logger.info("Haptic engine reset")
             }
-            self.engine = engine
+            return engine
         } catch {
-            Self.logger.error("Failed to create haptic engine: \(error.localizedDescription)")
-            engine = nil
+            logger.error("Failed to create haptic engine: \(error.localizedDescription, privacy: .public)")
+            return nil
         }
     }
 
-    public var isHapticsSupported: Bool {
-        CHHapticEngine.capabilitiesForHardware().supportsHaptics
-    }
-
-    public func startSimpleHaptic() {
-        play(HapticPatterns.simple())
-    }
-
-    public func startComplexHaptic() {
-        play(HapticPatterns.complex())
-    }
-
-    private func play(_ events: [CHHapticEvent]) {
-        guard let engine else { return }
-
-        do {
-            let pattern = try CHHapticPattern(events: events, parameters: [])
-            // Starting a running engine is a no-op; this also recovers after a stop or reset.
-            try engine.start()
-            let player = try engine.makePlayer(with: pattern)
-            try player.start(atTime: CHHapticTimeImmediate)
-        } catch {
-            Self.logger.error("Failed to play haptic pattern: \(error.localizedDescription)")
+    private static func makePatterns() -> [HapticPattern: CHHapticPattern] {
+        var patterns: [HapticPattern: CHHapticPattern] = [:]
+        for pattern in HapticPattern.allCases {
+            do {
+                patterns[pattern] = try CHHapticPattern(events: HapticPatterns.events(for: pattern), parameters: [])
+            } catch {
+                logger.error("Failed to build haptic pattern \(pattern.rawValue, privacy: .public): \(error.localizedDescription, privacy: .public)")
+            }
         }
+        return patterns
     }
 }

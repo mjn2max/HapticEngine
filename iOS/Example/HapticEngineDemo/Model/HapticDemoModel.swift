@@ -25,9 +25,9 @@ final class HapticDemoModel {
         self.engine = engine
     }
 
-    func play(_ preset: HapticPreset) {
-        preset.play(on: engine)
-        record("Played \(preset.title)" + (isHapticsSupported ? "" : " (no haptic hardware)"))
+    func play(_ pattern: HapticPattern) {
+        engine.play(pattern)
+        record("Played \(pattern.title)" + (isHapticsSupported ? "" : " (no haptic hardware)"))
     }
 
     /// Records app lifecycle changes, useful for checking the engine recovers after backgrounding.
