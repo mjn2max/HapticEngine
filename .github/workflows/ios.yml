@@ -1,0 +1,48 @@
+name: iOS
+
+on:
+  push:
+    branches: [main]
+    paths: &paths
+      - Package.swift
+      - iOS/**
+      - .github/workflows/ios.yml
+  pull_request:
+    paths: *paths
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    # Needs a runner image that includes Xcode 27 (Swift 6.4).
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Unit tests
+        run: swift test
+
+      - name: Build library for each platform
+        run: |
+          for destination in \
+            'generic/platform=iOS' \
+            'generic/platform=iOS Simulator' \
+            'generic/platform=macOS,variant=Mac Catalyst' \
+            'generic/platform=tvOS'; do
+            xcodebuild build -scheme HapticEngine -destination "$destination" -quiet
+          done
+
+      - name: Build demo app
+        run: |
+          xcodebuild build \
+            -project iOS/Example/HapticEngineDemo.xcodeproj \
+            -scheme HapticEngineDemo \
+            -destination 'generic/platform=iOS Simulator' \
+            -quiet

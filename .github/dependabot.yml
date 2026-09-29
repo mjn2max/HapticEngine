@@ -1,0 +1,22 @@
+version: 2
+updates:
+  - package-ecosystem: gradle
+    directory: /Android
+    schedule:
+      interval: monthly
+    groups:
+      android:
+        patterns: ["*"]
+    ignore:
+      # Stay on the AGP / compileSdk supported by the Android Studio in use.
+      # Remove when upgrading Android Studio; see Android/gradle/libs.versions.toml.
+      - dependency-name: com.android.*
+        update-types: [version-update:semver-minor, version-update:semver-major]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      actions:
+        patterns: ["*"]
