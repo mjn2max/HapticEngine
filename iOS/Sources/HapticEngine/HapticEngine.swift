@@ -1,96 +1,77 @@
-import CoreHaptics
+//
+// HapticEngine.swift
+// HapticEngine
+//
+// Copyright © 2025. All rights reserved.
+// CodePassion.dev
+//
 
-public class HapticEngine: ObservableObject, HapticEngineProtocol {
-    // MARK: - Initialization
-    @Published private var engine: CHHapticEngine?
-    
+import CoreHaptics
+import os
+
+/// Plays haptic patterns with Core Haptics.
+///
+/// Create one instance and keep it for as long as you need haptics, for example
+/// in your app's model. On devices without haptic hardware every method is a no-op.
+///
+/// ```swift
+/// let haptics = HapticEngine()
+/// haptics.startSimpleHaptic()
+/// ```
+public final class HapticEngine: HapticEngineProtocol {
+    private static let logger = Logger(subsystem: "dev.codepassion.HapticEngine", category: "HapticEngine")
+
+    private let engine: CHHapticEngine?
+
     public init() {
-        guard isHapticsSupported else {
+        guard CHHapticEngine.capabilitiesForHardware().supportsHaptics else {
+            engine = nil
             return
         }
-        
+
         do {
-            engine = try CHHapticEngine()
-            try engine?.start()
+            let engine = try CHHapticEngine()
+            engine.playsHapticsOnly = true
+            // Let the system shut the engine down when idle to save power; `play(_:)` restarts it.
+            engine.isAutoShutdownEnabled = true
+            engine.stoppedHandler = { reason in
+                Self.logger.info("Haptic engine stopped (reason \(reason.rawValue))")
+            }
+            engine.resetHandler = {
+                // The system reset the haptic server, e.g. after the app was backgrounded.
+                // Nothing to rebuild: `play(_:)` starts the engine and creates a new player each time.
+                Self.logger.info("Haptic engine reset")
+            }
+            self.engine = engine
         } catch {
-            print("There was an error creating the engine: \(error.localizedDescription)")
+            Self.logger.error("Failed to create haptic engine: \(error.localizedDescription)")
+            engine = nil
         }
     }
-    
-    // MARK: - Properties
+
     public var isHapticsSupported: Bool {
         CHHapticEngine.capabilitiesForHardware().supportsHaptics
     }
-}
 
-// MARK: - Methods
-extension HapticEngine {
     public func startSimpleHaptic() {
-        // make sure that the device supports haptics
-        guard CHHapticEngine.capabilitiesForHardware().supportsHaptics else { return }
-        var events = [CHHapticEvent]()
-        
-        // create one intense, sharp tap
-        let intensity = CHHapticEventParameter(parameterID: .hapticIntensity, value: 1)
-        let sharpness = CHHapticEventParameter(parameterID: .hapticSharpness, value: 1)
-        let event = CHHapticEvent(eventType: .hapticTransient, parameters: [intensity, sharpness], relativeTime: 0)
-        events.append(event)
-        
-        for i in stride(from: 0, to: 1, by: 0.1) {
-            let intensity = CHHapticEventParameter(parameterID: .hapticIntensity, value: Float(i))
-            let sharpness = CHHapticEventParameter(parameterID: .hapticSharpness, value: Float(i))
-            let event = CHHapticEvent(eventType: .hapticTransient, parameters: [intensity, sharpness], relativeTime: i)
-            events.append(event)
-        }
-        
-        // convert those events into a pattern and play it immediately
-        do {
-            let pattern = try CHHapticPattern(events: events, parameters: [])
-            let player = try engine?.makePlayer(with: pattern)
-            try player?.start(atTime: 0)
-        } catch {
-            print("Failed to play pattern: \(error.localizedDescription).")
-        }
+        play(HapticPatterns.simple())
     }
-    
+
     public func startComplexHaptic() {
-        guard CHHapticEngine.capabilitiesForHardware().supportsHaptics else { return }
-        var events = [CHHapticEvent]()
-        
-        // Define intensity levels
-        let mediumIntensity: Float = 0.5
-        let hardIntensity: Float = 1.0
-        let softIntensity: Float = 0.2
-        
-        // Create continuous events for each 1.5-second segment
-        let segments: [(intensity: Float, startTime: TimeInterval)] = [
-            (mediumIntensity, 0.0),  // Medium: 0-1.5 seconds
-            (hardIntensity, 1.5),    // Hard: 1.5-3 seconds
-            (softIntensity, 3.0),    // Soft: 3-4.5 seconds
-            (hardIntensity, 4.5)     // Hard: 4.5-6 seconds
-        ]
-        
-        // Create events for each segment with multiple points for smooth continuous effect
-        for (intensity, startTime) in segments {
-            for offset in stride(from: 0.0, to: 1.5, by: 0.1) {
-                let event = CHHapticEvent(
-                    eventType: .hapticContinuous,
-                    parameters: [
-                        CHHapticEventParameter(parameterID: .hapticIntensity, value: intensity),
-                        CHHapticEventParameter(parameterID: .hapticSharpness, value: intensity)
-                    ],
-                    relativeTime: startTime + offset,
-                    duration: 0.15)
-                events.append(event)
-            }
-        }
-        
+        play(HapticPatterns.complex())
+    }
+
+    private func play(_ events: [CHHapticEvent]) {
+        guard let engine else { return }
+
         do {
             let pattern = try CHHapticPattern(events: events, parameters: [])
-            let player = try engine?.makePlayer(with: pattern)
-            try player?.start(atTime: 0)
+            // Starting a running engine is a no-op; this also recovers after a stop or reset.
+            try engine.start()
+            let player = try engine.makePlayer(with: pattern)
+            try player.start(atTime: CHHapticTimeImmediate)
         } catch {
-            print("Failed to play pattern: \(error.localizedDescription).")
+            Self.logger.error("Failed to play haptic pattern: \(error.localizedDescription)")
         }
     }
 }

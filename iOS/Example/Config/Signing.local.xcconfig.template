@@ -1,0 +1,5 @@
+// Copy to Signing.local.xcconfig (gitignored) and fill in your Team ID
+// to run the demo on a physical device.
+
+DEVELOPMENT_TEAM = YOUR_TEAM_ID
+// PRODUCT_BUNDLE_IDENTIFIER = com.yourname.HapticEngineDemo
