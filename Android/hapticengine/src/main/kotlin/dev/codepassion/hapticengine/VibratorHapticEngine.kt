@@ -2,13 +2,15 @@ package dev.codepassion.hapticengine
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.media.AudioAttributes
 import android.os.Build
+import android.os.VibrationAttributes
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
 import androidx.annotation.RequiresApi
 
-internal class VibratorHapticEngine(context: Context) : HapticEngine {
+internal class VibratorHapticEngine(context: Context, usage: HapticUsage) : HapticEngine {
     private val vibrator: Vibrator =
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             context.getSystemService(VibratorManager::class.java).defaultVibrator
@@ -19,6 +21,14 @@ internal class VibratorHapticEngine(context: Context) : HapticEngine {
 
     override val isHapticsSupported: Boolean = vibrator.hasVibrator()
 
+    /** Tells the system which of the user's vibration settings apply. Built once, like the effects. */
+    private val attributes: Any =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            VibrationAttributes.createForUsage(usage.vibrationUsage)
+        } else {
+            AudioAttributes.Builder().setUsage(usage.audioUsage).build()
+        }
+
     /** Every pattern, built once up front since they never change. Empty without a vibrator. */
     private val effects: Map<HapticPattern, VibrationEffect> =
         if (isHapticsSupported) HapticPattern.entries.associateWith(::makeEffect) else emptyMap()
@@ -26,7 +36,13 @@ internal class VibratorHapticEngine(context: Context) : HapticEngine {
     /** Plays [pattern]. The vibrator cancels whatever it was playing, so patterns never overlap. */
     override fun play(pattern: HapticPattern) {
         val effect = effects[pattern] ?: return
-        vibrator.vibrate(effect)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            vibrator.vibrate(effect, attributes as VibrationAttributes)
+        } else {
+            // Replaced by the `VibrationAttributes` overload in Android 13, which is used above.
+            @Suppress("DEPRECATION")
+            vibrator.vibrate(effect, attributes as AudioAttributes)
+        }
     }
 
     private fun makeEffect(pattern: HapticPattern): VibrationEffect {

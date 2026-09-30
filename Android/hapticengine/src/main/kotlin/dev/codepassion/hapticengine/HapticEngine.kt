@@ -50,6 +50,12 @@ public interface HapticEngine {
     public fun startPulseHaptic(): Unit = play(HapticPattern.Pulse)
 }
 
-/** Creates the default [HapticEngine], backed by the system vibrator. */
-public fun HapticEngine(context: Context): HapticEngine =
-    VibratorHapticEngine(context.applicationContext)
+/**
+ * Creates the default [HapticEngine], backed by the system vibrator.
+ *
+ * @param usage what the haptics are for, which decides which of the user's vibration settings apply.
+ *   Defaults to [HapticUsage.Touch], for feedback on something the user touched.
+ */
+@JvmOverloads
+public fun HapticEngine(context: Context, usage: HapticUsage = HapticUsage.Touch): HapticEngine =
+    VibratorHapticEngine(context.applicationContext, usage)

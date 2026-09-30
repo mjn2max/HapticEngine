@@ -16,7 +16,6 @@ concurrency:
 
 jobs:
   build-and-test:
-    # Needs a runner image that includes Xcode 27 (Swift 6.4).
     runs-on: macos-latest
     timeout-minutes: 30
     steps:
@@ -39,6 +38,19 @@ jobs:
             xcodebuild build -scheme HapticEngine -destination "$destination" -quiet
           done
 
+  # The demo app needs Xcode 27, which GitHub only offers on the `xcode-27` preview image for now. Once
+  # `macos-latest` includes Xcode 27 as stable, this can move back into `build-and-test`.
+  demo:
+    runs-on: xcode-27
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+
+      # `latest` includes betas; the preview image only has Xcode 27, which is still a beta.
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest
+
       - name: Build demo app
         run: |
           xcodebuild build \
@@ -46,3 +58,49 @@ jobs:
             -scheme HapticEngineDemo \
             -destination 'generic/platform=iOS Simulator' \
             -quiet
+
+  # The package declares swift-tools-version 6.0, so it must keep building with the oldest Xcode that has it.
+  # The demo app needs the latest Xcode and isn't built here.
+  oldest-supported-xcode:
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '16.4'
+
+      - name: Unit tests
+        run: swift test
+
+  # Reports public API changes against the latest release. Before 1.0 breaking changes are allowed, so it
+  # only reports them; from 1.0 on, it fails the pull request.
+  api-breakage:
+    if: github.event_name == 'pull_request'
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Compare with the latest release
+        run: |
+          baseline=$(git tag --list '[0-9]*.[0-9]*.[0-9]*' --sort=-v:refname | head -n 1)
+          if [ -z "$baseline" ]; then
+            echo "No release yet; nothing to compare against."
+            exit 0
+          fi
+          echo "Comparing with $baseline"
+          if swift package diagnose-api-breaking-changes "$baseline" --products HapticEngine; then
+            exit 0
+          fi
+          case "$baseline" in
+            0.*) echo "::warning::Public API breaks compatibility with $baseline. Allowed before 1.0; note it in CHANGELOG.md." ;;
+            *) exit 1 ;;
+          esac

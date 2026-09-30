@@ -31,8 +31,13 @@ jobs:
       # Also validates the Gradle wrapper jar.
       - uses: gradle/actions/setup-gradle@v5
 
-      - name: Unit tests, lint and builds
+      # `check` includes `apiCheck`, which fails if the public API changed without `apiDump`.
+      - name: Unit tests, API check, lint and builds
         run: ./gradlew check :hapticengine:assembleRelease :example:assembleDebug
+
+      # Catches a broken publishing setup before a release does. Unsigned, into the runner's local repository.
+      - name: Publish locally
+        run: ./gradlew :hapticengine:publishToMavenLocal
 
       - name: Upload reports
         if: failure()

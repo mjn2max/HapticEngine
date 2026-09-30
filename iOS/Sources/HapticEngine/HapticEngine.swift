@@ -7,6 +7,7 @@
 //
 
 import CoreHaptics
+import Foundation
 import os
 
 /// Plays haptic patterns with Core Haptics.
@@ -14,11 +15,16 @@ import os
 /// Create one instance and keep it for as long as you need haptics, for example
 /// in your app's model. On devices without haptic hardware every method is a no-op.
 ///
+/// Safe to share and call from any thread or actor: calls to ``play(_:)`` are serialized, so one
+/// always finishes stopping the previous pattern before the next starts.
+///
 /// ```swift
 /// let haptics = HapticEngine()
 /// haptics.play(.success)
 /// ```
-public final class HapticEngine: HapticEngineProtocol {
+// `@unchecked` because `CHHapticEngine` and its players aren't marked `Sendable`. The engine and
+// patterns are set once in `init` and only read after; the mutable player is guarded by `lock`.
+public final class HapticEngine: HapticEngineProtocol, @unchecked Sendable {
     // Messages mark their values `.public`: none are user data, and the default `.private` hides them in
     // release logs, which is where they are needed.
     private static let logger = Logger(subsystem: "dev.codepassion.HapticEngine", category: "HapticEngine")
@@ -28,8 +34,11 @@ public final class HapticEngine: HapticEngineProtocol {
     /// Every pattern, built once up front since they never change. Empty without an engine.
     private let patterns: [HapticPattern: CHHapticPattern]
 
-    /// The player for the last pattern played, kept so the next `play(_:)` can stop it.
+    /// The player for the last pattern played, kept so the next `play(_:)` can stop it. Guarded by `lock`.
     private var currentPlayer: CHHapticPatternPlayer?
+
+    /// Serializes `play(_:)`, so stopping the previous pattern and starting the next can't interleave.
+    private let lock = NSLock()
 
     public init() {
         engine = Self.makeEngine()
@@ -43,6 +52,9 @@ public final class HapticEngine: HapticEngineProtocol {
     /// Plays `pattern`, stopping any pattern that is still playing, as Android's vibrator does.
     public func play(_ pattern: HapticPattern) {
         guard let engine, let hapticPattern = patterns[pattern] else { return }
+
+        lock.lock()
+        defer { lock.unlock() }
 
         // Throws if the player already finished or the engine was reset since; either way it's silent.
         try? currentPlayer?.stop(atTime: CHHapticTimeImmediate)

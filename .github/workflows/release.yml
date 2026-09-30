@@ -1,0 +1,70 @@
+name: Release
+
+# Push a tag such as `0.2.0` (no `v` prefix) to release. The tag is the Swift package version; this workflow
+# checks the Android version matches, publishes the Android library to Maven Central, and creates the GitHub
+# release from CHANGELOG.md.
+#
+# Repository secrets:
+#   MAVEN_CENTRAL_USERNAME, MAVEN_CENTRAL_PASSWORD  A user token from central.sonatype.com
+#   SIGNING_KEY, SIGNING_KEY_PASSWORD               An ASCII-armored GPG private key and its passphrase
+
+on:
+  push:
+    tags: ['[0-9]+.[0-9]+.[0-9]+']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Check versions match the tag
+        run: |
+          tag="${GITHUB_REF_NAME}"
+          android=$(grep '^VERSION_NAME=' Android/gradle.properties | cut -d= -f2)
+          if [ "$android" != "$tag" ]; then
+            echo "::error::Android/gradle.properties has VERSION_NAME=$android, but the tag is $tag."
+            exit 1
+          fi
+          if ! grep -q "^## \[$tag\]" CHANGELOG.md; then
+            echo "::error::CHANGELOG.md has no '## [$tag]' section."
+            exit 1
+          fi
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: gradle/actions/setup-gradle@v5
+
+      - name: Test
+        working-directory: Android
+        run: ./gradlew check
+
+      # Uploads to Maven Central as a deployment to review and release at central.sonatype.com.
+      - name: Publish to Maven Central
+        working-directory: Android
+        env:
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_KEY }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_KEY_PASSWORD }}
+        run: ./gradlew :hapticengine:publishToMavenCentral --no-configuration-cache
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="${GITHUB_REF_NAME}"
+          # The changelog section for this version, without its heading.
+          awk -v tag="$tag" '
+            $0 ~ "^## \\[" tag "\\]" { found = 1; next }
+            found && /^## \[/ { exit }
+            found { print }
+          ' CHANGELOG.md > notes.md
+          gh release create "$tag" --title "$tag" --notes-file notes.md

@@ -15,7 +15,9 @@
 /// mock in tests and SwiftUI previews, where haptic hardware is unavailable.
 /// A conforming type only needs ``isHapticsSupported`` and ``play(_:)``; the
 /// `start…Haptic()` methods are provided for you.
-public protocol HapticEngineProtocol {
+///
+/// Conforming types are `Sendable`, so an engine can be shared across actors and tasks.
+public protocol HapticEngineProtocol: Sendable {
     /// Whether haptics can play on this device.
     ///
     /// This is `false` in the Simulator, on most Macs, and on iPads, and also if the

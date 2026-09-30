@@ -29,3 +29,17 @@ class HapticEngineTest {
         assertEquals(HapticPattern.entries, spy.played)
     }
 }
+
+class HapticUsageTest {
+    @Test
+    fun touchUsesTheTouchFeedbackSetting() {
+        assertEquals(android.os.VibrationAttributes.USAGE_TOUCH, HapticUsage.Touch.vibrationUsage)
+        assertEquals(android.media.AudioAttributes.USAGE_ASSISTANCE_SONIFICATION, HapticUsage.Touch.audioUsage)
+    }
+
+    @Test
+    fun everyUsageMapsToADistinctSetting() {
+        assertEquals(HapticUsage.entries.size, HapticUsage.entries.map { it.vibrationUsage }.toSet().size)
+        assertEquals(HapticUsage.entries.size, HapticUsage.entries.map { it.audioUsage }.toSet().size)
+    }
+}

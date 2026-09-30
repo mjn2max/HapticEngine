@@ -1,0 +1,46 @@
+public abstract interface class dev/codepassion/hapticengine/HapticEngine {
+	public abstract fun isHapticsSupported ()Z
+	public abstract fun play (Ldev/codepassion/hapticengine/HapticPattern;)V
+	public fun startComplexHaptic ()V
+	public fun startErrorHaptic ()V
+	public fun startHeartbeatHaptic ()V
+	public fun startKnockHaptic ()V
+	public fun startPulseHaptic ()V
+	public fun startRumbleHaptic ()V
+	public fun startSimpleHaptic ()V
+	public fun startSuccessHaptic ()V
+	public fun startTickHaptic ()V
+	public fun startWarningHaptic ()V
+}
+
+public final class dev/codepassion/hapticengine/HapticEngineKt {
+	public static final fun HapticEngine (Landroid/content/Context;)Ldev/codepassion/hapticengine/HapticEngine;
+	public static final fun HapticEngine (Landroid/content/Context;Ldev/codepassion/hapticengine/HapticUsage;)Ldev/codepassion/hapticengine/HapticEngine;
+	public static synthetic fun HapticEngine$default (Landroid/content/Context;Ldev/codepassion/hapticengine/HapticUsage;ILjava/lang/Object;)Ldev/codepassion/hapticengine/HapticEngine;
+}
+
+public final class dev/codepassion/hapticengine/HapticPattern : java/lang/Enum {
+	public static final field Complex Ldev/codepassion/hapticengine/HapticPattern;
+	public static final field Error Ldev/codepassion/hapticengine/HapticPattern;
+	public static final field Heartbeat Ldev/codepassion/hapticengine/HapticPattern;
+	public static final field Knock Ldev/codepassion/hapticengine/HapticPattern;
+	public static final field Pulse Ldev/codepassion/hapticengine/HapticPattern;
+	public static final field Rumble Ldev/codepassion/hapticengine/HapticPattern;
+	public static final field Simple Ldev/codepassion/hapticengine/HapticPattern;
+	public static final field Success Ldev/codepassion/hapticengine/HapticPattern;
+	public static final field Tick Ldev/codepassion/hapticengine/HapticPattern;
+	public static final field Warning Ldev/codepassion/hapticengine/HapticPattern;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/codepassion/hapticengine/HapticPattern;
+	public static fun values ()[Ldev/codepassion/hapticengine/HapticPattern;
+}
+
+public final class dev/codepassion/hapticengine/HapticUsage : java/lang/Enum {
+	public static final field Media Ldev/codepassion/hapticengine/HapticUsage;
+	public static final field Notification Ldev/codepassion/hapticengine/HapticUsage;
+	public static final field Touch Ldev/codepassion/hapticengine/HapticUsage;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/codepassion/hapticengine/HapticUsage;
+	public static fun values ()[Ldev/codepassion/hapticengine/HapticUsage;
+}
+

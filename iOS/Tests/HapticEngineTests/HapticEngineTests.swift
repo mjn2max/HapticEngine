@@ -20,11 +20,22 @@ struct HapticEngineTests {
     func playsEachPatternWithoutCrashing(pattern: HapticPattern) {
         HapticEngine().play(pattern)
     }
+
+    @Test func canBeSharedAcrossTasks() async {
+        // Compiles only because the engine is `Sendable`; on an iPhone the calls also race for real.
+        let engine = HapticEngine()
+        await withTaskGroup(of: Void.self) { group in
+            for pattern in HapticPattern.allCases {
+                group.addTask { engine.play(pattern) }
+            }
+        }
+    }
 }
 
 @Suite("HapticEngineProtocol")
 struct HapticEngineProtocolTests {
-    final class SpyEngine: HapticEngineProtocol {
+    // Only used from one test at a time, so it skips the locking a shared engine would need.
+    final class SpyEngine: HapticEngineProtocol, @unchecked Sendable {
         var isHapticsSupported: Bool { true }
         private(set) var played: [HapticPattern] = []
 
