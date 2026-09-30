@@ -37,8 +37,6 @@ private val durationsMs: Map<HapticPattern, Long> = mapOf(
     HapticPattern.Pulse to 900,
 )
 
-private val HapticEvent.endMs: Long get() = atMs + if (this is Hold) durationMs else 0
-
 /** Equal within a small tolerance, since levels are computed in floating point. */
 private fun assertSameEvents(expected: List<HapticEvent>, actual: List<HapticEvent>, pattern: HapticPattern) {
     assertEquals("$pattern event count", expected.size, actual.size)
@@ -66,7 +64,7 @@ class HapticPatternSpecTest {
     @Test
     fun durationMatchesSpec() {
         HapticPattern.entries.forEach {
-            assertEquals("$it", durationsMs.getValue(it), HapticPatterns.events(it).maxOf { e -> e.endMs })
+            assertEquals("$it", durationsMs.getValue(it), it.durationMs)
         }
     }
 

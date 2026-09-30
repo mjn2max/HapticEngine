@@ -112,6 +112,7 @@ val alerts = HapticEngine(context, HapticUsage.Notification)
 | Complex pattern | `startComplexHaptic()` | `startComplexHaptic()` |
 | Tick, success, warning, error | `startTickHaptic()`, `startSuccessHaptic()`, `startWarningHaptic()`, `startErrorHaptic()` | Same |
 | Heartbeat, knock, rumble, pulse | `startHeartbeatHaptic()`, `startKnockHaptic()`, `startRumbleHaptic()`, `startPulseHaptic()` | Same |
+| How long a pattern plays | `HapticPattern.duration: TimeInterval` (seconds) | `HapticPattern.durationMs: Long` |
 
 On both platforms an implementation only provides `isHapticsSupported` and `play`; the `start…Haptic()`
 shorthands come from a protocol extension on iOS and default interface methods on Android.

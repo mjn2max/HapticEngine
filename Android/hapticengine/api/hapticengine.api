@@ -30,6 +30,7 @@ public final class dev/codepassion/hapticengine/HapticPattern : java/lang/Enum {
 	public static final field Success Ldev/codepassion/hapticengine/HapticPattern;
 	public static final field Tick Ldev/codepassion/hapticengine/HapticPattern;
 	public static final field Warning Ldev/codepassion/hapticengine/HapticPattern;
+	public final fun getDurationMs ()J
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public static fun valueOf (Ljava/lang/String;)Ldev/codepassion/hapticengine/HapticPattern;
 	public static fun values ()[Ldev/codepassion/hapticengine/HapticPattern;

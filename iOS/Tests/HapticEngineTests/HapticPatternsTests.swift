@@ -94,6 +94,7 @@ struct HapticPatternSpecTests {
         let expected = try #require(Self.durations[pattern])
         let hapticPattern = try CHHapticPattern(events: HapticPatterns.events(for: pattern), parameters: [])
         #expect(abs(hapticPattern.duration - expected) < 0.0001)
+        #expect(abs(pattern.duration - expected) < 0.0001)
     }
 }
 

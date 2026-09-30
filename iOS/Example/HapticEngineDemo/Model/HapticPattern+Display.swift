@@ -54,23 +54,6 @@ extension HapticPattern {
         }
     }
 
-    /// Roughly how long the pattern plays, from its first event to the end of its last.
-    /// Keep in step with the timings in the library's `HapticPatterns.swift`.
-    var duration: TimeInterval {
-        switch self {
-        case .simple: 0.9
-        case .complex: 6
-        case .tick: 0
-        case .success: 0.15
-        case .warning: 0.25
-        case .error: 0.2
-        case .heartbeat: 0.95
-        case .knock: 0.5
-        case .rumble: 0.8
-        case .pulse: 0.9
-        }
-    }
-
     /// `duration` for display, such as "Instant", "250 ms" or "6 s".
     var durationText: String {
         switch duration {

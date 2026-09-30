@@ -1,7 +1,7 @@
 [versions]
-# AGP 9.2 is the newest supported by Android Studio Panda 4 (2025.3.4), which caps compileSdk
-# at 36.1. The AndroidX versions below are the newest that still compile against 36.1; newer
-# releases (Compose UI 1.12, activity 1.13, lifecycle 2.11) need compileSdk 37 and AGP 9.4.
+# Both modules compile against SDK 36.1 (compileSdk in their build.gradle.kts). The AndroidX versions
+# below are the newest that still compile against 36.1; newer releases (Compose UI 1.12, activity 1.13,
+# lifecycle 2.11) need compileSdk 37. Dependabot skips AGP minor and major updates; see .github/dependabot.yml.
 agp = "9.4.1"
 kotlin = "2.4.20"
 composeBom = "2026.06.01"

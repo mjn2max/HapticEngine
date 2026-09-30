@@ -41,6 +41,16 @@ enum HapticPatterns {
         }
     }
 
+    /// How long each pattern plays, worked out once from its events so it can't drift from them.
+    static let durations: [HapticPattern: TimeInterval] = Dictionary(
+        uniqueKeysWithValues: HapticPattern.allCases.map { pattern in
+            let ends = events(for: pattern).map { event in
+                event.relativeTime + (event.type == .hapticContinuous ? event.duration : 0)
+            }
+            return (pattern, ends.max() ?? 0)
+        }
+    )
+
     /// A full-strength tap, then taps every 100 ms rising from 10% to 90% strength.
     private static func simple() -> [CHHapticEvent] {
         let firstTap = transient(intensity: 1, sharpness: 1, at: 0)

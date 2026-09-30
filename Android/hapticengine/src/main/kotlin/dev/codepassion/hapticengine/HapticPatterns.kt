@@ -11,6 +11,9 @@ internal sealed interface HapticEvent {
     val intensity: Float
     val sharpness: Float
 
+    /** When the event stops. A tap has no length, as in Core Haptics. */
+    val endMs: Long get() = if (this is Hold) atMs + durationMs else atMs
+
     /** A momentary tap, like Core Haptics' transient event. */
     data class Tap(override val intensity: Float, override val sharpness: Float, override val atMs: Long) : HapticEvent
 
@@ -95,6 +98,12 @@ internal object HapticPatterns {
         // Each gap is as long as a burst.
         HapticPattern.Pulse -> (0L until 5L).map { HapticEvent.Hold(1f, 0.5f, it * 2 * PULSE_BURST_MS, PULSE_BURST_MS) }
     }
+
+    /** How long each pattern plays, worked out once from its events so it can't drift from them. */
+    private val durations: Map<HapticPattern, Long> =
+        HapticPattern.entries.associateWith { pattern -> events(pattern).maxOf { it.endMs } }
+
+    fun durationMs(pattern: HapticPattern): Long = durations.getValue(pattern)
 
     /** A full-strength tap, then taps every 100 ms rising from 10% to 90% strength. */
     private fun simple(): List<HapticEvent> =

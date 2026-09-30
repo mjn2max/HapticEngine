@@ -62,24 +62,6 @@ val HapticPattern.icon: ImageVector
         HapticPattern.Pulse -> Icons.Outlined.Sensors
     }
 
-/**
- * Roughly how long the pattern plays, from its first event to the end of its last.
- * Keep in step with the timings in the library's `HapticPatterns.kt`.
- */
-val HapticPattern.durationMs: Long
-    get() = when (this) {
-        HapticPattern.Simple -> 900
-        HapticPattern.Complex -> 6_000
-        HapticPattern.Tick -> 0
-        HapticPattern.Success -> 150
-        HapticPattern.Warning -> 250
-        HapticPattern.Error -> 200
-        HapticPattern.Heartbeat -> 950
-        HapticPattern.Knock -> 500
-        HapticPattern.Rumble -> 800
-        HapticPattern.Pulse -> 900
-    }
-
 /** [durationMs] for display, such as "Instant", "250 ms" or "6 s". */
 val HapticPattern.durationText: String
     get() = when {

@@ -37,5 +37,13 @@ public enum class HapticPattern {
     Rumble,
 
     /** Five short bursts over about one second. */
-    Pulse,
+    Pulse;
+
+    /**
+     * How long the pattern plays, in milliseconds: from its first event to the end of its last. A single tap,
+     * like [Tick], is 0.
+     *
+     * The engine doesn't report when a pattern ends, so use this to time UI to it.
+     */
+    public val durationMs: Long get() = HapticPatterns.durationMs(this)
 }

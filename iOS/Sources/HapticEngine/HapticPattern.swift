@@ -6,6 +6,8 @@
 // CodePassion.dev
 //
 
+import Foundation
+
 /// A built-in haptic pattern. Pass one to ``HapticEngineProtocol/play(_:)``.
 ///
 /// ```swift
@@ -44,4 +46,12 @@ public enum HapticPattern: String, CaseIterable, Sendable {
 
     /// Five short bursts over about one second.
     case pulse
+
+    /// How long the pattern plays, in seconds: from its first event to the end of its last. A single tap,
+    /// like ``tick``, is `0`.
+    ///
+    /// The engine doesn't report when a pattern ends, so use this to time UI to it.
+    public var duration: TimeInterval {
+        HapticPatterns.durations[self, default: 0]
+    }
 }
