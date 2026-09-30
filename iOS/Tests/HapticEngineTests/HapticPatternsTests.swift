@@ -45,9 +45,15 @@ struct HapticPatternIntentTests {
     }
 }
 
+/// The patterns the Android library has too, in the same order.
+let sharedWithAndroid: [HapticPattern] = [
+    .simple, .complex, .tick, .success, .warning, .error, .heartbeat, .knock, .rumble, .pulse,
+]
+
 @Suite("Haptic pattern specs")
 struct HapticPatternSpecTests {
-    /// The exact events of every pattern. Keep in step with `HapticPatterns.kt` on Android.
+    /// The exact events of the patterns shared with Android. Keep in step with `HapticPatterns.kt` there.
+    /// The iOS-only patterns are held to the rules in `HapticPatternRuleTests` instead.
     static let specs: [HapticPattern: [EventSpec]] = [
         .simple: [.tap(1, 1, at: 0)] + (1...9).map { step in
             let level = Float(step) / 10
@@ -78,18 +84,19 @@ struct HapticPatternSpecTests {
         .error: 0.2, .heartbeat: 0.95, .knock: 0.5, .rumble: 0.8, .pulse: 0.9,
     ]
 
-    @Test func everyPatternHasASpec() {
-        #expect(Set(Self.specs.keys) == Set(HapticPattern.allCases))
-        #expect(Set(Self.durations.keys) == Set(HapticPattern.allCases))
+    @Test func everySharedPatternHasASpec() {
+        #expect(Array(HapticPattern.allCases.prefix(sharedWithAndroid.count)) == sharedWithAndroid)
+        #expect(Set(Self.specs.keys) == Set(sharedWithAndroid))
+        #expect(Set(Self.durations.keys) == Set(sharedWithAndroid))
     }
 
-    @Test(arguments: HapticPattern.allCases)
+    @Test(arguments: sharedWithAndroid)
     func eventsMatchSpec(pattern: HapticPattern) throws {
         let expected = try #require(Self.specs[pattern])
         #expect(HapticPatterns.events(for: pattern).map(EventSpec.init) == expected)
     }
 
-    @Test(arguments: HapticPattern.allCases)
+    @Test(arguments: sharedWithAndroid)
     func durationMatchesSpec(pattern: HapticPattern) throws {
         let expected = try #require(Self.durations[pattern])
         let hapticPattern = try CHHapticPattern(events: HapticPatterns.events(for: pattern), parameters: [])
@@ -150,6 +157,18 @@ struct HapticPatternRuleTests {
             #expect(hold.duration > 0)
             #expect(hold.relativeTime + hold.duration <= next.relativeTime + 0.0001)
         }
+    }
+
+    @Test(arguments: HapticPattern.allCases)
+    func durationMatchesCoreHaptics(pattern: HapticPattern) throws {
+        let hapticPattern = try CHHapticPattern(events: HapticPatterns.events(for: pattern), parameters: [])
+        #expect(abs(pattern.duration - hapticPattern.duration) < 0.0001)
+    }
+
+    @Test(arguments: HapticPattern.allCases)
+    func isShortEnoughForFeedback(pattern: HapticPattern) {
+        // The longest, complex, is 6 seconds. Anything longer is likely a typo in a timing.
+        #expect(pattern.duration <= 6)
     }
 
     @Test func patternsAreDistinct() {

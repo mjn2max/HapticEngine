@@ -56,14 +56,42 @@ struct HapticEngineProtocolTests {
         spy.startKnockHaptic()
         spy.startRumbleHaptic()
         spy.startPulseHaptic()
-        #expect(spy.played == HapticPattern.allCases)
+        // Shorthands exist for the ten patterns shared with Android.
+        #expect(spy.played == sharedWithAndroid)
     }
 
     @Test func patternRawValuesAreStable() {
         // Raw values appear in logs and may be persisted by apps, so renaming a case must be deliberate.
         #expect(HapticPattern.allCases.map(\.rawValue) == [
+            // Shared with Android
             "simple", "complex", "tick", "success", "warning",
             "error", "heartbeat", "knock", "rumble", "pulse",
+            // Feedback
+            "selection", "lightImpact", "mediumImpact", "heavyImpact", "softImpact", "rigidImpact",
+            "toggleOn", "toggleOff", "buttonPress", "longPress", "dragStart", "drop",
+            "snap", "swipe", "refresh", "delete", "undo", "doubleTap",
+            // Alerts
+            "notification", "message", "mention", "reminder", "alarm", "ring",
+            "doorbell", "siren", "countdown", "timerDone", "lowBattery", "sos",
+            // Rhythm
+            "drumroll", "gallop", "march", "waltz", "clockTick", "metronome", "racingHeart",
+            "restingHeart", "footsteps", "clap", "bounce", "echo", "syncopation",
+            // Texture
+            "buzz", "hum", "purr", "zipper", "sandpaper", "gravel",
+            "bubbles", "sparkle", "crescendo", "fadeOut", "wobble", "throb",
+            // Nature
+            "raindrop", "rain", "thunder", "earthquake", "oceanWave", "gust",
+            "breathe", "crickets", "woodpecker", "campfire", "hail", "avalanche",
+            // Mechanical
+            "typewriter", "ratchet", "dial", "spring", "engineStart", "engineRev",
+            "shutter", "lock", "unlock", "gears", "drill",
+            // Game
+            "coin", "powerUp", "levelUp", "jump", "landing", "hit",
+            "criticalHit", "explosion", "laser", "shield", "gameOver", "victory",
         ])
+    }
+
+    @Test func hasOneHundredPatterns() {
+        #expect(HapticPattern.allCases.count == 100)
     }
 }

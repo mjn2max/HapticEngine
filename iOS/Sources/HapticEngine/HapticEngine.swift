@@ -22,8 +22,8 @@ import os
 /// let haptics = HapticEngine()
 /// haptics.play(.success)
 /// ```
-// `@unchecked` because `CHHapticEngine` and its players aren't marked `Sendable`. The engine and
-// patterns are set once in `init` and only read after; the mutable player is guarded by `lock`.
+// `@unchecked` because `CHHapticEngine` and its players aren't marked `Sendable`. The engine is set once in
+// `init` and only read after; the pattern cache and the current player are guarded by `lock`.
 public final class HapticEngine: HapticEngineProtocol, @unchecked Sendable {
     // Messages mark their values `.public`: none are user data, and the default `.private` hides them in
     // release logs, which is where they are needed.
@@ -31,18 +31,19 @@ public final class HapticEngine: HapticEngineProtocol, @unchecked Sendable {
 
     private let engine: CHHapticEngine?
 
-    /// Every pattern, built once up front since they never change. Empty without an engine.
-    private let patterns: [HapticPattern: CHHapticPattern]
+    /// Patterns already built, each the first time it plays: there are too many to build up front for an
+    /// app that plays a few. Guarded by `lock`.
+    private var patterns: [HapticPattern: CHHapticPattern] = [:]
 
     /// The player for the last pattern played, kept so the next `play(_:)` can stop it. Guarded by `lock`.
     private var currentPlayer: CHHapticPatternPlayer?
 
-    /// Serializes `play(_:)`, so stopping the previous pattern and starting the next can't interleave.
+    /// Serializes `play(_:)`, so stopping the previous pattern and starting the next can't interleave, and
+    /// guards the pattern cache.
     private let lock = NSLock()
 
     public init() {
         engine = Self.makeEngine()
-        patterns = engine == nil ? [:] : Self.makePatterns()
     }
 
     public var isHapticsSupported: Bool {
@@ -51,10 +52,12 @@ public final class HapticEngine: HapticEngineProtocol, @unchecked Sendable {
 
     /// Plays `pattern`, stopping any pattern that is still playing, as Android's vibrator does.
     public func play(_ pattern: HapticPattern) {
-        guard let engine, let hapticPattern = patterns[pattern] else { return }
+        guard let engine else { return }
 
         lock.lock()
         defer { lock.unlock() }
+
+        guard let hapticPattern = hapticPattern(for: pattern) else { return }
 
         // Throws if the player already finished or the engine was reset since; either way it's silent.
         try? currentPlayer?.stop(atTime: CHHapticTimeImmediate)
@@ -94,15 +97,16 @@ public final class HapticEngine: HapticEngineProtocol, @unchecked Sendable {
         }
     }
 
-    private static func makePatterns() -> [HapticPattern: CHHapticPattern] {
-        var patterns: [HapticPattern: CHHapticPattern] = [:]
-        for pattern in HapticPattern.allCases {
-            do {
-                patterns[pattern] = try CHHapticPattern(events: HapticPatterns.events(for: pattern), parameters: [])
-            } catch {
-                logger.error("Failed to build haptic pattern \(pattern.rawValue, privacy: .public): \(error.localizedDescription, privacy: .public)")
-            }
+    /// The built pattern, from the cache or built now. Call with `lock` held.
+    private func hapticPattern(for pattern: HapticPattern) -> CHHapticPattern? {
+        if let built = patterns[pattern] { return built }
+        do {
+            let built = try CHHapticPattern(events: HapticPatterns.events(for: pattern), parameters: [])
+            patterns[pattern] = built
+            return built
+        } catch {
+            Self.logger.error("Failed to build haptic pattern \(pattern.rawValue, privacy: .public): \(error.localizedDescription, privacy: .public)")
+            return nil
         }
-        return patterns
     }
 }

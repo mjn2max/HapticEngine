@@ -46,7 +46,7 @@ enum PatternLayout: String, CaseIterable {
     }
 }
 
-/// Every pattern, grouped by category, in the layout the user picked.
+/// Every pattern, grouped by category, in the layout the user picked, filtered by an optional search.
 struct PatternsView: View {
     let nowPlaying: HapticDemoModel.Playback?
     /// False without haptic hardware: the patterns are dimmed and can't be tapped, but the layout can
@@ -57,6 +57,15 @@ struct PatternsView: View {
     /// Plain state rather than `@AppStorage`: changes to `@AppStorage` arrive outside the switcher's
     /// `withAnimation`, which made layout changes instant. Saved on every change instead.
     @State private var layout = PatternLayout.saved
+    @State private var query = ""
+
+    /// The categories with a pattern matching the search, each with only its matching patterns.
+    private var sections: [(category: HapticPattern.Category, patterns: [HapticPattern])] {
+        HapticPattern.Category.allCases.compactMap { category in
+            let patterns = category.patterns.filter { $0.matches(query) }
+            return patterns.isEmpty ? nil : (category, patterns)
+        }
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
@@ -68,27 +77,33 @@ struct PatternsView: View {
             }
             .padding(.leading, 4)
 
+            SearchField(text: $query)
+
             VStack(alignment: .leading, spacing: 20) {
-                ForEach(HapticPattern.Category.allCases, id: \.self) { category in
+                ForEach(sections, id: \.category) { section in
                     VStack(alignment: .leading, spacing: 8) {
-                        Text(category.title)
+                        Text("\(section.category.title) · \(section.patterns.count)")
                             .font(.subheadline.weight(.semibold))
                             .foregroundStyle(.secondary)
                             .padding(.leading, 4)
                         Group {
                             switch layout {
                             case .grid:
-                                PatternGrid(patterns: category.patterns, nowPlaying: nowPlaying, onPlay: onPlay)
+                                PatternGrid(patterns: section.patterns, nowPlaying: nowPlaying, onPlay: onPlay)
                             case .cards:
-                                PatternCards(patterns: category.patterns, nowPlaying: nowPlaying, onPlay: onPlay)
+                                PatternCards(patterns: section.patterns, nowPlaying: nowPlaying, onPlay: onPlay)
                             case .list:
-                                PatternList(patterns: category.patterns, nowPlaying: nowPlaying, onPlay: onPlay)
+                                PatternList(patterns: section.patterns, nowPlaying: nowPlaying, onPlay: onPlay)
                             }
                         }
                         .disabled(!canPlay)
                         // The custom button styles don't dim when disabled, so dim here.
                         .opacity(canPlay ? 1 : 0.4)
                     }
+                }
+
+                if sections.isEmpty {
+                    ContentUnavailableView.search(text: query)
                 }
             }
             // All sections, headings included, change as one block: the old layout leaves at once and the
@@ -104,6 +119,37 @@ struct PatternsView: View {
         // A light tick on each change, fitting for a haptics demo.
         .sensoryFeedback(.selection, trigger: layout)
         .onChange(of: layout) { _, layout in layout.save() }
+    }
+}
+
+/// Filters the patterns. A plain field rather than `.searchable`, which needs the navigation bar this
+/// screen hides.
+private struct SearchField: View {
+    @Binding var text: String
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "magnifyingglass")
+                .foregroundStyle(.secondary)
+                .accessibilityHidden(true)
+            TextField("Search \(HapticPattern.allCases.count) patterns", text: $text)
+                .textInputAutocapitalization(.never)
+                .autocorrectionDisabled()
+                .submitLabel(.search)
+            if !text.isEmpty {
+                Button {
+                    text = ""
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Clear search")
+            }
+        }
+        .padding(.horizontal, 12)
+        .frame(minHeight: 40)
+        .background(Color(.tertiarySystemFill), in: .rect(cornerRadius: 12))
     }
 }
 

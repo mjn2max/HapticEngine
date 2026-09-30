@@ -14,6 +14,10 @@ A small haptics library for **iOS** and **Android** with the same API on both pl
   - **Complex:** four 1.5 second segments: medium, hard, soft, hard.
   - **Feedback:** tick, success, warning and error.
   - **Rhythm and texture:** heartbeat, knock, rumble and pulse.
+- On iOS, 90 more patterns, for 100 in all, in seven groups: feedback (impacts, toggles, drag and
+  drop…), alerts (notification, alarm, ring, SOS…), rhythm, texture, nature (rain, thunder, ocean
+  wave…), mechanical (typewriter, lock, engine…) and game (coin, power up, explosion…). These are iOS
+  only for now; play them with `play(_:)`.
 - On Android 12+ phones that support them, taps play as haptic primitives, which feel much closer to
   iOS than a plain vibration. Other phones get an equivalent waveform.
 - Safe to call anywhere: on devices without haptic hardware every call does nothing, and one engine can
@@ -121,7 +125,8 @@ For tests and previews, pass your own implementation of the protocol / interface
 
 ## Demo apps
 
-Each platform has a demo app with the same screens: every pattern in a grid, card or list layout, a
+Each platform has a demo app with the same screens: every pattern in a grid, card or list layout (the iOS
+demo also has search across its 100 patterns), a
 now-playing card with the pattern's description and progress, and an activity history you can replay
 from, swipe to delete, or start from suggestions when it's empty.
 
@@ -157,8 +162,9 @@ cd Android && ./gradlew check :example:assembleDebug
 ```
 
 Pattern definitions live in `iOS/Sources/HapticEngine/HapticPatterns.swift` and
-`Android/hapticengine/src/main/kotlin/dev/codepassion/hapticengine/HapticPatterns.kt`. Change both
-together and update the tests on both sides so the platforms stay in step. A change to how a pattern
+`Android/hapticengine/src/main/kotlin/dev/codepassion/hapticengine/HapticPatterns.kt`. For the ten
+patterns on both platforms, change both together and update the tests on both sides so the platforms
+stay in step. The iOS-only patterns are held to shared rules in the iOS tests instead of exact specs. A change to how a pattern
 feels also needs the [device testing checklist](docs/device-testing.md).
 
 The Android public API is recorded in `Android/hapticengine/api/hapticengine.api`, and `check` fails if

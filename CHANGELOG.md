@@ -7,6 +7,10 @@ All notable changes to this project are documented here. The format follows
 ## [Unreleased]
 
 ### Added
+- iOS: 90 more patterns, for 100 in all: feedback, alerts, rhythm, texture, nature, mechanical and game
+  patterns such as `toggleOn`, `alarm`, `drumroll`, `purr`, `thunder`, `typewriter` and `coin`. They
+  are iOS only for now; play them with `play(_:)`.
+- iOS demo: search by name, description or category, and pattern counts per category.
 - iOS: eight new patterns: tick, success, warning, error, heartbeat, knock, rumble and pulse.
 - iOS: `HapticPattern` enum and `HapticEngineProtocol.play(_:)` to play any pattern. The
   `start…Haptic()` methods, including the new `startTickHaptic()` and so on, are now shorthands for it.
@@ -38,7 +42,7 @@ All notable changes to this project are documented here. The format follows
 - iOS: custom `HapticEngineProtocol` conformers now implement only `isHapticsSupported` and `play(_:)`.
 - iOS: `isHapticsSupported` is `false` if the haptic engine couldn't be created, not only without hardware.
 - iOS: playing a pattern now stops the one still playing, matching Android, instead of overlapping it.
-- iOS: patterns are built once when the engine is created instead of on every play.
+- iOS: each pattern is built once, the first time it plays, instead of on every play.
 - iOS: the complex pattern is now four continuous segments instead of 60 overlapping events.
 - iOS: errors are logged with `os.Logger` instead of `print`.
 

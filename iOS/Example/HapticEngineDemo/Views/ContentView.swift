@@ -15,6 +15,8 @@ struct ContentView: View {
                     .padding([.horizontal, .bottom])
                     .padding(.top, 8)
             }
+            // Scrolling the results puts the search keyboard away.
+            .scrollDismissesKeyboard(.immediately)
             // The status and history button replace the navigation bar, pinned so what's playing stays
             // visible while scrolling to the lower patterns.
             .safeAreaInset(edge: .top) {
