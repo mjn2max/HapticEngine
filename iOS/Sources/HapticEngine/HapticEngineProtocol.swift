@@ -27,8 +27,7 @@ public protocol HapticEngineProtocol {
     func play(_ pattern: HapticPattern)
 }
 
-// Shorthands for each pattern. Android's `HapticEngine` interface has `startSimpleHaptic()` and
-// `startComplexHaptic()`; the rest are iOS only for now.
+// Shorthands for each pattern. Android's `HapticEngine` interface has the same ones, as default methods.
 public extension HapticEngineProtocol {
     /// Plays ``HapticPattern/simple``.
     func startSimpleHaptic() { play(.simple) }

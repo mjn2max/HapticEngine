@@ -25,5 +25,6 @@ kotlin {
 }
 
 dependencies {
+    implementation(libs.androidx.annotation)
     testImplementation(libs.junit)
 }
