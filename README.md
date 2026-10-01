@@ -117,6 +117,7 @@ val alerts = HapticEngine(context, HapticUsage.Notification)
 | Tick, success, warning, error | `startTickHaptic()`, `startSuccessHaptic()`, `startWarningHaptic()`, `startErrorHaptic()` | Same |
 | Heartbeat, knock, rumble, pulse | `startHeartbeatHaptic()`, `startKnockHaptic()`, `startRumbleHaptic()`, `startPulseHaptic()` | Same |
 | How long a pattern plays | `HapticPattern.duration: TimeInterval` (seconds) | `HapticPattern.durationMs: Long` |
+| A pattern's taps and holds | `HapticPattern.events: [HapticPatternEvent]` | Not yet |
 
 On both platforms an implementation only provides `isHapticsSupported` and `play`; the `start…Haptic()`
 shorthands come from a protocol extension on iOS and default interface methods on Android.
@@ -125,10 +126,14 @@ For tests and previews, pass your own implementation of the protocol / interface
 
 ## Demo apps
 
-Each platform has a demo app with the same screens: every pattern in a grid, card or list layout (the iOS
-demo also has search across its 100 patterns), a
-now-playing card with the pattern's description and progress, and an activity history you can replay
-from, swipe to delete, or start from suggestions when it's empty.
+Each platform has a demo app: every pattern in a grid or list, a now-playing card with the pattern's
+description and progress, and an activity history you can replay from, swipe to delete, or start from
+suggestions when it's empty.
+
+The iOS demo is built for its 100 patterns: search them all, filter by category from the
+button beside search, and star favorites (touch and hold a pattern, or tap the star by the now-playing card) to
+find them again under **Favorites**. To try the UI in the Simulator, which has no haptic hardware, add
+`-MockHaptics YES` to the scheme's launch arguments.
 
 - **iOS:** open `iOS/Example/HapticEngineDemo.xcodeproj`. To run on an iPhone, copy
   `iOS/Example/Config/Signing.local.xcconfig.template` to `Signing.local.xcconfig` and set your Team ID.
@@ -156,6 +161,10 @@ HapticEngine/
 ```sh
 # iOS
 swift test
+
+# iOS demo UI tests: search, scrolling and navigation, driven like a person would (about 3 minutes)
+xcodebuild test -project iOS/Example/HapticEngineDemo.xcodeproj -scheme HapticEngineDemo \
+  -destination 'platform=iOS Simulator,name=iPhone 17e'
 
 # Android (JDK 17+; Android Studio's bundled JDK works)
 cd Android && ./gradlew check :example:assembleDebug

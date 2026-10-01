@@ -6,20 +6,21 @@
 import HapticEngine
 import SwiftUI
 
-/// Patterns as rows with their description and length: the list layout of ``PatternsView``.
+/// Patterns as rows with their description and length: for reading what each one does.
 struct PatternList: View {
     let patterns: [HapticPattern]
-    let nowPlaying: HapticDemoModel.Playback?
-    let onPlay: (HapticPattern) -> Void
+    @Environment(HapticDemoModel.self) private var model
 
     var body: some View {
-        VStack(spacing: 0) {
+        LazyVStack(spacing: 0) {
             ForEach(patterns, id: \.self) { pattern in
                 PatternRow(
                     pattern: pattern,
-                    isPlaying: nowPlaying?.pattern == pattern,
-                    onPlay: { onPlay(pattern) }
+                    isPlaying: model.nowPlaying?.pattern == pattern,
+                    isFavorite: model.isFavorite(pattern),
+                    onPlay: { model.play(pattern) }
                 )
+                .patternActions(pattern, model: model)
                 if pattern != patterns.last {
                     // Inset to line up with the text, as in system lists.
                     Divider()
@@ -35,12 +36,13 @@ struct PatternList: View {
 private struct PatternRow: View {
     let pattern: HapticPattern
     let isPlaying: Bool
+    let isFavorite: Bool
     let onPlay: () -> Void
 
     var body: some View {
         Button(action: onPlay) {
             HStack(spacing: 12) {
-                PatternIcon(pattern: pattern, isPlaying: isPlaying, size: 40)
+                PatternIcon(pattern: pattern, isPlaying: isPlaying, isFavorite: isFavorite, size: 40)
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(pattern.title)

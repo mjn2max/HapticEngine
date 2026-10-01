@@ -58,9 +58,3 @@ struct EventSpec: Equatable, CustomStringConvertible {
         "\(type.rawValue) t=\(time) i=\(intensity) s=\(sharpness) d=\(duration)"
     }
 }
-
-extension CHHapticEvent {
-    func value(of parameter: CHHapticEvent.ParameterID) -> Float? {
-        eventParameters.first { $0.parameterID == parameter }?.value
-    }
-}

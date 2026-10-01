@@ -42,11 +42,23 @@ extension HapticPattern {
         }
     }
 
-    /// Whether `query` matches the pattern's name, description or category, ignoring case and accents.
+    /// Whether every word of `query` starts a word in the pattern's name, description or category,
+    /// ignoring case and accents. Matching word starts, not any fragment, keeps "rain" from finding
+    /// "fine-grained".
     func matches(_ query: String) -> Bool {
-        let query = query.trimmingCharacters(in: .whitespaces)
-        guard !query.isEmpty else { return true }
-        return [title, subtitle, category.title].contains { $0.localizedStandardContains(query) }
+        let queryWords = Self.words(in: query)
+        guard !queryWords.isEmpty else { return true }
+        let words = Self.words(in: "\(title) \(subtitle) \(category.title)")
+        return queryWords.allSatisfy { queryWord in
+            words.contains { $0.hasPrefix(queryWord) }
+        }
+    }
+
+    /// The words in `text`, folded for comparison: "Fade-Out" gives "fade" and "out".
+    private static func words(in text: String) -> [String] {
+        text.folding(options: [.caseInsensitive, .diacriticInsensitive], locale: .current)
+            .split { !$0.isLetter && !$0.isNumber }
+            .map(String.init)
     }
 
     private struct Details {
@@ -200,7 +212,8 @@ extension HapticPattern {
     }
 
     /// Groups the patterns on the home screen, so the list stays easy to scan.
-    enum Category: CaseIterable {
+    /// The raw value is saved, so renaming a case forgets a saved filter for it.
+    enum Category: String, CaseIterable {
         /// Short responses to something the user did.
         case feedback
         /// Getting the user's attention.
@@ -228,13 +241,25 @@ extension HapticPattern {
             }
         }
 
+        var systemImage: String {
+            switch self {
+            case .feedback: "hand.tap"
+            case .alerts: "bell"
+            case .rhythm: "metronome"
+            case .texture: "waveform"
+            case .nature: "leaf"
+            case .mechanical: "gearshape"
+            case .game: "gamecontroller"
+            }
+        }
+
         var tint: Color {
             switch self {
             case .feedback: .teal
             case .alerts: .orange
             case .rhythm: .pink
             case .texture: .purple
-            case .nature: .mint
+            case .nature: .green
             case .mechanical: .gray
             case .game: .indigo
             }

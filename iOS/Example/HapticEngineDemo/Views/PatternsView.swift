@@ -8,8 +8,7 @@ import SwiftUI
 
 /// How the patterns are laid out. Remembered between launches.
 ///
-/// Each layout has a distinct job, ordered from quickest to tap to most detailed. A saved value from
-/// a removed layout (such as the old "compact") falls back to the default.
+/// A saved value from a removed layout (such as the old "compact" or "cards") falls back to the default.
 enum PatternLayout: String, CaseIterable {
     private static let storageKey = "patternLayout"
 
@@ -22,192 +21,290 @@ enum PatternLayout: String, CaseIterable {
         UserDefaults.standard.set(rawValue, forKey: Self.storageKey)
     }
 
-    /// Icon and name, three to a row: for tapping quickly.
+    /// Icon and name, three or more to a row: for tapping quickly.
     case grid
-    /// Two-column cards with description and length: for browsing.
-    case cards
-    /// One row per pattern with description and length: for scanning details.
+    /// One row per pattern with description and length: for reading what each one does.
     case list
 
     var title: String {
         switch self {
         case .grid: "Grid"
-        case .cards: "Cards"
         case .list: "List"
         }
     }
 
     var systemImage: String {
         switch self {
-        case .grid: "square.grid.3x3.fill"
-        case .cards: "rectangle.grid.2x2.fill"
+        case .grid: "square.grid.2x2"
         case .list: "list.bullet"
         }
     }
 }
 
-/// Every pattern, grouped by category, in the layout the user picked, filtered by an optional search.
+/// The patterns to show together, under an optional heading.
+private struct PatternSection: Identifiable {
+    let id: String
+    let title: String?
+    let patterns: [HapticPattern]
+}
+
+/// Every pattern, filtered from the toolbar or by a search, in the layout the user picked.
+///
+/// Search opens above the patterns, and looks through every pattern whatever the filter: someone
+/// searching wants a pattern wherever it is.
 struct PatternsView: View {
-    let nowPlaying: HapticDemoModel.Playback?
-    /// False without haptic hardware: the patterns are dimmed and can't be tapped, but the layout can
-    /// still be changed.
-    var canPlay = true
-    let onPlay: (HapticPattern) -> Void
+    @Binding var filter: PatternFilter
+    let layout: PatternLayout
+    @Binding var query: String
+    /// Whether the search field shows above the patterns.
+    @Binding var isSearchFieldOpen: Bool
+    /// Where the now-playing bar starts, in global coordinates. The patterns fade out across it.
+    var fadeTop: CGFloat = .infinity
 
-    /// Plain state rather than `@AppStorage`: changes to `@AppStorage` arrive outside the switcher's
-    /// `withAnimation`, which made layout changes instant. Saved on every change instead.
-    @State private var layout = PatternLayout.saved
-    @State private var query = ""
+    @Environment(HapticDemoModel.self) private var model
+    @State private var scrollPosition = ScrollPosition(edge: .top)
 
-    /// The categories with a pattern matching the search, each with only its matching patterns.
-    private var sections: [(category: HapticPattern.Category, patterns: [HapticPattern])] {
+    /// Results replace the browsing sections once something is typed; until then, the filter's patterns
+    /// stay in view.
+    private var hasQuery: Bool { !query.trimmingCharacters(in: .whitespaces).isEmpty }
+
+    private var sections: [PatternSection] {
+        if hasQuery {
+            return categorySections { $0.matches(query) }
+        }
+        switch filter {
+        case .all:
+            return categorySections { _ in true }
+        case .favorites:
+            return model.favorites.isEmpty ? [] : [PatternSection(id: "favorites", title: nil, patterns: model.favorites)]
+        case .category(let category):
+            return [PatternSection(id: category.rawValue, title: nil, patterns: category.patterns)]
+        }
+    }
+
+    /// One section per category with a pattern that passes `include`, headed by its name and count.
+    private func categorySections(_ include: (HapticPattern) -> Bool) -> [PatternSection] {
         HapticPattern.Category.allCases.compactMap { category in
-            let patterns = category.patterns.filter { $0.matches(query) }
-            return patterns.isEmpty ? nil : (category, patterns)
+            let patterns = category.patterns.filter(include)
+            guard !patterns.isEmpty else { return nil }
+            return PatternSection(id: category.rawValue, title: "\(category.title) · \(patterns.count)", patterns: patterns)
         }
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            HStack {
-                Text("Patterns")
-                    .font(.title3.weight(.bold))
-                Spacer()
-                LayoutSwitcher(selection: $layout)
+        ScrollView {
+            VStack(alignment: .leading, spacing: 0) {
+                header
+                content
+                    .padding([.horizontal, .bottom])
+                    .padding(.top, 8)
             }
-            .padding(.leading, 4)
+        }
+        .scrollPosition($scrollPosition)
+        .scrollDismissesKeyboard(.immediately)
+        .accessibilityIdentifier("patternList")
+        // Scrolling puts the search field away, back into its button, to give the results the room.
+        // The query stays, so the results stay too; with nothing typed, search simply closes.
+        .onScrollPhaseChange { _, phase in
+            guard phase == .interacting, isSearchFieldOpen else { return }
+            withAnimation(.snappy) { isSearchFieldOpen = false }
+        }
+        // The patterns melt into the bar instead of meeting it at a line. The system's soft edge
+        // effect stays on beneath it, adding a gentle blur as they fade.
+        .mask { BottomFade(fadeTop: fadeTop).ignoresSafeArea() }
+        // A new filter, or a search, starts at the top, not partway down, as a new mailbox does in Mail:
+        // at once, since the patterns are all new. Opening search glides up to its field instead. Scrolling
+        // to the edge rather than to a view at the top keeps the navigation bar settled: scrolling to a view
+        // left the large title stranded beneath the toolbar buttons.
+        .onChange(of: filter) { scrollPosition.scrollTo(edge: .top) }
+        .onChange(of: query) { scrollPosition.scrollTo(edge: .top) }
+        .onChange(of: isSearchFieldOpen) { _, isOpen in
+            if isOpen { withAnimation(.snappy) { scrollPosition.scrollTo(edge: .top) } }
+        }
+        .background(Color(.systemGroupedBackground))
+    }
 
-            SearchField(text: $query)
+    /// The search field, at the top of the patterns while it's open. It scrolls with them rather than
+    /// staying pinned, so it needs no background of its own.
+    @ViewBuilder
+    private var header: some View {
+        if isSearchFieldOpen {
+            SearchField(text: $query) {
+                withAnimation(.snappy) {
+                    query = ""
+                    isSearchFieldOpen = false
+                }
+        }
+        .transition(.opacity)
+        }
+    }
 
+
+    @ViewBuilder
+    private var content: some View {
+        if sections.isEmpty {
+            emptyState
+                .padding(.top, 40)
+        } else {
             VStack(alignment: .leading, spacing: 20) {
-                ForEach(sections, id: \.category) { section in
+                ForEach(sections) { section in
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("\(section.category.title) · \(section.patterns.count)")
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(.secondary)
-                            .padding(.leading, 4)
-                        Group {
-                            switch layout {
-                            case .grid:
-                                PatternGrid(patterns: section.patterns, nowPlaying: nowPlaying, onPlay: onPlay)
-                            case .cards:
-                                PatternCards(patterns: section.patterns, nowPlaying: nowPlaying, onPlay: onPlay)
-                            case .list:
-                                PatternList(patterns: section.patterns, nowPlaying: nowPlaying, onPlay: onPlay)
-                            }
+                        if let title = section.title {
+                            Text(title)
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(.secondary)
+                                .padding(.leading, 4)
+                                .accessibilityAddTraits(.isHeader)
                         }
-                        .disabled(!canPlay)
-                        // The custom button styles don't dim when disabled, so dim here.
-                        .opacity(canPlay ? 1 : 0.4)
+                        switch layout {
+                        case .grid: PatternGrid(patterns: section.patterns)
+                        case .list: PatternList(patterns: section.patterns)
+                        }
                     }
                 }
-
-                if sections.isEmpty {
-                    ContentUnavailableView.search(text: query)
-                }
             }
-            // All sections, headings included, change as one block: the old layout leaves at once and the
-            // new one fades in from slightly smaller. Nothing slides or shows on top of anything else, and
-            // every layout keeps the same order and colors, so the eye can follow a pattern across.
+            .disabled(!model.isHapticsSupported)
+            // The custom button styles don't dim when disabled, so dim here.
+            .opacity(model.isHapticsSupported ? 1 : 0.4)
+            // The old layout leaves at once and the new one fades in from slightly smaller, so the eye can
+            // follow a pattern across: every layout keeps the same order and colors.
             .id(layout)
             .transition(.asymmetric(
-                insertion: .opacity.combined(with: .scale(scale: 0.98, anchor: .top))
-                    .animation(.easeOut(duration: 0.25)),
+                insertion: .opacity.combined(with: .scale(scale: 0.98, anchor: .top)),
                 removal: .identity
             ))
         }
-        // A light tick on each change, fitting for a haptics demo.
-        .sensoryFeedback(.selection, trigger: layout)
-        .onChange(of: layout) { _, layout in layout.save() }
+    }
+
+    @ViewBuilder
+    private var emptyState: some View {
+        if hasQuery {
+            ContentUnavailableView.search(text: query)
+        } else {
+            // Only favorites can be empty: every category has patterns.
+            ContentUnavailableView {
+                Label("No Favorites Yet", systemImage: "star")
+            } description: {
+                Text("Touch and hold a pattern, or tap the star after playing one, to keep it here.")
+            }
+        }
     }
 }
 
-/// Filters the patterns. A plain field rather than `.searchable`, which needs the navigation bar this
-/// screen hides.
+/// The search field. Takes the keyboard as it appears; Cancel clears it and goes back to browsing.
 private struct SearchField: View {
     @Binding var text: String
+    let onCancel: () -> Void
+
+    @Environment(HapticDemoModel.self) private var model
+    @FocusState private var isFocused: Bool
 
     var body: some View {
-        HStack(spacing: 8) {
-            Image(systemName: "magnifyingglass")
-                .foregroundStyle(.secondary)
-                .accessibilityHidden(true)
-            TextField("Search \(HapticPattern.allCases.count) patterns", text: $text)
-                .textInputAutocapitalization(.never)
-                .autocorrectionDisabled()
-                .submitLabel(.search)
-            if !text.isEmpty {
-                Button {
-                    text = ""
-                } label: {
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundStyle(.secondary)
+        HStack(spacing: 12) {
+            HStack(spacing: 8) {
+                Image(systemName: "magnifyingglass")
+                    .foregroundStyle(.secondary)
+                    .accessibilityHidden(true)
+                TextField("Search \(HapticPattern.allCases.count) Patterns", text: $text)
+                    .focused($isFocused)
+                    .accessibilityIdentifier("searchField")
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled()
+                    .submitLabel(.search)
+                if !text.isEmpty {
+                    Button {
+                        text = ""
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundStyle(.secondary)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Clear Search")
                 }
-                .buttonStyle(.plain)
-                .accessibilityLabel("Clear search")
             }
+            .padding(.horizontal, 12)
+            .frame(minHeight: 34)
+            .background(Color(.tertiarySystemFill), in: .capsule)
+
+            Button("Cancel", action: onCancel)
+                .fontWeight(.medium)
         }
-        .padding(.horizontal, 12)
-        .frame(minHeight: 40)
-        .background(Color(.tertiarySystemFill), in: .rect(cornerRadius: 12))
+        .padding(.horizontal)
+        .padding(.vertical, 6)
+        .onAppear { isFocused = true }
+        // Playing a result puts the keyboard away, so the now-playing bar can show it.
+        .onChange(of: model.nowPlaying?.id) { _, playing in
+            if playing != nil { isFocused = false }
+        }
     }
 }
 
-/// Picks the layout. The selected option shows its icon and name, the others only their icon, and the
-/// highlight slides between them, so it's always clear which layout is showing.
-private struct LayoutSwitcher: View {
-    @Binding var selection: PatternLayout
+/// Opaque down to above the now-playing bar, then fading to clear across its top edge. Used as a mask,
+/// it fades the patterns out as they reach the bar, so nothing shows through behind its text.
+///
+/// The fade eases in and out rather than running straight, like light falling off: a straight fade
+/// starts and stops abruptly, which shows as lines while scrolling.
+private struct BottomFade: View {
+    let fadeTop: CGFloat
 
-    @Namespace private var highlight
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    /// How far above and below the bar's top edge the fade runs.
+    private static let above: CGFloat = 56
+    private static let below: CGFloat = 20
+    /// Enough stops that the eased curve shows no steps.
+    private static let steps = 12
 
     var body: some View {
-        HStack(spacing: 2) {
-            ForEach(PatternLayout.allCases, id: \.self) { layout in
-                let isSelected = layout == selection
-                Button {
-                    withAnimation(reduceMotion ? .easeInOut(duration: 0.2) : .smooth(duration: 0.4)) {
-                        selection = layout
-                    }
-                } label: {
-                    HStack(spacing: 6) {
-                        Image(systemName: layout.systemImage)
-                        if isSelected {
-                            Text(layout.title)
-                                // Never truncated; the capsule grows to fit the name.
-                                .fixedSize()
-                                .transition(.opacity.combined(with: .scale(scale: 0.8, anchor: .leading)))
-                        }
-                    }
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(isSelected ? Color.white : .secondary)
-                    .padding(.horizontal, isSelected ? 14 : 11)
-                    .frame(height: 34)
-                    .background {
-                        if isSelected {
-                            Capsule()
-                                .fill(.tint)
-                                .matchedGeometryEffect(id: "highlight", in: highlight)
-                        }
-                    }
-                    .contentShape(.capsule)
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel(layout.title)
-                .accessibilityAddTraits(isSelected ? .isSelected : [])
+        GeometryReader { geometry in
+            let frame = geometry.frame(in: .global)
+            let height = max(frame.height, 1)
+            let top = fadeTop - frame.minY
+            let start = min(max((top - Self.above) / height, 0), 1)
+            let end = min(max((top + Self.below) / height, start), 1)
+            let fade = (0...Self.steps).map { step in
+                let progress = Double(step) / Double(Self.steps)
+                // Smoothstep: slow at both ends, so the fade has no visible start or end.
+                let eased = progress * progress * (3 - 2 * progress)
+                return Gradient.Stop(
+                    color: .black.opacity(1 - eased),
+                    location: start + (end - start) * progress
+                )
             }
+            LinearGradient(
+                stops: [.init(color: .black, location: 0)] + fade,
+                startPoint: .top,
+                endPoint: .bottom
+            )
         }
-        .padding(3)
-        .background(Color(.tertiarySystemFill), in: .capsule)
-        .accessibilityElement(children: .contain)
-        .accessibilityLabel("Layout")
+    }
+}
+
+/// Picks the layout from the toolbar, as Files and Photos do.
+struct LayoutMenu: View {
+    @Binding var selection: PatternLayout
+
+    var body: some View {
+        Menu {
+            Picker("View As", selection: $selection.animation(.easeOut(duration: 0.25))) {
+                ForEach(PatternLayout.allCases, id: \.self) { layout in
+                    Label(layout.title, systemImage: layout.systemImage)
+                }
+            }
+        } label: {
+            Label("View As", systemImage: selection.systemImage)
+        }
+        .sensoryFeedback(.selection, trigger: selection)
     }
 }
 
 #Preview {
-    ScrollView {
-        PatternsView(nowPlaying: .init(pattern: .knock), onPlay: { _ in })
-            .padding()
+    @Previewable @State var filter = PatternFilter.all
+    NavigationStack {
+        PatternsView(
+            filter: $filter,
+            layout: .grid,
+            query: .constant(""),
+            isSearchFieldOpen: .constant(false)
+        )
     }
-    .background(Color(.systemGroupedBackground))
+    .environment(HapticDemoModel(engine: MockHapticEngine()))
 }

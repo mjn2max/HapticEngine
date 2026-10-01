@@ -33,6 +33,11 @@ final class HapticDemoModel {
     }
 
     private let engine: any HapticEngineProtocol
+    private let defaults: UserDefaults
+    private static let favoritesKey = "favorites"
+
+    /// Patterns the user starred, in the order they were starred. Saved between launches.
+    private(set) var favorites: [HapticPattern]
     /// Newest first. Only records a pattern when it differs from the one before, so replays don't add entries.
     private(set) var log: [LogEntry] = []
     private(set) var nowPlaying: Playback?
@@ -42,8 +47,24 @@ final class HapticDemoModel {
 
     var isHapticsSupported: Bool { engine.isHapticsSupported }
 
-    init(engine: any HapticEngineProtocol = HapticEngine()) {
+    init(engine: any HapticEngineProtocol = HapticEngine(), defaults: UserDefaults = .standard) {
         self.engine = engine
+        self.defaults = defaults
+        // A saved pattern that no longer exists, such as one renamed since, is dropped.
+        favorites = (defaults.stringArray(forKey: Self.favoritesKey) ?? []).compactMap(HapticPattern.init(rawValue:))
+    }
+
+    func isFavorite(_ pattern: HapticPattern) -> Bool {
+        favorites.contains(pattern)
+    }
+
+    func toggleFavorite(_ pattern: HapticPattern) {
+        if let index = favorites.firstIndex(of: pattern) {
+            favorites.remove(at: index)
+        } else {
+            favorites.append(pattern)
+        }
+        defaults.set(favorites.map(\.rawValue), forKey: Self.favoritesKey)
     }
 
     /// Plays a pattern chosen on the home screen, logging it if it differs from the last one logged.

@@ -184,6 +184,13 @@ enum HapticPatterns {
         }
     }
 
+    /// Each pattern's events in their public form, worked out once.
+    static let publicEvents: [HapticPattern: [HapticPatternEvent]] = Dictionary(
+        uniqueKeysWithValues: HapticPattern.allCases.map { pattern in
+            (pattern, events(for: pattern).map(HapticPatternEvent.init))
+        }
+    )
+
     /// How long each pattern plays, worked out once from its events so it can't drift from them.
     static let durations: [HapticPattern: TimeInterval] = Dictionary(
         uniqueKeysWithValues: HapticPattern.allCases.map { pattern in

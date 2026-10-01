@@ -166,6 +166,27 @@ struct HapticPatternRuleTests {
     }
 
     @Test(arguments: HapticPattern.allCases)
+    func publicEventsMatchTheCoreHapticsEvents(pattern: HapticPattern) {
+        let expected = HapticPatterns.events(for: pattern).map(EventSpec.init)
+        let actual = pattern.events.map { event in
+            EventSpec(
+                type: event.kind == .tap ? .hapticTransient : .hapticContinuous,
+                time: event.time,
+                intensity: event.intensity,
+                sharpness: event.sharpness,
+                duration: event.duration
+            )
+        }
+        #expect(actual == expected)
+    }
+
+    @Test(arguments: HapticPattern.allCases)
+    func durationIsTheEndOfTheLastEvent(pattern: HapticPattern) throws {
+        let end = try #require(pattern.events.map { $0.time + $0.duration }.max())
+        #expect(abs(pattern.duration - end) < 0.0001)
+    }
+
+    @Test(arguments: HapticPattern.allCases)
     func isShortEnoughForFeedback(pattern: HapticPattern) {
         // The longest, complex, is 6 seconds. Anything longer is likely a typo in a timing.
         #expect(pattern.duration <= 6)

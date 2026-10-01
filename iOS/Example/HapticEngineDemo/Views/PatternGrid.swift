@@ -6,11 +6,10 @@
 import HapticEngine
 import SwiftUI
 
-/// Patterns as compact tiles: the grid layout of ``PatternsView``.
+/// Patterns as compact tiles, three or more to a row: the quickest to tap.
 struct PatternGrid: View {
     let patterns: [HapticPattern]
-    let nowPlaying: HapticDemoModel.Playback?
-    let onPlay: (HapticPattern) -> Void
+    @Environment(HapticDemoModel.self) private var model
 
     private let columns = [GridItem(.adaptive(minimum: 100), spacing: 12)]
 
@@ -19,9 +18,11 @@ struct PatternGrid: View {
             ForEach(patterns, id: \.self) { pattern in
                 PatternTile(
                     pattern: pattern,
-                    isPlaying: nowPlaying?.pattern == pattern,
-                    onPlay: { onPlay(pattern) }
+                    isPlaying: model.nowPlaying?.pattern == pattern,
+                    isFavorite: model.isFavorite(pattern),
+                    onPlay: { model.play(pattern) }
                 )
+                .patternActions(pattern, model: model)
             }
         }
     }
@@ -31,12 +32,13 @@ struct PatternGrid: View {
 private struct PatternTile: View {
     let pattern: HapticPattern
     let isPlaying: Bool
+    let isFavorite: Bool
     let onPlay: () -> Void
 
     var body: some View {
         Button(action: onPlay) {
             VStack(spacing: 8) {
-                PatternIcon(pattern: pattern, isPlaying: isPlaying)
+                PatternIcon(pattern: pattern, isPlaying: isPlaying, isFavorite: isFavorite)
                 Text(pattern.title)
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(.primary)
@@ -68,14 +70,5 @@ struct CardPressStyle: ButtonStyle {
             .background(configuration.isPressed ? Color(.systemFill) : .clear)
             .background(Color(.secondarySystemGroupedBackground))
             .clipShape(.rect(cornerRadius: 20))
-    }
-}
-
-/// Shrinks a card slightly while pressed, so a tap feels physical even without haptics.
-struct PressableStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .scaleEffect(configuration.isPressed ? 0.96 : 1)
-            .animation(.snappy(duration: 0.2), value: configuration.isPressed)
     }
 }

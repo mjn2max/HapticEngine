@@ -10,7 +10,24 @@ All notable changes to this project are documented here. The format follows
 - iOS: 90 more patterns, for 100 in all: feedback, alerts, rhythm, texture, nature, mechanical and game
   patterns such as `toggleOn`, `alarm`, `drumroll`, `purr`, `thunder`, `typewriter` and `coin`. They
   are iOS only for now; play them with `play(_:)`.
-- iOS demo: search by name, description or category, and pattern counts per category.
+- iOS demo: redesigned for 100 patterns. Search them all with the system search bar, filter by category
+  from a menu beside search, and star favorites from a pattern's context menu or the now-playing card. The filter,
+  layout and favorites are remembered. The now-playing card moved to the bottom, and the layout and
+  activity buttons to the toolbar. The cards layout was removed; grid and list remain.
+- iOS: `HapticPattern.events`, the taps and holds that make up a pattern with their timing, strength and
+  sharpness, for showing or inspecting a pattern.
+- iOS demo: the now-playing bar is always shown, one height in every state, with a tip before the first
+  play and a warning on devices without haptics. Tap it or swipe it up to see the pattern's full
+  description and a timeline of its taps and holds.
+- iOS demo: search starts as a button at the top of the screen and opens above the patterns.
+  Scrolling puts it away again but keeps the results, and the button stays tinted while a search is
+  active. Search matches the start of words, so "rain" no longer finds "fine-grained".
+- iOS demo: the filter button next to search shows the selected filter's icon in its color, and the
+  title's subtitle names the filter and its pattern count. With no row of chips, the patterns start
+  right below the title.
+- iOS demo: UI tests for search, covering typing, clearing, cancelling, scrolling, playing a result and
+  navigating away and back.
+- iOS demo: `-MockHaptics YES` launch argument (debug builds) to try the UI in the Simulator.
 - iOS: eight new patterns: tick, success, warning, error, heartbeat, knock, rumble and pulse.
 - iOS: `HapticPattern` enum and `HapticEngineProtocol.play(_:)` to play any pattern. The
   `start…Haptic()` methods, including the new `startTickHaptic()` and so on, are now shorthands for it.

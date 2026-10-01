@@ -342,4 +342,10 @@ public enum HapticPattern: String, CaseIterable, Sendable {
     public var duration: TimeInterval {
         HapticPatterns.durations[self, default: 0]
     }
+
+    /// The taps and holds that make up the pattern, in time order: for showing or inspecting it, such as
+    /// drawing its timeline.
+    public var events: [HapticPatternEvent] {
+        HapticPatterns.publicEvents[self, default: []]
+    }
 }
