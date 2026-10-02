@@ -245,6 +245,34 @@ final class NowPlayingBarUITests: XCTestCase {
         }
     }
 
+    /// Opened to the full size and collapsed again, a short list is back where it was: not left scrolled
+    /// up over a gap.
+    func testAShortListReturnsAfterOpeningFullAndCollapsing() {
+        for layout in ["grid", "list"] {
+            relaunch(filter: "category.mechanical", layout: layout)
+            let first = app.buttons["pattern.typewriter"]
+            XCTAssertTrue(first.waitForExistence(timeout: 2))
+            let top = first.frame.minY
+            first.tap()
+            header.tap()
+            settle()
+            toggleFull.tap()
+            settle()
+            header.tap()
+            settle()
+            attachScreenshot("\(layout) collapsed after full")
+            XCTAssertEqual(first.frame.minY, top, accuracy: 2, layout)
+
+            // Dragged all the way up and back down, as well as tapped.
+            drag(header, by: -600)
+            settle()
+            drag(header, by: 700)
+            settle()
+            attachScreenshot("\(layout) dragged full and back")
+            XCTAssertEqual(first.frame.minY, top, accuracy: 2, "\(layout), dragged")
+        }
+    }
+
     // MARK: Helpers
 
     private var header: XCUIElement { app.descendants(matching: .any)["nowPlaying"] }
@@ -270,9 +298,9 @@ final class NowPlayingBarUITests: XCTestCase {
         start.press(forDuration: 0.05, thenDragTo: start.withOffset(CGVector(dx: 0, dy: distance)), withVelocity: .fast, thenHoldForDuration: 0)
     }
 
-    private func relaunch(filter: String) {
+    private func relaunch(filter: String, layout: String = "list") {
         app.terminate()
-        app.launchArguments = ["-MockHaptics", "YES", "-patternFilter", filter, "-patternLayout", "list", "-favorites", "()"]
+        app.launchArguments = ["-MockHaptics", "YES", "-patternFilter", filter, "-patternLayout", layout, "-favorites", "()"]
         app.launch()
     }
 

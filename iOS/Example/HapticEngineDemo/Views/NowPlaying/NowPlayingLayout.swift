@@ -22,4 +22,7 @@ final class NowPlayingLayout {
     /// How much taller than collapsed the bar has settled, which the patterns can scroll past. Changes
     /// only once a resize settles, never with the finger.
     var openHeight: CGFloat = 0
+    /// How far the bar has opened, from 0 collapsed to 1 at the summary and above. Follows the finger, so
+    /// it changes every frame the bar moves: read it only from small views, like `top`.
+    var openness: CGFloat = 0
 }

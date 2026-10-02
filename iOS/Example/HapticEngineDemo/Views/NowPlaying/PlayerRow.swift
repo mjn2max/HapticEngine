@@ -117,6 +117,10 @@ struct PlayerRow: View {
         .onChange(of: height(of: size) - height(of: .collapsed), initial: true) { _, openHeight in
             layout.openHeight = max(openHeight, 0)
         }
+        // With the finger, so the bar's surface turns solid as it opens.
+        .onChange(of: openness, initial: true) { _, openness in
+            layout.openness = openness
+        }
         // Smaller than full, the details show from their top, so the summary shows its whole timeline.
         .onChange(of: size) { _, size in
             if size != .full { withAnimation(Self.scrollSnap) { scrollPosition.scrollTo(edge: .top) } }

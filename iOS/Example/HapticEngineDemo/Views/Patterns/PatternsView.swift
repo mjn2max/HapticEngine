@@ -24,8 +24,6 @@ struct PatternsView: View {
 
     @Environment(HapticDemoModel.self) private var model
     @State private var scrollPosition = ScrollPosition(edge: .top)
-    /// Whether the end of the patterns is in sight.
-    @State private var isEndVisible = false
 
     var body: some View {
         let search = PatternSearch(query)
@@ -46,20 +44,25 @@ struct PatternsView: View {
             .equatable()
             .padding([.horizontal, .bottom])
             .padding(.top, 8)
-            Color.clear
-                .frame(height: 1)
-                .onScrollVisibilityChange(threshold: 0.01) { isEndVisible = $0 }
         }
         .scrollPosition($scrollPosition)
         // Only scroll room, never layout: the patterns stay where they are as the bar opens over them.
         .contentMargins(.bottom, nowPlaying.openHeight)
-        // Scrolled to the end, as playing the last patterns leaves them, the patterns follow the bar: up as
-        // it opens, so the one just played stays in sight rather than vanishing beneath it, and back down as
-        // it closes. The scroll view keeps its offset when the room shrinks, which left the patterns past
-        // their end, over a gap, until touched. Once the scroll view has the new room, so it scrolls to the
-        // new end rather than the old one.
-        .onScrollGeometryChange(for: CGFloat.self) { _ in nowPlaying.openHeight } action: { old, new in
-            guard new != old, isEndVisible else { return }
+        // Scrolled to the end, as playing the last patterns leaves them, the patterns follow the bar up as it
+        // opens, so the one just played stays in sight rather than vanishing beneath it. And whenever the room
+        // shrinks, patterns left past their new end settle back onto it: the scroll view keeps its offset
+        // when the room shrinks, which left them scrolled up over a gap until touched.
+        //
+        // Both read from the scroll view's own geometry, so where the patterns are and how much room they
+        // have always come from the same moment. Room taken from the bar arrives a pass early; the scroll
+        // view's inset arrives a pass after its visible height. Either judged the patterns' place against
+        // room they didn't have yet. Asking whether a marker at the end was visible failed at the full
+        // size: that leaves the end of a short list at the navigation bar's edge, where it counted as out of
+        // sight on some systems, so a collapse left the list stranded.
+        .onScrollGeometryChange(for: BottomRoom.self) { BottomRoom($0) } action: { old, new in
+            guard new.height != old.height else { return }
+            let follows = new.height < old.height ? old.isAtEnd : new.isPastEnd
+            guard follows else { return }
             withAnimation(.spring(duration: 0.42, bounce: 0)) { scrollPosition.scrollTo(edge: .bottom) }
         }
         .scrollDismissesKeyboard(.immediately)
@@ -70,8 +73,8 @@ struct PatternsView: View {
             guard phase == .interacting, isSearchFieldOpen, search.isEmpty else { return }
             withAnimation(.snappy) { isSearchFieldOpen = false }
         }
-        // The patterns melt into the bar instead of meeting it at a line. The system's soft edge
-        // effect stays on beneath it, adding a gentle blur as they fade.
+        // The patterns show through the collapsed glass bar, and melt into the open one instead of meeting
+        // it at a line. The system's soft edge effect stays on beneath it, adding a gentle blur.
         .mask { BottomFade(nowPlaying: nowPlaying).ignoresSafeArea() }
         .modifier(RecedeBehindNowPlaying(nowPlaying: nowPlaying, navigationBarBottom: navigationBarBottom))
         // A new filter, or a search, starts at the top, not partway down, as a new mailbox does in Mail:
@@ -80,6 +83,27 @@ struct PatternsView: View {
         .onChange(of: filter) { scrollPosition.scrollTo(edge: .top) }
         .onChange(of: query) { scrollPosition.scrollTo(edge: .top) }
         .background(Color(.systemGroupedBackground))
+    }
+}
+
+/// Where the patterns are scrolled, relative to their end, and how much of the scroll view they can show:
+/// less as the now-playing bar opens over them, more as it closes.
+private struct BottomRoom: Equatable {
+    /// The visible height: the scroll view's, less its insets.
+    let height: CGFloat
+    /// At the end, or close enough that following the bar keeps the end in place.
+    let isAtEnd: Bool
+    /// Past the end, over room that's no longer there.
+    let isPastEnd: Bool
+
+    init(_ geometry: ScrollGeometry) {
+        height = geometry.containerSize.height
+        // The furthest the content can scroll. `containerSize` already leaves out the insets, and at rest
+        // at the top the offset is minus the top inset. A short list's end is its top.
+        let top = -geometry.contentInsets.top
+        let end = top + max(geometry.contentSize.height - geometry.containerSize.height, 0)
+        isAtEnd = geometry.contentOffset.y >= end - 8
+        isPastEnd = geometry.contentOffset.y > end + 1
     }
 }
 
@@ -218,7 +242,10 @@ private struct RecedeBehindNowPlaying: ViewModifier {
 }
 
 /// Opaque down to above the now-playing bar, then fading to clear across its top edge. Used as a mask,
-/// it fades the patterns out as they reach the bar, so nothing shows through behind its text.
+/// it fades the patterns out as they reach the open bar, so nothing shows through behind its details.
+/// Collapsed, the bar is glass, which the patterns should show through, but faintly: at full strength
+/// their text competed with the bar's. So the fade stops at `glassFloor` beneath the collapsed bar, and
+/// runs on to clear as the bar opens and turns solid.
 ///
 /// The fade eases in and out rather than running straight, like light falling off: a straight fade
 /// starts and stops abruptly, which shows as lines while scrolling.
@@ -228,6 +255,8 @@ private struct BottomFade: View {
     /// How far above and below the bar's top edge the fade runs.
     private static let above: CGFloat = 56
     private static let below: CGFloat = 20
+    /// How much of the patterns shows through the collapsed glass bar: enough to color it, too little to read.
+    private static let glassFloor = 0.25
     /// Enough stops that the eased curve shows no steps.
     private static let steps = 12
     /// Smoothstep at each stop: slow at both ends, so the fade has no visible start or end. The same
@@ -242,11 +271,12 @@ private struct BottomFade: View {
             let frame = geometry.frame(in: .global)
             let height = max(frame.height, 1)
             let top = nowPlaying.top - frame.minY
+            let floor = Self.glassFloor * (1 - nowPlaying.openness)
             let start = min(max((top - Self.above) / height, 0), 1)
             let end = min(max((top + Self.below) / height, start), 1)
             LinearGradient(
                 stops: [.init(color: .black, location: 0)] + Self.curve.map { point in
-                    Gradient.Stop(color: .black.opacity(point.opacity), location: start + (end - start) * point.progress)
+                    Gradient.Stop(color: .black.opacity(floor + (1 - floor) * point.opacity), location: start + (end - start) * point.progress)
                 },
                 startPoint: .top,
                 endPoint: .bottom

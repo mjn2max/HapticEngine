@@ -75,7 +75,10 @@ struct NowPlayingBar: View {
                     maxHeight: maxHeight - Self.verticalPadding * 2,
                     layout: layout
                 )
-                .onDisappear { layout.openHeight = 0 }
+                .onDisappear {
+                    layout.openHeight = 0
+                    layout.openness = 0
+                }
                 // The tip and the player share a layout, so only their contents change: the tip leaves
                 // quickly, then the player fades in, so their text never shows on top of each other.
                 .transition(.asymmetric(
@@ -96,7 +99,7 @@ struct NowPlayingBar: View {
         .padding(.vertical, Self.verticalPadding)
         .frame(height: fixedHeight, alignment: .top)
         .frame(minHeight: Self.collapsedHeight)
-        .barBackground(tint: model.isHapticsSupported ? nil : .orange)
+        .barBackground(layout: layout, tint: model.isHapticsSupported ? nil : .orange)
         .contentShape(.rect(cornerRadius: Self.cornerRadius))
         .onGeometryChange(for: CGFloat.self) { $0.frame(in: .global).minY } action: { layout.top = $0 }
         // A light tap each time it settles on a size, as a haptics demo should.
@@ -177,40 +180,72 @@ private struct MessageRow: View {
 }
 
 extension Color {
-    /// The bar's surface: raised over the patterns' background in both light and dark.
+    /// The open bar's solid surface: raised over the patterns' background in both light and dark.
     static let barSurface = Color(.secondarySystemGroupedBackground)
 }
 
 private extension View {
-    /// An opaque surface, the same at every size. Liquid Glass changes with its size and with what's
-    /// behind it: it drew a gray, glossy rim on the collapsed bar that flattened to white as the bar
-    /// grew, and restyled the icon, star and gray text over the changing patterns, so the row flickered
-    /// mid-resize. A solid surface keeps them steady, as a sheet's does. Content is clipped to the shape.
-    /// `tint` colors it lightly, to mark a warning.
+    /// Liquid Glass while collapsed, a floating capsule the patterns scroll beneath, like Music's mini
+    /// player. As the bar opens, a solid surface fades in over the glass, opaque from the summary up.
+    ///
+    /// Glass changes with its size and with what's behind it: over a bar being resized, its rim went from
+    /// gray and glossy to flat white, and it restyled the icon, star and gray text over the changing
+    /// patterns, so the open bar flickered mid-resize. Under the solid surface, those changes are hidden,
+    /// and an open bar is as steady as a sheet. Content is clipped to the shape. `tint` colors the bar
+    /// lightly, to mark a warning. Before iOS 26, a material takes the glass's place.
     ///
     /// The corners are `NowPlayingBar.cornerRadius`: collapsed, a capsule. On iOS 26 the bottom corners
     /// are concentric with the screen's where that's rounder, so they follow its curve whatever the
     /// device; collapsed, the bar's height caps them, so it stays a capsule. The top corners keep a fixed
     /// radius, as they're far from any screen corner.
     @ViewBuilder
-    func barBackground(tint: Color? = nil) -> some View {
+    func barBackground(layout: NowPlayingLayout, tint: Color? = nil) -> some View {
         let radius = NowPlayingBar.cornerRadius
         if #available(iOS 26, *) {
-            surface(tint: tint, in: ConcentricRectangle(uniformTopCorners: .fixed(radius), uniformBottomCorners: .concentric(minimum: .fixed(radius))))
+            let shape = ConcentricRectangle(uniformTopCorners: .fixed(radius), uniformBottomCorners: .concentric(minimum: .fixed(radius)))
+            clipShape(shape)
+                .background { BarSurface(layout: layout, tint: tint, shape: shape) }
         } else {
-            surface(tint: tint, in: RoundedRectangle(cornerRadius: radius, style: .continuous))
+            let shape = RoundedRectangle(cornerRadius: radius, style: .continuous)
+            clipShape(shape)
+                .background { BarSurface(layout: layout, tint: tint, shape: shape) }
+        }
+    }
+}
+
+/// The bar's surface. A view of its own, so following the bar's openness every frame updates only it.
+private struct BarSurface<S: Shape>: View {
+    let layout: NowPlayingLayout
+    let tint: Color?
+    let shape: S
+
+    var body: some View {
+        let solidity = layout.openness
+        ZStack {
+            translucent
+            shape.fill(Color.barSurface)
+                .opacity(solidity)
+            shape.stroke(Color(.separator).opacity(0.5 * solidity), lineWidth: 1)
+        }
+        // Lifts the open bar off the patterns, as a sheet's edge does. Glass casts its own while collapsed.
+        .background {
+            shape.fill(Color.barSurface)
+                .shadow(color: .black.opacity(0.12 * solidity), radius: 16, y: 4)
+                .opacity(solidity)
         }
     }
 
-    private func surface(tint: Color?, in shape: some Shape) -> some View {
-        clipShape(shape)
-            .background((tint ?? .clear).opacity(0.12), in: shape)
-            // The shadow on the surface alone: on the whole view, every icon and line of text cast one.
-            .background {
-                shape.fill(Color.barSurface)
-                    .shadow(color: .black.opacity(0.12), radius: 16, y: 4)
-            }
-            .overlay(shape.stroke(Color(.separator).opacity(0.5), lineWidth: 1))
+    @ViewBuilder
+    private var translucent: some View {
+        if #available(iOS 26, *) {
+            Color.clear
+                .glassEffect(tint.map { .regular.tint($0.opacity(0.25)) } ?? .regular, in: shape)
+        } else {
+            shape.fill(.regularMaterial)
+                .overlay(shape.fill((tint ?? .clear).opacity(0.12)))
+                .overlay(shape.stroke(Color(.separator).opacity(0.5), lineWidth: 1))
+                .shadow(color: .black.opacity(0.12), radius: 16, y: 4)
+        }
     }
 }
 
