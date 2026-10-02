@@ -19,8 +19,9 @@ struct ContentView: View {
     @State private var searchAnchor: CGRect?
     /// The screen's width.
     @State private var width: CGFloat = 0
-    /// The screen's height, safe areas included.
-    @State private var height: CGFloat = 0
+    /// The height of the area the now-playing bar is laid out in: below the navigation bar, down to the
+    /// bottom safe area.
+    @State private var barArea: CGFloat = 0
     /// Screens pushed over the patterns. The search controls draw over the navigation bar, so they step
     /// aside while another screen shows.
     @State private var path: [Screen] = []
@@ -55,11 +56,12 @@ struct ContentView: View {
         return (minX, max(maxX - minX, 0))
     }
 
-    /// The tallest the now-playing bar may grow: up to just below the navigation bar's controls, which
-    /// stay in reach above it.
+    /// The tallest the now-playing bar may grow: up to its spacing below the navigation bar, whose controls
+    /// stay in reach above it. From the room the bar is actually given, less its spacing above and below:
+    /// any taller and the bar would be squeezed into it, pushing its contents up against its top edge.
     private var nowPlayingMaxHeight: CGFloat {
-        guard let searchAnchor, height > 0 else { return .infinity }
-        return height - NowPlayingBar.margin - searchAnchor.maxY - 16
+        guard barArea > 0 else { return .infinity }
+        return barArea - NowPlayingBar.topSpacing - (NowPlayingBar.margin - bottomInset)
     }
 
     /// How much of the patterns shows as the now-playing bar grows toward the navigation bar. Once
@@ -125,9 +127,10 @@ struct ContentView: View {
                 // shift as it's resized, nor lay out again on every frame of its animation.
                 .bottomBar {
                     Color.clear
-                        .frame(height: max(barCollapsedHeight + 12 + NowPlayingBar.margin - bottomInset, 0))
+                        .frame(height: max(barCollapsedHeight + NowPlayingBar.topSpacing + NowPlayingBar.margin - bottomInset, 0))
                         .allowsHitTesting(false)
                 }
+                .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { barArea = $0 }
                 // Always at the bottom, within thumb reach, like the mini player in Music: play a pattern
                 // above, then replay or star it here without looking for it again.
                 .overlay(alignment: .bottom) {
@@ -180,9 +183,6 @@ struct ContentView: View {
         .ignoresSafeArea(.keyboard, edges: .bottom)
         .onGeometryChange(for: CGFloat.self) { $0.safeAreaInsets.bottom } action: { bottomInset = $0 }
         .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
-        .onGeometryChange(for: CGFloat.self) { $0.frame(in: .global).maxY + $0.safeAreaInsets.bottom } action: {
-            height = $0
-        }
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in
             isKeyboardVisible = true
         }

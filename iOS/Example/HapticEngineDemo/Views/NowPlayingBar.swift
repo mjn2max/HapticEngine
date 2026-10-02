@@ -37,6 +37,8 @@ struct NowPlayingBar: View {
     /// The gap to the screen's sides and bottom. Equal on all three, so the bar's lower corners run
     /// parallel to the screen's.
     static let margin: CGFloat = 12
+    /// The room above the bar, so it floats clear of the patterns, and of the navigation bar at its tallest.
+    static let topSpacing: CGFloat = 12
     /// The bar's padding above and below its content.
     fileprivate static let verticalPadding: CGFloat = 10
 
@@ -125,8 +127,7 @@ struct NowPlayingBar: View {
                 .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { onCollapsedHeightChange($0) }
         }
         .padding(.horizontal, Self.margin)
-        // Room above, so the bar floats clear of the patterns rather than touching them.
-        .padding(.top, 12)
+        .padding(.top, Self.topSpacing)
         // Down into the home indicator's safe area, the same distance from the bottom as from the sides.
         // A negative padding rather than `ignoresSafeArea`, which iOS 26 doesn't apply inside a bar.
         .padding(.bottom, Self.margin - bottomInset)
