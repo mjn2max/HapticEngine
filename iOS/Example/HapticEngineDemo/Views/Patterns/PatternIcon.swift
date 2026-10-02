@@ -39,18 +39,30 @@ struct PatternIcon: View {
 extension View {
     /// The actions every pattern offers wherever it appears: a context menu on touch and hold, and the
     /// same actions for VoiceOver.
-    func patternActions(_ pattern: HapticPattern, model: HapticDemoModel) -> some View {
-        let isFavorite = model.isFavorite(pattern)
+    func patternActions(_ pattern: HapticPattern, isFavorite: Bool) -> some View {
+        modifier(PatternActions(pattern: pattern, isFavorite: isFavorite))
+    }
+}
+
+/// Takes plain values, not the model, so a tile or row whose pattern didn't change skips updating.
+private struct PatternActions: ViewModifier {
+    let pattern: HapticPattern
+    let isFavorite: Bool
+
+    @Environment(HapticDemoModel.self) private var model
+
+    func body(content: Content) -> some View {
         let favoriteTitle = isFavorite ? "Remove from Favorites" : "Add to Favorites"
-        return contextMenu {
-            Button("Play", systemImage: "play") { model.play(pattern) }
-            Button(favoriteTitle, systemImage: isFavorite ? "star.slash" : "star") {
-                withAnimation(.snappy) { model.toggleFavorite(pattern) }
+        content
+            .contextMenu {
+                Button("Play", systemImage: "play") { model.play(pattern) }
+                Button(favoriteTitle, systemImage: isFavorite ? "star.slash" : "star", action: toggleFavorite)
             }
-        }
-        .accessibilityAction(named: favoriteTitle) {
-            withAnimation(.snappy) { model.toggleFavorite(pattern) }
-        }
-        .accessibilityIdentifier("pattern.\(pattern.rawValue)")
+            .accessibilityAction(named: favoriteTitle, toggleFavorite)
+            .accessibilityIdentifier("pattern.\(pattern.rawValue)")
+    }
+
+    private func toggleFavorite() {
+        withAnimation(.snappy) { model.toggleFavorite(pattern) }
     }
 }

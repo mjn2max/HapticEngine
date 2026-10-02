@@ -15,14 +15,21 @@ extension HapticPattern {
 
     var systemImage: String { details.symbol }
 
-    /// `duration` for display, such as "Instant", "250 ms" or "6 s".
-    var durationText: String {
-        switch duration {
-        case ..<0.05: "Instant"
-        case ..<1: "\(Int((duration * 1000).rounded())) ms"
-        default: "\(duration.formatted(.number.precision(.fractionLength(0...1)))) s"
+    /// `duration` for display, such as "Instant", "250 ms" or "6 s". Formatted once per pattern: every
+    /// row shows it.
+    var durationText: String { Self.durationTexts[self, default: ""] }
+
+    private static let durationTexts: [HapticPattern: String] = Dictionary(
+        uniqueKeysWithValues: allCases.map { pattern in
+            let duration = pattern.duration
+            let text = switch duration {
+            case ..<0.05: "Instant"
+            case ..<1: "\(Int((duration * 1000).rounded())) ms"
+            default: "\(duration.formatted(.number.precision(.fractionLength(0...1)))) s"
+            }
+            return (pattern, text)
         }
-    }
+    )
 
     /// The original ten keep their own colors, with feedback in traffic-light colors. The rest take their
     /// category's color, so related patterns read as a group.
@@ -40,25 +47,6 @@ extension HapticPattern {
         case .pulse: .cyan
         default: category.tint
         }
-    }
-
-    /// Whether every word of `query` starts a word in the pattern's name, description or category,
-    /// ignoring case and accents. Matching word starts, not any fragment, keeps "rain" from finding
-    /// "fine-grained".
-    func matches(_ query: String) -> Bool {
-        let queryWords = Self.words(in: query)
-        guard !queryWords.isEmpty else { return true }
-        let words = Self.words(in: "\(title) \(subtitle) \(category.title)")
-        return queryWords.allSatisfy { queryWord in
-            words.contains { $0.hasPrefix(queryWord) }
-        }
-    }
-
-    /// The words in `text`, folded for comparison: "Fade-Out" gives "fade" and "out".
-    private static func words(in text: String) -> [String] {
-        text.folding(options: [.caseInsensitive, .diacriticInsensitive], locale: .current)
-            .split { !$0.isLetter && !$0.isNumber }
-            .map(String.init)
     }
 
     private struct Details {
@@ -265,8 +253,9 @@ extension HapticPattern {
             }
         }
 
-        var patterns: [HapticPattern] {
-            HapticPattern.allCases.filter { $0.category == self }
-        }
+        /// In the order the library declares them. Grouped once: views ask on every update.
+        var patterns: [HapticPattern] { Self.patternsByCategory[self, default: []] }
+
+        private static let patternsByCategory = Dictionary(grouping: HapticPattern.allCases, by: \.category)
     }
 }

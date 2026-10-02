@@ -29,29 +29,51 @@ final class HapticDemoModel {
         var entryID: LogEntry.ID?
         let start = Date()
 
-        var end: Date { start.addingTimeInterval(max(pattern.duration, Self.minimumDisplayDuration)) }
+        var displayDuration: TimeInterval { max(pattern.duration, Self.minimumDisplayDuration) }
     }
 
+    /// The most entries the log keeps; the oldest go first.
+    static let logLimit = 50
+
     private let engine: any HapticEngineProtocol
-    private let defaults: UserDefaults
-    private static let favoritesKey = "favorites"
+    private let preferences: Preferences
+    /// Where patterns are handed to the engine. Off the main thread: starting the engine again after the
+    /// system idled it can take long enough to drop frames just as a tapped pattern starts animating.
+    /// Serial, so patterns still play in the order they were tapped.
+    @ObservationIgnored private let playbackQueue: DispatchQueue
 
     /// Patterns the user starred, in the order they were starred. Saved between launches.
-    private(set) var favorites: [HapticPattern]
+    private(set) var favorites: [HapticPattern] {
+        didSet { preferences.favorites = favorites }
+    }
+    /// What the browser shows. Saved between launches.
+    var filter: PatternFilter {
+        didSet { preferences.filter = filter }
+    }
+    /// How the browser lays out the patterns. Saved between launches.
+    var layout: PatternLayout {
+        didSet { preferences.layout = layout }
+    }
     /// Newest first. Only records a pattern when it differs from the one before, so replays don't add entries.
     private(set) var log: [LogEntry] = []
     private(set) var nowPlaying: Playback?
     /// Stays set after the pattern finishes, so its description can still be read.
     private(set) var lastPlayed: HapticPattern?
-    private var playbackEndTask: Task<Void, Never>?
+    @ObservationIgnored private var playbackEndTask: Task<Void, Never>?
 
     var isHapticsSupported: Bool { engine.isHapticsSupported }
 
-    init(engine: any HapticEngineProtocol = HapticEngine(), defaults: UserDefaults = .standard) {
+    init(
+        engine: any HapticEngineProtocol = HapticEngine(),
+        preferences: Preferences = Preferences(),
+        playbackQueue: DispatchQueue = DispatchQueue(label: "dev.codepassion.HapticEngineDemo.playback", qos: .userInteractive)
+    ) {
         self.engine = engine
-        self.defaults = defaults
-        // A saved pattern that no longer exists, such as one renamed since, is dropped.
-        favorites = (defaults.stringArray(forKey: Self.favoritesKey) ?? []).compactMap(HapticPattern.init(rawValue:))
+        self.preferences = preferences
+        self.playbackQueue = playbackQueue
+        favorites = preferences.favorites
+        filter = preferences.filter
+        layout = preferences.layout
     }
 
     func isFavorite(_ pattern: HapticPattern) -> Bool {
@@ -64,14 +86,13 @@ final class HapticDemoModel {
         } else {
             favorites.append(pattern)
         }
-        defaults.set(favorites.map(\.rawValue), forKey: Self.favoritesKey)
     }
 
     /// Plays a pattern chosen on the home screen, logging it if it differs from the last one logged.
     func play(_ pattern: HapticPattern) {
         if log.first?.pattern != pattern {
             log.insert(LogEntry(pattern: pattern), at: 0)
-            if log.count > 50 { log.removeLast() }
+            if log.count > Self.logLimit { log.removeLast(log.count - Self.logLimit) }
         }
         startPlayback(pattern, entryID: log.first?.id)
     }
@@ -83,7 +104,8 @@ final class HapticDemoModel {
     }
 
     private func startPlayback(_ pattern: HapticPattern, entryID: LogEntry.ID?) {
-        engine.play(pattern)
+        let engine = engine
+        playbackQueue.async { engine.play(pattern) }
 
         // The engine doesn't report when a pattern finishes, so clear it once its duration has passed.
         // A new tap replaces the one before it.
@@ -92,7 +114,7 @@ final class HapticDemoModel {
         lastPlayed = pattern
         playbackEndTask?.cancel()
         playbackEndTask = Task { [weak self] in
-            try? await Task.sleep(for: .seconds(playback.end.timeIntervalSince(playback.start)))
+            try? await Task.sleep(for: .seconds(playback.displayDuration))
             guard !Task.isCancelled else { return }
             self?.nowPlaying = nil
         }

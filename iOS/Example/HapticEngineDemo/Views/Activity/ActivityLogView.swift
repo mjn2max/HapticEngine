@@ -51,7 +51,8 @@ struct ActivityLogView: View {
     }
 
     private var entryList: some View {
-        ScrollView {
+        let playingEntryID = model.nowPlaying?.entryID
+        return ScrollView {
             VStack(spacing: 0) {
                 ForEach(model.log) { entry in
                     SwipeToDelete(
@@ -65,7 +66,7 @@ struct ActivityLogView: View {
                     ) {
                         ActivityRow(
                             entry: entry,
-                            isPlaying: model.nowPlaying?.entryID == entry.id,
+                            isPlaying: playingEntryID == entry.id,
                             onPlay: {
                                 // A tap on an open row closes it, rather than playing it by surprise.
                                 if openEntryID != nil {
@@ -78,12 +79,11 @@ struct ActivityLogView: View {
                     }
                     if entry.id != model.log.last?.id {
                         Divider()
-                            .padding(.leading, 64)
+                            .padding(.leading, GroupedCard.dividerInset)
                     }
                 }
             }
-            .background(Color(.secondarySystemGroupedBackground), in: .rect(cornerRadius: 20))
-            .clipShape(.rect(cornerRadius: 20))
+            .groupedCard()
             .padding()
             .animation(.snappy, value: model.log.first?.id)
         }
@@ -123,12 +123,11 @@ struct ActivityLogView: View {
                             }
                             if pattern != Self.suggestions.last {
                                 Divider()
-                                    .padding(.leading, 64)
+                                    .padding(.leading, GroupedCard.dividerInset)
                             }
                         }
                     }
-                    .background(Color(.secondarySystemGroupedBackground), in: .rect(cornerRadius: 20))
-                    .clipShape(.rect(cornerRadius: 20))
+                    .groupedCard()
                 }
 
                 Button("See All Patterns") { dismiss() }
@@ -232,10 +231,7 @@ private struct ActivityRow: View {
                 Spacer(minLength: 8)
 
                 if isPlaying {
-                    Image(systemName: "waveform")
-                        .foregroundStyle(pattern.tint)
-                        .symbolEffect(.variableColor.iterative, isActive: true)
-                        .transition(.scale.combined(with: .opacity))
+                    PlayingIndicator(tint: pattern.tint)
                 } else {
                     Image(systemName: "play.fill")
                         .font(.caption)

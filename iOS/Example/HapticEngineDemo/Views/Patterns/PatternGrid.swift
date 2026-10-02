@@ -14,29 +14,29 @@ struct PatternGrid: View {
     private let columns = [GridItem(.adaptive(minimum: 100), spacing: 12)]
 
     var body: some View {
+        let playing = model.nowPlaying?.pattern
         LazyVGrid(columns: columns, spacing: 12) {
             ForEach(patterns, id: \.self) { pattern in
-                PatternTile(
-                    pattern: pattern,
-                    isPlaying: model.nowPlaying?.pattern == pattern,
-                    isFavorite: model.isFavorite(pattern),
-                    onPlay: { model.play(pattern) }
-                )
-                .patternActions(pattern, model: model)
+                PatternTile(pattern: pattern, isPlaying: pattern == playing, isFavorite: model.isFavorite(pattern))
             }
         }
     }
 }
 
-/// The description isn't shown here; the status card shows it for the pattern that's playing.
+/// The description isn't shown here; the now-playing bar shows it for the pattern last played.
+///
+/// Only plain values come in, so on each play only the tiles that start or stop playing update.
 private struct PatternTile: View {
     let pattern: HapticPattern
     let isPlaying: Bool
     let isFavorite: Bool
-    let onPlay: () -> Void
+
+    @Environment(HapticDemoModel.self) private var model
 
     var body: some View {
-        Button(action: onPlay) {
+        Button {
+            model.play(pattern)
+        } label: {
             VStack(spacing: 8) {
                 PatternIcon(pattern: pattern, isPlaying: isPlaying, isFavorite: isFavorite)
                 Text(pattern.title)
@@ -50,7 +50,7 @@ private struct PatternTile: View {
             .frame(maxWidth: .infinity)
             .background(isPlaying ? pattern.tint.opacity(0.08) : .clear)
             .overlay {
-                RoundedRectangle(cornerRadius: 20)
+                RoundedRectangle(cornerRadius: GroupedCard.cornerRadius)
                     .strokeBorder(pattern.tint, lineWidth: isPlaying ? 2 : 0)
             }
         }
@@ -58,17 +58,6 @@ private struct PatternTile: View {
         .animation(.snappy, value: isPlaying)
         .accessibilityHint(pattern.subtitle)
         .accessibilityValue(isPlaying ? "Playing" : "")
-    }
-}
-
-/// Highlights a card while pressed, like the rows in the list layout and on the Activity screen, so a
-/// pattern responds the same way in every layout. Draws the card's background too, so the highlight
-/// sits behind its content.
-struct CardPressStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .background(configuration.isPressed ? Color(.systemFill) : .clear)
-            .background(Color(.secondarySystemGroupedBackground))
-            .clipShape(.rect(cornerRadius: 20))
+        .patternActions(pattern, isFavorite: isFavorite)
     }
 }

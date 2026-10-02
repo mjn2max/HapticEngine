@@ -58,6 +58,16 @@ All notable changes to this project are documented here. The format follows
 - CI for iOS and Android, and Dependabot updates.
 
 ### Changed
+- iOS demo: smoother. Resizing the now-playing bar no longer updates the whole screen on every frame,
+  only the patterns' fade; its details are no longer rebuilt as it's dragged; playing a pattern updates
+  only the tiles that start or stop playing; and search folds each pattern's words once instead of on
+  every keystroke. Patterns are handed to the engine off the main thread, so restarting an idle engine
+  can't stall a tap's animation.
+- iOS demo: reorganized by feature, with what's saved in one `Preferences` store, which patterns show in
+  a testable `PatternCatalog`, and the iOS 26 fallbacks in one file. New unit tests cover search,
+  filters, favorites, the activity log, saved preferences and every SF Symbol name.
+- iOS demo: text without letters or digits, such as "-", no longer counts as a search that lists every
+  pattern.
 - iOS: the Swift package needs Xcode 16 (Swift 6.0) or later.
 - iOS: `HapticEngine` is `Sendable` and safe to call from any thread, and `HapticEngineProtocol` now
   requires `Sendable`. Custom conformers must be `Sendable` too.

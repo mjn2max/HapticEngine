@@ -30,6 +30,17 @@
       <Testables>
          <TestableReference
             skipped = "NO"
+            parallelizable = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "D100000000000000000000B5"
+               BuildableName = "HapticEngineDemoTests.xctest"
+               BlueprintName = "HapticEngineDemoTests"
+               ReferencedContainer = "container:HapticEngineDemo.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO"
             parallelizable = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"

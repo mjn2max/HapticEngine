@@ -9,9 +9,6 @@ import SwiftUI
 struct ContentView: View {
     @Environment(HapticDemoModel.self) private var model
 
-    @State private var filter = PatternFilter.saved
-    /// Plain state rather than `@AppStorage`, so a change animates; saved on every change instead.
-    @State private var layout = PatternLayout.saved
     @State private var query = ""
     /// Whether the search field is open in the navigation bar. Otherwise search is only a button.
     @State private var isSearchFieldOpen = false
@@ -25,10 +22,8 @@ struct ContentView: View {
     /// Screens pushed over the patterns. The search controls draw over the navigation bar, so they step
     /// aside while another screen shows.
     @State private var path: [Screen] = []
-    /// The top of the now-playing bar, in global coordinates, where the patterns fade out.
-    @State private var barTop = CGFloat.infinity
-    /// The now-playing bar's height collapsed, which the patterns leave room for.
-    @State private var barCollapsedHeight = NowPlayingBar.collapsedHeight
+    /// Where the now-playing bar is. Only read by the views that need it: see `NowPlayingLayout`.
+    @State private var nowPlaying = NowPlayingLayout()
     /// The screen's bottom safe area, which the now-playing bar moves down into.
     @State private var bottomInset: CGFloat = 0
     /// The keyboard covers the now-playing bar, which would show faintly through it, so the bar fades
@@ -36,7 +31,7 @@ struct ContentView: View {
     @State private var isKeyboardVisible = false
 
     private var isSearching: Bool {
-        isSearchFieldOpen || !query.trimmingCharacters(in: .whitespaces).isEmpty
+        isSearchFieldOpen || !PatternSearch(query).isEmpty
     }
 
     /// Room for the open search controls: from just past the leading buttons to the trailing margin. The
@@ -64,30 +59,21 @@ struct ContentView: View {
         return barArea - NowPlayingBar.topSpacing - (NowPlayingBar.margin - bottomInset)
     }
 
-    /// How much of the patterns shows as the now-playing bar grows toward the navigation bar. Once
-    /// there's no room left between them, the only patterns left in sight would be a strip under the
-    /// status bar and the navigation bar's buttons, cut off below by the fade into the bar: they fade out
-    /// instead, as the content behind a full-height sheet recedes.
-    private var patternsVisibility: Double {
-        guard let searchAnchor else { return 1 }
-        let room = barTop - searchAnchor.maxY
-        return min(max((room - 80) / 120, 0), 1)
-    }
-
     /// The menu button's glass, measured on iOS 26. The bar makes it a native bar button, which can't be
     /// measured from here.
     private static let leadingButtonsWidth: CGFloat = 45
     private static let gap: CGFloat = 8
 
     var body: some View {
+        @Bindable var model = model
         NavigationStack(path: $path) {
             PatternsView(
-                filter: $filter,
-                layout: layout,
+                filter: $model.filter,
+                layout: model.layout,
                 query: $query,
                 isSearchFieldOpen: $isSearchFieldOpen,
-                fadeTop: barTop,
-                visibility: patternsVisibility
+                nowPlaying: nowPlaying,
+                navigationBarBottom: searchAnchor?.maxY
             )
                 // Inline, so the patterns start right below the bar, and the header looks the same whether
                 // scrolled or not.
@@ -95,7 +81,7 @@ struct ContentView: View {
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .topBarLeading) {
-                        AppMenu(layout: $layout, isActivityEnabled: model.isHapticsSupported) {
+                        AppMenu(layout: $model.layout, isActivityEnabled: model.isHapticsSupported) {
                             path.append(.activity)
                         }
                     }
@@ -124,22 +110,18 @@ struct ContentView: View {
                 }
                 // Room for the now-playing bar collapsed, and no more. Opened, it grows over the patterns as
                 // a sheet does, rather than taking room from them: their layout never changes, so they don't
-                // shift as it's resized, nor lay out again on every frame of its animation.
+                // shift as it's resized, nor lay out again on every frame of its animation. They gain only
+                // room to scroll past it: see `NowPlayingLayout.openHeight`.
                 .bottomBar {
                     Color.clear
-                        .frame(height: max(barCollapsedHeight + NowPlayingBar.topSpacing + NowPlayingBar.margin - bottomInset, 0))
+                        .frame(height: max(nowPlaying.collapsedHeight + NowPlayingBar.topSpacing + NowPlayingBar.margin - bottomInset, 0))
                         .allowsHitTesting(false)
                 }
                 .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { barArea = $0 }
                 // Always at the bottom, within thumb reach, like the mini player in Music: play a pattern
                 // above, then replay or star it here without looking for it again.
                 .overlay(alignment: .bottom) {
-                    NowPlayingBar(
-                        bottomInset: bottomInset,
-                        maxHeight: nowPlayingMaxHeight,
-                        onCollapsedHeightChange: { barCollapsedHeight = $0 },
-                        onTopChange: { barTop = $0 }
-                    )
+                    NowPlayingBar(layout: nowPlaying, bottomInset: bottomInset, maxHeight: nowPlayingMaxHeight)
                     .opacity(isKeyboardVisible ? 0 : 1)
                     .animation(.easeOut(duration: 0.2), value: isKeyboardVisible)
                 }
@@ -149,7 +131,7 @@ struct ContentView: View {
         // While searching, the field takes its place, and results ignore the filter.
         .overlay(alignment: .topLeading) {
             if let searchAnchor {
-                HeaderTitle(filter: $filter)
+                HeaderTitle(filter: $model.filter)
                     .frame(width: titleGap.width, height: SearchControls.height)
                     .padding(.top, searchAnchor.minY)
                     .padding(.leading, titleGap.minX)
@@ -168,7 +150,7 @@ struct ContentView: View {
         // controls alone.
         .overlay(alignment: .topTrailing) {
             if let searchAnchor {
-                SearchControls(text: $query, isOpen: $isSearchFieldOpen, filter: $filter, openWidth: searchOpenWidth)
+                SearchControls(text: $query, isOpen: $isSearchFieldOpen, filter: $model.filter, openWidth: searchOpenWidth)
                     .padding(.top, searchAnchor.minY)
                     .padding(.trailing, width - searchAnchor.maxX)
                     .ignoresSafeArea()
@@ -189,39 +171,12 @@ struct ContentView: View {
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
             isKeyboardVisible = false
         }
-        .onChange(of: filter) { _, filter in filter.save() }
-        .onChange(of: layout) { _, layout in layout.save() }
     }
 }
 
 /// Screens the patterns lead to.
 private enum Screen: Hashable {
     case activity
-}
-
-private extension ToolbarContent {
-    /// On iOS 26, no glass from the bar around the item, for an item that draws its own.
-    @ToolbarContentBuilder
-    func withoutSharedBackground() -> some ToolbarContent {
-        if #available(iOS 26, *) {
-            sharedBackgroundVisibility(.hidden)
-        } else {
-            self
-        }
-    }
-}
-
-private extension View {
-    /// On iOS 26, a bar with the system's scroll edge effect, so the patterns fade out beneath it as they
-    /// do under the toolbar instead of showing through the glass. Earlier, a plain inset.
-    @ViewBuilder
-    func bottomBar<Content: View>(@ViewBuilder content: () -> Content) -> some View {
-        if #available(iOS 26, *) {
-            safeAreaBar(edge: .bottom, content: content)
-        } else {
-            safeAreaInset(edge: .bottom, content: content)
-        }
-    }
 }
 
 #Preview("Supported") {

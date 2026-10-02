@@ -125,33 +125,3 @@ struct SearchControls: View {
         }
     }
 }
-
-// MARK: Glass
-
-/// On iOS 26, a glass container, so shapes inside blend as they meet and part. Earlier, a plain group.
-private struct GlassGroup<Content: View>: View {
-    let spacing: CGFloat
-    @ViewBuilder let content: Content
-
-    var body: some View {
-        if #available(iOS 26, *) {
-            GlassEffectContainer(spacing: spacing) { content }
-        } else {
-            content
-        }
-    }
-}
-
-private extension View {
-    /// Interactive glass on iOS 26, matching the navigation bar's other buttons. Earlier, a thin
-    /// material, like the bar.
-    @ViewBuilder
-    func glass<S: Shape>(in shape: S, id: String, namespace: Namespace.ID) -> some View {
-        if #available(iOS 26, *) {
-            glassEffect(.regular.interactive(), in: shape)
-                .glassEffectID(id, in: namespace)
-        } else {
-            background(.thinMaterial, in: shape)
-        }
-    }
-}

@@ -13,7 +13,7 @@ enum PatternFilter: Hashable, Identifiable {
     case favorites
     case category(HapticPattern.Category)
 
-    /// Every filter, in the order the filter bar shows them. New categories join automatically.
+    /// Every filter, in the order the filter menu shows them. New categories join automatically.
     static var allFilters: [PatternFilter] {
         [.all, .favorites] + HapticPattern.Category.allCases.map(PatternFilter.category)
     }
@@ -37,7 +37,7 @@ enum PatternFilter: Hashable, Identifiable {
         }
     }
 
-    /// The selected chip's color. `nil` for all, which takes the app's tint.
+    /// The selected filter's color. `nil` for all, which takes the app's tint.
     var tint: Color? {
         switch self {
         case .all: nil
@@ -48,18 +48,8 @@ enum PatternFilter: Hashable, Identifiable {
 
     // MARK: Saving
 
-    private static let storageKey = "patternFilter"
-
-    /// The filter saved last time, or `all`. A saved category that no longer exists falls back to `all`.
-    static var saved: PatternFilter {
-        UserDefaults.standard.string(forKey: storageKey).flatMap(PatternFilter.init(storageValue:)) ?? .all
-    }
-
-    func save() {
-        UserDefaults.standard.set(storageValue, forKey: Self.storageKey)
-    }
-
-    private var storageValue: String {
+    /// How `Preferences` saves it. Also a launch argument value, such as `-patternFilter category.game`.
+    var storageValue: String {
         switch self {
         case .all: "all"
         case .favorites: "favorites"
@@ -67,7 +57,8 @@ enum PatternFilter: Hashable, Identifiable {
         }
     }
 
-    private init?(storageValue: String) {
+    /// `nil` for a value that no longer names a filter, such as a removed category.
+    init?(storageValue: String) {
         switch storageValue {
         case "all": self = .all
         case "favorites": self = .favorites

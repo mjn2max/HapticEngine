@@ -15,11 +15,7 @@ struct HeaderTitle: View {
     @Environment(HapticDemoModel.self) private var model
 
     private var count: Int {
-        switch filter {
-        case .all: HapticPattern.allCases.count
-        case .favorites: model.favorites.count
-        case .category(let category): category.patterns.count
-        }
+        PatternCatalog.count(of: filter, favorites: model.favorites)
     }
 
     var body: some View {

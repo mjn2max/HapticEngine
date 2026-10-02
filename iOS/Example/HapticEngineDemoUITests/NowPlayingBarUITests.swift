@@ -198,6 +198,53 @@ final class NowPlayingBarUITests: XCTestCase {
         XCTAssertTrue(first.isHittable)
     }
 
+    func testTheListScrollsClearOfTheSummary() {
+        relaunch(filter: "category.game")
+        app.buttons["pattern.coin"].tap()
+        header.tap()
+        settle()
+        // Above the bar, which covers the middle of the screen.
+        for _ in 1...4 { scrollList(by: -250) }
+        settle()
+        attachScreenshot("scrolled to the end under the summary")
+        let showAll = app.buttons["showAll"]
+        XCTAssertTrue(showAll.isHittable)
+        XCTAssertLessThan(showAll.frame.maxY, header.frame.minY)
+    }
+
+    func testTheListRisesWithTheBarWhenScrolledToTheEnd() {
+        relaunch(filter: "category.game")
+        app.buttons["pattern.coin"].tap()
+        for _ in 1...4 { scrollList(by: -250) }
+        settle()
+        let showAll = app.buttons["showAll"]
+        XCTAssertTrue(showAll.isHittable)
+        header.tap()
+        settle()
+        attachScreenshot("opened while scrolled to the end")
+        XCTAssertTrue(showAll.isHittable)
+        XCTAssertLessThan(showAll.frame.maxY, header.frame.minY)
+    }
+
+    func testTheListSettlesBackWhenTheBarCollapsesAtTheEnd() {
+        relaunch(filter: "category.game")
+        app.buttons["pattern.coin"].tap()
+        for _ in 1...4 { scrollList(by: -250) }
+        settle()
+        let showAll = app.buttons["showAll"]
+        let endBottom = showAll.frame.maxY
+        // Up past the summary to the full size and back, then from the summary alone.
+        for open in [{ self.header.tap(); self.settle(); self.toggleFull.tap() }, { self.header.tap() }] {
+            open()
+            settle()
+            header.tap()
+            settle()
+            attachScreenshot("collapsed at the end")
+            // Back where it was, against the collapsed bar, not floating above a gap.
+            XCTAssertEqual(showAll.frame.maxY, endBottom, accuracy: 2)
+        }
+    }
+
     // MARK: Helpers
 
     private var header: XCUIElement { app.descendants(matching: .any)["nowPlaying"] }
@@ -215,6 +262,12 @@ final class NowPlayingBarUITests: XCTestCase {
     private func scrollDetails(by distance: CGFloat, fast: Bool) {
         let start = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.6))
         start.press(forDuration: 0.05, thenDragTo: start.withOffset(CGVector(dx: 0, dy: distance)), withVelocity: fast ? .fast : .slow, thenHoldForDuration: 0)
+    }
+
+    /// Scrolls the patterns from near the top of the screen, clear of the bar however far it's open.
+    private func scrollList(by distance: CGFloat) {
+        let start = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.2))
+        start.press(forDuration: 0.05, thenDragTo: start.withOffset(CGVector(dx: 0, dy: distance)), withVelocity: .fast, thenHoldForDuration: 0)
     }
 
     private func relaunch(filter: String) {

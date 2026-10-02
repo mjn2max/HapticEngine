@@ -162,7 +162,12 @@ HapticEngine/
 # iOS
 swift test
 
-# iOS demo UI tests: search, scrolling and navigation, driven like a person would (about 3 minutes)
+# iOS demo unit tests: search, filters, favorites, the activity log and what's saved (seconds)
+xcodebuild test -project iOS/Example/HapticEngineDemo.xcodeproj -scheme HapticEngineDemo \
+  -destination 'platform=iOS Simulator,name=iPhone 17e' -only-testing:HapticEngineDemoTests
+
+# iOS demo unit and UI tests: the UI tests drive search, scrolling and navigation like a person would
+# (about 10 minutes)
 xcodebuild test -project iOS/Example/HapticEngineDemo.xcodeproj -scheme HapticEngineDemo \
   -destination 'platform=iOS Simulator,name=iPhone 17e'
 
