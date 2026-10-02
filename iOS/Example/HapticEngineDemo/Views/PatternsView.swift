@@ -50,16 +50,18 @@ private struct PatternSection: Identifiable {
 
 /// Every pattern, filtered from the toolbar or by a search, in the layout the user picked.
 ///
-/// Search opens above the patterns, and looks through every pattern whatever the filter: someone
+/// Search opens in the navigation bar, and looks through every pattern whatever the filter: someone
 /// searching wants a pattern wherever it is.
 struct PatternsView: View {
     @Binding var filter: PatternFilter
     let layout: PatternLayout
     @Binding var query: String
-    /// Whether the search field shows above the patterns.
+    /// Whether the search field is open in the navigation bar.
     @Binding var isSearchFieldOpen: Bool
     /// Where the now-playing bar starts, in global coordinates. The patterns fade out across it.
     var fadeTop: CGFloat = .infinity
+    /// How much of the patterns shows, from 0 to 1. The background stays.
+    var visibility: Double = 1
 
     @Environment(HapticDemoModel.self) private var model
     @State private var scrollPosition = ScrollPosition(edge: .top)
@@ -93,52 +95,37 @@ struct PatternsView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 0) {
-                header
-                content
-                    .padding([.horizontal, .bottom])
-                    .padding(.top, 8)
-            }
+            content
+                .padding([.horizontal, .bottom])
+                .padding(.top, 8)
         }
         .scrollPosition($scrollPosition)
         .scrollDismissesKeyboard(.immediately)
         .accessibilityIdentifier("patternList")
-        // Scrolling puts the search field away, back into its button, to give the results the room.
-        // The query stays, so the results stay too; with nothing typed, search simply closes.
+        // Scrolling puts the keyboard away. The field stays, since it costs the patterns no room, and
+        // shows what the results are for; with nothing typed, search simply closes.
         .onScrollPhaseChange { _, phase in
-            guard phase == .interacting, isSearchFieldOpen else { return }
+            guard phase == .interacting, isSearchFieldOpen, !hasQuery else { return }
             withAnimation(.snappy) { isSearchFieldOpen = false }
         }
         // The patterns melt into the bar instead of meeting it at a line. The system's soft edge
         // effect stays on beneath it, adding a gentle blur as they fade.
         .mask { BottomFade(fadeTop: fadeTop).ignoresSafeArea() }
+        .opacity(visibility)
+        // The bar reports where it will settle as soon as it starts moving, so the fade eases there
+        // alongside it rather than jumping ahead.
+        .animation(.easeInOut(duration: 0.3), value: visibility)
+        .allowsHitTesting(visibility > 0.5)
+        // The edge effect under the navigation bar draws the patterns again itself, which the fade above
+        // doesn't reach: hidden while they're faded, or a strip of them stays under the status bar.
+        .topEdgeEffectHidden(visibility < 1)
         // A new filter, or a search, starts at the top, not partway down, as a new mailbox does in Mail:
-        // at once, since the patterns are all new. Opening search glides up to its field instead. Scrolling
-        // to the edge rather than to a view at the top keeps the navigation bar settled: scrolling to a view
+        // at once, since the patterns are all new. Scrolling to the edge rather than to a view at the top keeps the navigation bar settled: scrolling to a view
         // left the large title stranded beneath the toolbar buttons.
         .onChange(of: filter) { scrollPosition.scrollTo(edge: .top) }
         .onChange(of: query) { scrollPosition.scrollTo(edge: .top) }
-        .onChange(of: isSearchFieldOpen) { _, isOpen in
-            if isOpen { withAnimation(.snappy) { scrollPosition.scrollTo(edge: .top) } }
-        }
         .background(Color(.systemGroupedBackground))
     }
-
-    /// The search field, at the top of the patterns while it's open. It scrolls with them rather than
-    /// staying pinned, so it needs no background of its own.
-    @ViewBuilder
-    private var header: some View {
-        if isSearchFieldOpen {
-            SearchField(text: $query) {
-                withAnimation(.snappy) {
-                    query = ""
-                    isSearchFieldOpen = false
-                }
-        }
-        .transition(.opacity)
-        }
-    }
-
 
     @ViewBuilder
     private var content: some View {
@@ -146,34 +133,45 @@ struct PatternsView: View {
             emptyState
                 .padding(.top, 40)
         } else {
-            VStack(alignment: .leading, spacing: 20) {
-                ForEach(sections) { section in
-                    VStack(alignment: .leading, spacing: 8) {
-                        if let title = section.title {
-                            Text(title)
-                                .font(.subheadline.weight(.semibold))
-                                .foregroundStyle(.secondary)
-                                .padding(.leading, 4)
-                                .accessibilityAddTraits(.isHeader)
-                        }
-                        switch layout {
-                        case .grid: PatternGrid(patterns: section.patterns)
-                        case .list: PatternList(patterns: section.patterns)
-                        }
+            VStack(spacing: 24) {
+                patterns
+                if !hasQuery && filter != .all {
+                    ShowAllFooter(shown: sections.reduce(0) { $0 + $1.patterns.count }) {
+                        withAnimation(.snappy) { filter = .all }
                     }
                 }
             }
-            .disabled(!model.isHapticsSupported)
-            // The custom button styles don't dim when disabled, so dim here.
-            .opacity(model.isHapticsSupported ? 1 : 0.4)
-            // The old layout leaves at once and the new one fades in from slightly smaller, so the eye can
-            // follow a pattern across: every layout keeps the same order and colors.
-            .id(layout)
-            .transition(.asymmetric(
-                insertion: .opacity.combined(with: .scale(scale: 0.98, anchor: .top)),
-                removal: .identity
-            ))
         }
+    }
+
+    private var patterns: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            ForEach(sections) { section in
+                VStack(alignment: .leading, spacing: 8) {
+                    if let title = section.title {
+                        Text(title)
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.secondary)
+                            .padding(.leading, 4)
+                            .accessibilityAddTraits(.isHeader)
+                    }
+                    switch layout {
+                    case .grid: PatternGrid(patterns: section.patterns)
+                    case .list: PatternList(patterns: section.patterns)
+                    }
+                }
+            }
+        }
+        .disabled(!model.isHapticsSupported)
+        // The custom button styles don't dim when disabled, so dim here.
+        .opacity(model.isHapticsSupported ? 1 : 0.4)
+        // The old layout leaves at once and the new one fades in from slightly smaller, so the eye can
+        // follow a pattern across: every layout keeps the same order and colors.
+        .id(layout)
+        .transition(.asymmetric(
+            insertion: .opacity.combined(with: .scale(scale: 0.98, anchor: .top)),
+            removal: .identity
+        ))
     }
 
     @ViewBuilder
@@ -191,51 +189,25 @@ struct PatternsView: View {
     }
 }
 
-/// The search field. Takes the keyboard as it appears; Cancel clears it and goes back to browsing.
-private struct SearchField: View {
-    @Binding var text: String
-    let onCancel: () -> Void
-
-    @Environment(HapticDemoModel.self) private var model
-    @FocusState private var isFocused: Bool
+/// At the end of a filtered list, how much of the whole it is and the way back to everything: someone who
+/// scrolled through a category finishes here, far from the filter at the top.
+private struct ShowAllFooter: View {
+    let shown: Int
+    let showAll: () -> Void
 
     var body: some View {
-        HStack(spacing: 12) {
-            HStack(spacing: 8) {
-                Image(systemName: "magnifyingglass")
-                    .foregroundStyle(.secondary)
-                    .accessibilityHidden(true)
-                TextField("Search \(HapticPattern.allCases.count) Patterns", text: $text)
-                    .focused($isFocused)
-                    .accessibilityIdentifier("searchField")
-                    .textInputAutocapitalization(.never)
-                    .autocorrectionDisabled()
-                    .submitLabel(.search)
-                if !text.isEmpty {
-                    Button {
-                        text = ""
-                    } label: {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundStyle(.secondary)
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel("Clear Search")
-                }
-            }
-            .padding(.horizontal, 12)
-            .frame(minHeight: 34)
-            .background(Color(.tertiarySystemFill), in: .capsule)
-
-            Button("Cancel", action: onCancel)
-                .fontWeight(.medium)
+        HStack(spacing: 4) {
+            Text("Showing \(shown) of \(HapticPattern.allCases.count)")
+                .foregroundStyle(.secondary)
+            Text("·")
+                .foregroundStyle(.tertiary)
+            Button("Show All", action: showAll)
+                .fontWeight(.semibold)
+                .accessibilityIdentifier("showAll")
         }
-        .padding(.horizontal)
-        .padding(.vertical, 6)
-        .onAppear { isFocused = true }
-        // Playing a result puts the keyboard away, so the now-playing bar can show it.
-        .onChange(of: model.nowPlaying?.id) { _, playing in
-            if playing != nil { isFocused = false }
-        }
+        .font(.subheadline)
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 8)
     }
 }
 
@@ -278,24 +250,6 @@ private struct BottomFade: View {
     }
 }
 
-/// Picks the layout from the toolbar, as Files and Photos do.
-struct LayoutMenu: View {
-    @Binding var selection: PatternLayout
-
-    var body: some View {
-        Menu {
-            Picker("View As", selection: $selection.animation(.easeOut(duration: 0.25))) {
-                ForEach(PatternLayout.allCases, id: \.self) { layout in
-                    Label(layout.title, systemImage: layout.systemImage)
-                }
-            }
-        } label: {
-            Label("View As", systemImage: selection.systemImage)
-        }
-        .sensoryFeedback(.selection, trigger: selection)
-    }
-}
-
 #Preview {
     @Previewable @State var filter = PatternFilter.all
     NavigationStack {
@@ -307,4 +261,16 @@ struct LayoutMenu: View {
         )
     }
     .environment(HapticDemoModel(engine: MockHapticEngine()))
+}
+
+private extension View {
+    /// On iOS 26, hides the scroll edge effect under the navigation bar. Earlier, there's none.
+    @ViewBuilder
+    func topEdgeEffectHidden(_ isHidden: Bool) -> some View {
+        if #available(iOS 26, *) {
+            scrollEdgeEffectHidden(isHidden, for: .top)
+        } else {
+            self
+        }
+    }
 }

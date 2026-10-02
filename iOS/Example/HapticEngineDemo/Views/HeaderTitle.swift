@@ -1,0 +1,76 @@
+//
+// HeaderTitle.swift
+// HapticEngineDemo
+//
+
+import HapticEngine
+import SwiftUI
+
+/// The navigation bar's title, with what's showing beneath it. With a filter on, that line is a token in
+/// the filter's color that clears it in one tap, as Photos and Mail show their filters: the filter and the
+/// way out of it, side by side.
+struct HeaderTitle: View {
+    @Binding var filter: PatternFilter
+
+    @Environment(HapticDemoModel.self) private var model
+
+    private var count: Int {
+        switch filter {
+        case .all: HapticPattern.allCases.count
+        case .favorites: model.favorites.count
+        case .category(let category): category.patterns.count
+        }
+    }
+
+    var body: some View {
+        VStack(spacing: 1) {
+            Text("Haptic Engine")
+                .font(.headline)
+                .lineLimit(1)
+                .accessibilityAddTraits(.isHeader)
+            if filter == .all {
+                Text("All · \(count)")
+                    .font(.caption)
+                    .lineLimit(1)
+                    .foregroundStyle(.secondary)
+                    .transition(.opacity)
+            } else {
+                token
+                    .transition(.scale(scale: 0.8).combined(with: .opacity))
+            }
+        }
+        .animation(.snappy, value: filter)
+        .sensoryFeedback(.selection, trigger: filter)
+    }
+
+    private var token: some View {
+        let tint = filter.tint ?? .accentColor
+        return Button {
+            filter = .all
+        } label: {
+            HStack(spacing: 4) {
+                Image(systemName: filter.systemImage)
+                    .imageScale(.small)
+                Text("\(filter.title) · \(count)")
+                    .lineLimit(1)
+                Image(systemName: "xmark")
+                    .imageScale(.small)
+                    .fontWeight(.bold)
+                    .foregroundStyle(tint.opacity(0.7))
+            }
+            .font(.caption.weight(.semibold))
+            .foregroundStyle(tint)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 2)
+            .background(tint.opacity(0.15), in: .capsule)
+            // Taller than it looks, so it's easy to hit in the bar.
+            .padding(.vertical, 4)
+            .contentShape(.rect)
+        }
+        .buttonStyle(.plain)
+        .padding(.vertical, -4)
+        .accessibilityLabel("Showing \(filter.title)")
+        .accessibilityHint("Clears the filter to show all patterns")
+        .accessibilityIdentifier("clearFilter")
+    }
+}

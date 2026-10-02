@@ -31,15 +31,21 @@ final class SearchUITests: XCTestCase {
         XCTAssertTrue(searchButton.exists)
         XCTAssertFalse(searchField.exists)
         XCTAssertTrue(filterButton.exists)
-        XCTAssertEqual(searchButton.value as? String, "")
+        attachScreenshot("launch")
     }
 
-    func testOpeningSearchFocusesTheFieldAndHidesTheFilter() {
+    func testOpeningSearchWidensItInTheNavigationBar() {
+        let buttonWidth = searchButton.frame.width
         openSearch()
         XCTAssertTrue(keyboard.waitForExistence(timeout: 2))
-        XCTAssertFalse(filterButton.exists)
-        XCTAssertFalse(searchButton.exists)
         attachScreenshot("search open")
+        XCTAssertFalse(filterButton.exists)
+        XCTAssertGreaterThan(searchField.frame.width, buttonWidth * 2)
+        // Up to the menu, which stays.
+        XCTAssertTrue(appMenu.isHittable)
+        XCTAssertLessThan(appMenu.frame.maxX, searchField.frame.minX)
+        // In the navigation bar, in a row with it, so it takes no room from the patterns.
+        XCTAssertEqual(searchField.frame.midY, appMenu.frame.midY, accuracy: 4)
     }
 
     func testTypingFindsPatternsByTheStartOfAWord() {
@@ -77,39 +83,35 @@ final class SearchUITests: XCTestCase {
         XCTAssertTrue(filterButton.exists)
         XCTAssertTrue(pattern("tick").exists)
         XCTAssertFalse(keyboard.exists)
-        XCTAssertEqual(searchButton.value as? String, "")
     }
 
     // MARK: Scrolling
 
-    func testScrollingMinimizesSearchButKeepsTheResults() {
+    func testScrollingPutsTheKeyboardAwayButKeepsTheSearch() {
         openSearch()
         searchField.typeText("tap")
         XCTAssertTrue(pattern("tick").waitForExistence(timeout: 2))
 
         scrollList(.up)
 
-        XCTAssertTrue(searchField.waitForNonExistence(timeout: 2), "The field closes into its button")
-        XCTAssertFalse(keyboard.exists)
-        XCTAssertTrue(searchButton.exists)
-        XCTAssertEqual(searchButton.value as? String, "tap", "The button says a search is active")
+        XCTAssertTrue(keyboard.waitForNonExistence(timeout: 2))
+        XCTAssertEqual(searchField.value as? String, "tap", "The field stays, saying what the results are for")
         // Still results, not the full browse: the filter stays away and a non-match stays hidden.
         XCTAssertFalse(filterButton.exists)
         XCTAssertFalse(pattern("rain").exists)
-        attachScreenshot("minimized with results")
+        attachScreenshot("scrolled results")
     }
 
-    func testReopeningAMinimizedSearchKeepsTheQuery() {
+    func testTappingTheFieldAfterScrollingBringsTheKeyboardBack() {
         openSearch()
         searchField.typeText("tap")
         scrollList(.up)
-        XCTAssertTrue(searchField.waitForNonExistence(timeout: 2))
+        XCTAssertTrue(keyboard.waitForNonExistence(timeout: 2))
 
-        searchButton.tap()
+        searchField.tap()
 
-        XCTAssertTrue(searchField.waitForExistence(timeout: 2))
-        XCTAssertEqual(searchField.value as? String, "tap")
         XCTAssertTrue(keyboard.waitForExistence(timeout: 2))
+        XCTAssertEqual(searchField.value as? String, "tap")
     }
 
     func testScrollingWithNothingTypedClosesSearch() {
@@ -117,17 +119,6 @@ final class SearchUITests: XCTestCase {
         scrollList(.up)
         XCTAssertTrue(searchField.waitForNonExistence(timeout: 2))
         XCTAssertTrue(filterButton.waitForExistence(timeout: 2))
-        XCTAssertEqual(searchButton.value as? String, "")
-    }
-
-    func testScrollingBackDownDoesNotReopenSearch() {
-        openSearch()
-        searchField.typeText("tap")
-        scrollList(.up)
-        scrollList(.down)
-        scrollList(.down)
-        XCTAssertFalse(searchField.exists)
-        XCTAssertEqual(searchButton.value as? String, "tap")
     }
 
     // MARK: Filters
@@ -149,16 +140,77 @@ final class SearchUITests: XCTestCase {
         attachScreenshot("nature")
     }
 
+    func testTheWholeFilterButtonOpensItsMenu() {
+        // The icon alone is about 27 by 17 points, too small a target.
+        XCTAssertGreaterThanOrEqual(filterButton.frame.width, 44)
+        XCTAssertGreaterThanOrEqual(filterButton.frame.height, 44)
+        // Near the edges, well clear of the icon, as a quick thumb lands.
+        for (dx, dy) in [(0.15, 0.5), (0.5, 0.15)] {
+            filterButton.coordinate(withNormalizedOffset: CGVector(dx: dx, dy: dy)).tap()
+            XCTAssertTrue(app.buttons["Nature"].firstMatch.waitForExistence(timeout: 2), "Tapped at \(dx), \(dy)")
+            if dx == 0.15 { attachScreenshot("filter menu") }
+            app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.9)).tap()
+            XCTAssertTrue(app.buttons["Nature"].firstMatch.waitForNonExistence(timeout: 2))
+        }
+    }
+
     func testSearchHidesTheFilter() {
         openSearch()
         XCTAssertFalse(filterButton.exists)
         searchField.typeText("tap")
         scrollList(.up)
-        XCTAssertTrue(searchField.waitForNonExistence(timeout: 2))
+        XCTAssertTrue(keyboard.waitForNonExistence(timeout: 2))
         XCTAssertFalse(filterButton.exists, "Results ignore the filter, so it isn't offered")
-        app.buttons["searchButton"].tap()
         app.buttons["Cancel"].tap()
         XCTAssertTrue(filterButton.waitForExistence(timeout: 2))
+    }
+
+    func testTheTitleTokenClearsTheFilter() {
+        XCTAssertFalse(clearFilterToken.exists, "Nothing to clear while showing all")
+        pickFilter("Nature")
+        XCTAssertTrue(clearFilterToken.waitForExistence(timeout: 2))
+        attachScreenshot("filter token")
+
+        clearFilterToken.tap()
+
+        XCTAssertTrue(pattern("tick").waitForExistence(timeout: 2))
+        XCTAssertTrue(clearFilterToken.waitForNonExistence(timeout: 2))
+        XCTAssertEqual(filterButton.value as? String, "All")
+    }
+
+    func testShowAllEndsAFilteredList() {
+        XCTAssertFalse(app.buttons["showAll"].exists)
+        pickFilter("Nature")
+        XCTAssertTrue(pattern("thunder").waitForExistence(timeout: 2))
+        let showAll = app.buttons["showAll"]
+        for _ in 0..<4 where !showAll.isHittable { list.swipeUp() }
+        attachScreenshot("show all")
+
+        showAll.tap()
+
+        XCTAssertTrue(pattern("tick").waitForExistence(timeout: 2))
+        XCTAssertEqual(filterButton.value as? String, "All")
+    }
+
+    // MARK: Menu
+
+    func testTheMenuSwitchesLayout() {
+        // The list shows each pattern's description; the grid doesn't.
+        let description = app.staticTexts["One light, crisp tap"]
+        XCTAssertTrue(description.exists)
+
+        appMenu.tap()
+        attachScreenshot("menu")
+        app.buttons["Grid"].firstMatch.tap()
+
+        XCTAssertTrue(description.waitForNonExistence(timeout: 2))
+        XCTAssertTrue(pattern("tick").exists)
+    }
+
+    func testTheMenuOpensActivity() {
+        openActivity()
+        app.navigationBars.buttons.firstMatch.tap()
+        XCTAssertTrue(appMenu.waitForExistence(timeout: 2))
     }
 
     // MARK: Mixed actions
@@ -179,14 +231,12 @@ final class SearchUITests: XCTestCase {
         searchField.typeText("rain")
         pattern("rain").tap()
         scrollList(.up)
-        XCTAssertTrue(searchField.waitForNonExistence(timeout: 2))
 
-        app.buttons["Activity"].tap()
-        XCTAssertTrue(app.navigationBars["Activity"].waitForExistence(timeout: 2))
+        openActivity()
         app.navigationBars.buttons.firstMatch.tap()
 
-        XCTAssertTrue(searchButton.waitForExistence(timeout: 2))
-        XCTAssertEqual(searchButton.value as? String, "rain")
+        XCTAssertTrue(searchField.waitForExistence(timeout: 2))
+        XCTAssertEqual(searchField.value as? String, "rain")
         XCTAssertTrue(pattern("rain").exists)
         XCTAssertFalse(pattern("tick").exists)
     }
@@ -226,6 +276,8 @@ final class SearchUITests: XCTestCase {
     private var searchButton: XCUIElement { app.buttons["searchButton"] }
     private var searchField: XCUIElement { app.textFields["searchField"] }
     private var filterButton: XCUIElement { app.buttons["filterButton"] }
+    private var clearFilterToken: XCUIElement { app.buttons["clearFilter"] }
+    private var appMenu: XCUIElement { app.buttons["appMenu"] }
     private var keyboard: XCUIElement { app.keyboards.firstMatch }
     private var list: XCUIElement { app.scrollViews["patternList"] }
 
@@ -247,6 +299,14 @@ final class SearchUITests: XCTestCase {
         let item = app.buttons[title].firstMatch
         XCTAssertTrue(item.waitForExistence(timeout: 2))
         item.tap()
+    }
+
+    private func openActivity() {
+        appMenu.tap()
+        let item = app.buttons["Activity"].firstMatch
+        XCTAssertTrue(item.waitForExistence(timeout: 2))
+        item.tap()
+        XCTAssertTrue(app.navigationBars["Activity"].waitForExistence(timeout: 2))
     }
 
     private func openSearch() {
