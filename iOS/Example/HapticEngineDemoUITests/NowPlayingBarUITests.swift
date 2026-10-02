@@ -99,6 +99,72 @@ final class NowPlayingBarUITests: XCTestCase {
         XCTAssertTrue(similar.exists)
     }
 
+    func testPlayingSimilarPatternsKeepsTheFullSizeAndRowInPlace() {
+        header.tap()
+        settle()
+        toggleFull.tap()
+        settle()
+        let fullTop = header.frame.minY
+        let rowTop = app.staticTexts["More in Feedback"].frame.minY
+        // Patterns of two and three events: the bar and the row stay put for each.
+        for name in ["success", "warning", "error"] {
+            let chip = app.buttons["similar.\(name)"]
+            XCTAssertTrue(chip.isHittable, name)
+            chip.tap()
+            settle()
+            XCTAssertEqual(header.frame.minY, fullTop, accuracy: 1, name)
+            XCTAssertEqual(app.staticTexts["More in Feedback"].frame.minY, rowTop, accuracy: 1, name)
+            XCTAssertTrue(chip.isSelected, name)
+        }
+        attachScreenshot("full after trying similar patterns")
+    }
+
+    func testShrinkingFromScrolledFullShowsTheWholeSummary() {
+        relaunch(filter: "category.nature")
+        app.buttons["pattern.rain"].tap()
+        settle()
+        let collapsed = header.frame.minY
+        header.tap()
+        settle()
+        let summaryToggleTop = toggleFull.frame.minY
+        for flick in [false, true] {
+            toggleFull.tap()
+            settle()
+            scrollDetails(by: -260, fast: flick)
+            // At once, while a flick still carries the details.
+            drag(header, by: 330, pause: flick ? 0 : 0.05)
+            settle()
+            XCTAssertEqual(toggleFull.label, "More Details")
+            XCTAssertEqual(toggleFull.frame.minY, summaryToggleTop, accuracy: 1, flick ? "flick" : "scroll")
+            XCTAssertLessThan(header.frame.minY, collapsed)
+        }
+        attachScreenshot("summary after shrinking")
+    }
+
+    func testPlayingSimilarPatternsAtTheEndStaysAtTheEnd() {
+        relaunch(filter: "category.nature")
+        app.buttons["pattern.rain"].tap()
+        header.tap()
+        settle()
+        toggleFull.tap()
+        settle()
+        let unscrolledToggleTop = toggleFull.frame.minY
+        for _ in 1...3 { scrollDetails(by: -400, fast: true) }
+        settle()
+        // Shorter patterns, then a longer one again.
+        for name in ["thunder", "earthquake", "rain"] {
+            app.buttons["similar.\(name)"].tap()
+            settle()
+            // Still scrolled to the end, rather than back to the top.
+            XCTAssertLessThan(toggleFull.frame.minY, unscrolledToggleTop - 40, name)
+        }
+        attachScreenshot("end after trying similar patterns")
+        // Smaller, they show from the top again.
+        drag(header, by: 330)
+        settle()
+        XCTAssertTrue(toggleFull.isHittable)
+    }
+
     func testOpeningAndClosingLeavesAFilteredListInPlace() {
         app.terminate()
         app.launchArguments = ["-MockHaptics", "YES", "-patternFilter", "category.game", "-patternLayout", "grid", "-favorites", "()"]
@@ -138,10 +204,23 @@ final class NowPlayingBarUITests: XCTestCase {
     private var toggleFull: XCUIElement { app.buttons["toggleFullDetails"] }
 
     /// A slow drag, so the bar settles on the size nearest where it's let go, not where a flick goes.
-    private func drag(_ element: XCUIElement, by distance: CGFloat) {
+    private func drag(_ element: XCUIElement, by distance: CGFloat, pause: TimeInterval = 0.05) {
         let start = element.coordinate(withNormalizedOffset: CGVector(dx: 0.3, dy: 0.5))
         let end = start.withOffset(CGVector(dx: 0, dy: distance))
-        start.press(forDuration: 0.05, thenDragTo: end, withVelocity: .slow, thenHoldForDuration: 0.3)
+        start.press(forDuration: pause, thenDragTo: end, withVelocity: .slow, thenHoldForDuration: 0.3)
+    }
+
+    /// Scrolls the full details from the middle of the screen, which they cover. A fast one is a flick
+    /// that leaves them coasting.
+    private func scrollDetails(by distance: CGFloat, fast: Bool) {
+        let start = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.6))
+        start.press(forDuration: 0.05, thenDragTo: start.withOffset(CGVector(dx: 0, dy: distance)), withVelocity: fast ? .fast : .slow, thenHoldForDuration: 0)
+    }
+
+    private func relaunch(filter: String) {
+        app.terminate()
+        app.launchArguments = ["-MockHaptics", "YES", "-patternFilter", filter, "-patternLayout", "list", "-favorites", "()"]
+        app.launch()
     }
 
     private func settle() {

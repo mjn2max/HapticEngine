@@ -19,6 +19,14 @@ All notable changes to this project are documented here. The format follows
 - iOS demo: the now-playing bar is always shown, one height in every state, with a tip before the first
   play and a warning on devices without haptics. Tap it or swipe it up to see the pattern's full
   description and a timeline of its taps and holds.
+- iOS demo: the now-playing bar keeps one solid surface at every size, so its colors no longer shift as
+  it's resized. Opened fully, it's always the same height, with the category's patterns pinned along
+  its bottom and the one showing marked: trying them one after another never moves the bar or the row,
+  and details scrolled to their end stay there. Its icon keeps its colors while a pattern plays, shown
+  by the ring and a bounce instead. Made smaller, its details scroll fully back to their top, even
+  right after a flick, so the summary's timeline is never cut off.
+- iOS demo: the now-playing bar is a capsule when collapsed, with a round icon and a round progress
+  ring drawn concentric with its ends, so their curves line up as a pattern plays.
 - iOS demo: a compact header: a menu for the layout and activity log, the title inline with the filter
   and its pattern count beneath, and filter and search sharing a capsule. With a filter on, the line
   under the title is a token that clears it in one tap, and a filtered list ends with "Show All".

@@ -10,8 +10,8 @@ import SwiftUI
 ///
 /// - **A tip**, before anything is played: how to play a pattern and how to keep one.
 /// - **The pattern last played**, with buttons to star it and play it again. It stays after the pattern
-///   ends, so the pattern can still be starred or replayed. The icon alone shows the state: filled in the
-///   pattern's color while it plays, light when it's done, with a ring that fills around it as it plays. It opens to three sizes, like a sheet: see `Size`.
+///   ends, so the pattern can still be starred or replayed. While it plays, the icon bounces and a ring
+///   fills around it; its colors never change. It opens to three sizes, like a sheet: see `Size`.
 /// - **A warning**, on a device without haptic hardware, where nothing can play.
 ///
 /// Collapsed, the bar is one height in every state, so switching between them never moves the patterns.
@@ -30,6 +30,10 @@ struct NowPlayingBar: View {
     }
 
     static let collapsedHeight: CGFloat = 64
+    /// Half the collapsed height, so collapsed the bar is a capsule, like the system's bars in iOS 26.
+    /// Everything along its leading end is drawn concentric with it, `inset` in from its edge with a
+    /// radius of `cornerRadius - inset`: the icon, a circle 12 points in, and the ring, a circle 8 in.
+    static let cornerRadius: CGFloat = collapsedHeight / 2
     /// The gap to the screen's sides and bottom. Equal on all three, so the bar's lower corners run
     /// parallel to the screen's.
     static let margin: CGFloat = 12
@@ -102,7 +106,7 @@ struct NowPlayingBar: View {
         .frame(height: fixedHeight, alignment: .top)
         .frame(minHeight: Self.collapsedHeight)
         .barBackground(tint: model.isHapticsSupported ? nil : .orange)
-        .contentShape(.rect(cornerRadius: 24))
+        .contentShape(.rect(cornerRadius: Self.cornerRadius))
         .onGeometryChange(for: CGFloat.self) { $0.frame(in: .global).minY } action: { onTopChange($0) }
         // A light tap each time it settles on a size, as a haptics demo should.
         .sensoryFeedback(.impact(flexibility: .soft, intensity: 0.6), trigger: size)
@@ -154,6 +158,9 @@ private struct Grabber: View {
 /// resizes it under the finger, and letting go settles on the nearest size, carried by the flick.
 private struct PlayerRow: View {
     static let snap = Animation.spring(duration: 0.42, bounce: 0.18)
+    /// For scrolling the details to an edge: as long as `snap`, but without its bounce. A scroll view
+    /// can't overshoot its edge, so a bouncing scroll there stopped short of it, cutting off the timeline.
+    private static let scrollSnap = Animation.spring(duration: 0.42, bounce: 0)
     /// Between the row and the details.
     private static let detailsGap: CGFloat = 16
     /// How far past the top of the full details a pull drops to the summary.
@@ -173,8 +180,17 @@ private struct PlayerRow: View {
     /// Where the summary ends in the details, and where they all end.
     @State private var summaryEnd: CGFloat = 0
     @State private var detailsEnd: CGFloat = 0
+    /// The similar patterns pinned along the full size's bottom.
+    @State private var footerHeight: CGFloat = 0
     /// How far the full details are pulled down past their top.
     @State private var overscroll: CGFloat = 0
+    /// How far the details are scrolled from their top, as `ScrollPosition` measures it, and whether to
+    /// their end.
+    @State private var scrollOffset: CGFloat = 0
+    @State private var isScrolledToEnd = false
+    /// How far the details were scrolled when a resize from the full size began, which they give up as
+    /// the bar shrinks. `nil` while not resizing, or when it began smaller.
+    @State private var resizeStartScroll: CGFloat?
     @State private var scrollPosition = ScrollPosition(edge: .top)
     /// Whether the details are built. Only while open or opening: built collapsed, they cost the first
     /// play a frame, and every play after it a rebuild nobody sees.
@@ -188,7 +204,9 @@ private struct PlayerRow: View {
         switch size {
         case .collapsed: rowHeight
         case .summary: min(rowHeight + Self.detailsGap + summaryEnd, maxHeight)
-        case .full: max(min(rowHeight + Self.detailsGap + detailsEnd, maxHeight), height(of: .summary))
+        // As tall as it may grow whatever the pattern, like a sheet's large size, so playing another from
+        // the patterns at its bottom never resizes it. Only without a limit, in previews, does it fit.
+        case .full: max(maxHeight.isFinite ? maxHeight : rowHeight + Self.detailsGap + detailsEnd + footerHeight, height(of: .summary))
         }
     }
 
@@ -208,6 +226,15 @@ private struct PlayerRow: View {
         let range = height(of: .summary) - height(of: .collapsed)
         guard range > 0 else { return 0 }
         return min(max((height - height(of: .collapsed)) / range, 0), 1)
+    }
+
+    /// How far the bar has opened past the summary, from 0 there to 1 at the full size.
+    private var fullness: CGFloat { fullness(at: height) }
+
+    private func fullness(at barHeight: CGFloat) -> CGFloat {
+        let range = height(of: .full) - height(of: .summary)
+        guard range > 0 else { return size == .full ? 1 : 0 }
+        return min(max((barHeight - height(of: .summary)) / range, 0), 1)
     }
 
     var body: some View {
@@ -233,8 +260,15 @@ private struct PlayerRow: View {
                 .gesture(resize)
         }
         .animation(.snappy, value: playback?.id)
+        // Smaller than full, the details show from their top, so the summary shows its whole timeline.
         .onChange(of: size) { _, size in
-            if size != .full { withAnimation(Self.snap) { scrollPosition.scrollTo(edge: .top) } }
+            if size != .full { withAnimation(Self.scrollSnap) { scrollPosition.scrollTo(edge: .top) } }
+        }
+        // Another pattern, from the row along the bottom. Scrolled to the end, as trying one after another
+        // leaves them, the details stay at their end whatever the new pattern's length, so the row and the
+        // events just above it stay put. Anywhere else, they keep their place.
+        .onChange(of: pattern) {
+            if size == .full, isScrolledToEnd { scrollPosition.scrollTo(edge: .bottom) }
         }
     }
 
@@ -259,10 +293,21 @@ private struct PlayerRow: View {
         }
         .scrollPosition($scrollPosition)
         .contentMargins(.top, Self.detailsGap, for: .scrollContent)
+        // Room to scroll the last details clear of the footer.
+        .contentMargins(.bottom, footerHeight, for: .scrollContent)
         .scrollDisabled(size != .full)
         .scrollIndicators(size == .full ? .automatic : .hidden)
         .onScrollGeometryChange(for: CGFloat.self) { -($0.contentOffset.y + $0.contentInsets.top) } action: { _, pull in
             overscroll = pull
+        }
+        .onScrollGeometryChange(for: CGFloat.self) { $0.contentOffset.y + $0.contentInsets.top } action: { _, offset in
+            scrollOffset = offset
+        }
+        .onScrollGeometryChange(for: Bool.self) { geometry in
+            geometry.contentOffset.y + geometry.containerSize.height
+                >= geometry.contentSize.height + geometry.contentInsets.bottom - 8
+        } action: { _, isAtEnd in
+            isScrolledToEnd = isAtEnd
         }
         // Pulled down well past the top, as if to close a sheet: back to the summary.
         .onScrollPhaseChange { old, _ in
@@ -277,6 +322,16 @@ private struct PlayerRow: View {
                 Color.black
             }
         }
+        // Pinned rather than at the end of the details, so it stays in one place whichever pattern plays.
+        .overlay(alignment: .bottom) {
+            SimilarPatterns(pattern: pattern)
+                .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { footerHeight = $0 }
+                // Only over the last part of the way, so it never shows faintly at the summary, as the
+                // bar's spring settles there.
+                .opacity(max(fullness - 0.4, 0) / 0.6)
+                .allowsHitTesting(size == .full)
+                .accessibilityHidden(size != .full)
+        }
         .opacity(openness)
         .allowsHitTesting(size != .collapsed)
         .accessibilityHidden(size == .collapsed)
@@ -288,14 +343,28 @@ private struct PlayerRow: View {
     private var resize: some Gesture {
         DragGesture(minimumDistance: 8, coordinateSpace: .global)
             .onChanged { drag in
+                if dragTranslation == 0, size == .full { resizeStartScroll = scrollOffset }
                 showsDetails = true
                 dragTranslation = drag.translation.height
+                // Shrinking from the full size, the details scroll back to their top in step with the bar,
+                // reaching it at the summary, so the summary comes into view as it does opening from
+                // the collapsed bar. Left scrolled, its timeline was out of sight the whole way down.
+                // Setting the offset also stops details still coasting from a flick.
+                if let start = resizeStartScroll, start > 0 {
+                    scrollPosition.scrollTo(y: start * fullness(at: height(of: size) - drag.translation.height))
+                }
             }
             .onEnded { drag in
                 let projected = height(of: size) - drag.predictedEndTranslation.height
                 let nearest = NowPlayingBar.Size.allCases.min {
                     abs(height(of: $0) - projected) < abs(height(of: $1) - projected)
                 } ?? size
+                // Back to full: to where the details were. Smaller, `onChange(of: size)` scrolls the rest
+                // of the way to their top.
+                if nearest == .full, let start = resizeStartScroll, start > 0 {
+                    withAnimation(Self.scrollSnap) { scrollPosition.scrollTo(y: start) }
+                }
+                resizeStartScroll = nil
                 withAnimation(Self.snap) {
                     size = nearest
                     dragTranslation = 0
@@ -333,8 +402,10 @@ private struct PlayerRow: View {
                 Text(pattern.title)
                     .font(.headline)
                     .lineLimit(1)
-                // Open, the full description is below, so this line shows the facts instead.
-                Text(openness > 0.5 ? "\(pattern.category.title) · \(pattern.durationText)" : pattern.subtitle)
+                // Open, the full description is below, so this line shows the facts instead. Follows the
+                // settled size, not the finger, so the header holds still while the bar is resized:
+                // switching halfway, it flickered as a drag crossed back and forth.
+                Text(size != .collapsed ? "\(pattern.category.title) · \(pattern.durationText)" : pattern.subtitle)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     // One line keeps the bar one height; large text needs the room to wrap.
@@ -360,12 +431,18 @@ private struct PlayerRow: View {
         }
     }
 
+    /// The same colors whether the pattern is playing or not. It used to fill solid while playing, for at
+    /// least `Playback.minimumDisplayDuration`, then turn light again: every play, a chip tap included,
+    /// flashed it for a second. The ring and the bounce show a play instead.
+    ///
+    /// A circle, concentric with the bar's corners: 12 points in from a 32 point curve, a radius of 20.
+    /// A rounded square there, and the ring around it, made three curves that didn't line up.
     private var icon: some View {
         Image(systemName: pattern.systemImage)
             .font(.system(size: 18, weight: .semibold))
-            .foregroundStyle(isPlaying ? .white : pattern.tint)
+            .foregroundStyle(pattern.tint)
             .frame(width: 40, height: 40)
-            .background(isPlaying ? pattern.tint : pattern.tint.opacity(0.15), in: .rect(cornerRadius: 11))
+            .background(pattern.tint.opacity(0.15), in: .circle)
             .contentTransition(.symbolEffect(.replace))
             // Bounces on every play, including a replay of the same pattern.
             .symbolEffect(.bounce, value: playback?.id)
@@ -456,7 +533,6 @@ private struct PatternDetails: View {
 
             PatternStats(pattern: pattern)
             EventList(pattern: pattern)
-            SimilarPatterns(pattern: pattern)
         }
         .padding(.trailing, 6)
         .padding(.bottom, 16)
@@ -584,32 +660,24 @@ private struct EventLabelStyle: LabelStyle {
     }
 }
 
-/// Others from the same category, to feel side by side. A tap plays one, and the bar shows it.
+/// The category's patterns, to feel side by side, pinned along the bottom of the full size. A tap plays
+/// one, and the bar shows it. The one showing stays in the row, marked, so the row never reflows as
+/// they're tried one after another.
 private struct SimilarPatterns: View {
     let pattern: HapticPattern
 
     @Environment(HapticDemoModel.self) private var model
 
     var body: some View {
-        let similar = pattern.category.patterns.filter { $0 != pattern }
-        if !similar.isEmpty {
-            VStack(alignment: .leading, spacing: 8) {
-                SectionTitle("More in \(pattern.category.title)")
+        let patterns = pattern.category.patterns
+        VStack(alignment: .leading, spacing: 8) {
+            SectionTitle("More in \(pattern.category.title)")
+            ScrollViewReader { proxy in
                 ScrollView(.horizontal) {
                     HStack(spacing: 8) {
-                        ForEach(similar, id: \.self) { similar in
-                            Button {
-                                model.play(similar)
-                            } label: {
-                                Label(similar.title, systemImage: similar.systemImage)
-                                    .font(.subheadline.weight(.medium))
-                                    .foregroundStyle(similar.tint)
-                                    .padding(.horizontal, 12)
-                                    .frame(minHeight: 36)
-                                    .background(similar.tint.opacity(0.12), in: .capsule)
-                            }
-                            .buttonStyle(.plain)
-                            .accessibilityHint("Plays it")
+                        ForEach(patterns, id: \.self) { similar in
+                            chip(similar, isSelected: similar == pattern)
+                                .id(similar)
                         }
                     }
                 }
@@ -617,8 +685,43 @@ private struct SimilarPatterns: View {
                 // To the bar's edges, so chips scroll out under its corners rather than stopping short.
                 .padding(.horizontal, -12)
                 .contentMargins(.horizontal, 12, for: .scrollContent)
+                // Only as far as needed to bring the one showing into view, so a tap never moves the row.
+                .onAppear { proxy.scrollTo(pattern) }
+                .onChange(of: pattern) { withAnimation(.snappy) { proxy.scrollTo(pattern) } }
             }
         }
+        .padding(.trailing, 6)
+        .padding(.bottom, 4)
+        // The details scroll out beneath it, fading rather than cut off along its top.
+        .background(alignment: .top) {
+            VStack(spacing: 0) {
+                LinearGradient(colors: [.barSurface.opacity(0), .barSurface], startPoint: .top, endPoint: .bottom)
+                    .frame(height: 24)
+                Color.barSurface
+            }
+            .padding(.top, -24)
+            .padding(.horizontal, -12)
+            .padding(.bottom, -NowPlayingBar.verticalPadding)
+        }
+    }
+
+    /// Filled in its color when it's the one showing. Otherwise the same size, so nothing shifts.
+    private func chip(_ similar: HapticPattern, isSelected: Bool) -> some View {
+        Button {
+            model.play(similar)
+        } label: {
+            Label(similar.title, systemImage: similar.systemImage)
+                .font(.subheadline.weight(.medium))
+                .foregroundStyle(isSelected ? .white : similar.tint)
+                .padding(.horizontal, 12)
+                .frame(minHeight: 36)
+                .background(isSelected ? similar.tint : similar.tint.opacity(0.12), in: .capsule)
+                .animation(.snappy, value: isSelected)
+        }
+        .buttonStyle(.plain)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+        .accessibilityHint(isSelected ? "Plays it again" : "Plays it")
+        .accessibilityIdentifier("similar.\(similar.rawValue)")
     }
 }
 
@@ -748,7 +851,7 @@ private struct MessageRow: View {
                 .font(.system(size: 18, weight: .semibold))
                 .foregroundStyle(tint)
                 .frame(width: 40, height: 40)
-                .background(tint.opacity(0.15), in: .rect(cornerRadius: 11))
+                .background(tint.opacity(0.15), in: .circle)
             VStack(alignment: .leading, spacing: 1) {
                 Text(title)
                     .font(.headline)
@@ -777,7 +880,9 @@ private struct BarButtonStyle: ButtonStyle {
     }
 }
 
-/// A ring around the icon that fills over the pattern's duration.
+/// A ring around the icon that fills over the pattern's duration, clockwise from the top. A circle 4
+/// points out from the icon: 8 points in from the bar's 32 point curve, so a radius of 24, concentric
+/// with both.
 private struct ProgressRing: View {
     /// The quickest the ring fills, so a pattern over in a blink still shows a sweep rather than a flash.
     /// Shorter than how long a playback shows, so the ring is seen full before it fades.
@@ -789,40 +894,51 @@ private struct ProgressRing: View {
     @State private var progress: CGFloat = 0
 
     var body: some View {
-        RoundedRectangle(cornerRadius: 14, style: .continuous)
+        Circle()
             .trim(from: 0, to: progress)
             .stroke(tint, style: StrokeStyle(lineWidth: 2.5, lineCap: .round))
+            .rotationEffect(.degrees(-90))
             .onAppear {
                 withAnimation(.linear(duration: duration)) { progress = 1 }
             }
     }
 }
 
+private extension Color {
+    /// The bar's surface: raised over the patterns' background in both light and dark.
+    static let barSurface = Color(.secondarySystemGroupedBackground)
+}
+
 private extension View {
-    /// Liquid Glass where available, to match the system toolbar; a material on earlier versions.
-    /// Content is clipped to the same shape.
+    /// An opaque surface, the same at every size. Liquid Glass changes with its size and with what's
+    /// behind it: it drew a gray, glossy rim on the collapsed bar that flattened to white as the bar
+    /// grew, and restyled the icon, star and gray text over the changing patterns, so the row flickered
+    /// mid-resize. A solid surface keeps them steady, as a sheet's does. Content is clipped to the shape.
     /// `tint` colors it lightly, to mark a warning.
     ///
-    /// On iOS 26, the bottom corners are concentric with the screen's, so they follow its curve whatever
-    /// the device. The top corners keep a fixed radius, as they're far from any screen corner.
+    /// The corners are `NowPlayingBar.cornerRadius`: collapsed, a capsule. On iOS 26 the bottom corners
+    /// are concentric with the screen's where that's rounder, so they follow its curve whatever the
+    /// device; collapsed, the bar's height caps them, so it stays a capsule. The top corners keep a fixed
+    /// radius, as they're far from any screen corner.
     @ViewBuilder
     func barBackground(tint: Color? = nil) -> some View {
-        let shape = RoundedRectangle(cornerRadius: 24, style: .continuous)
+        let radius = NowPlayingBar.cornerRadius
         if #available(iOS 26, *) {
-            let shape = ConcentricRectangle(uniformTopCorners: .fixed(24), uniformBottomCorners: .concentric(minimum: .fixed(24)))
-            // Clipped, so details scrolled to its edges stay within its corners.
-            clipShape(shape)
-                .glassEffect(.regular.tint(tint?.opacity(0.2)), in: shape)
-                // A steady backdrop for the glass. Glass restyles what's on it to stay legible over what's
-                // behind, and behind the bar changes as it's resized: white patterns, the gray background,
-                // patterns fading out. Over that, its icon, star and gray text switched colors mid-resize.
-                .background(Color(.systemBackground).opacity(0.85), in: shape)
+            surface(tint: tint, in: ConcentricRectangle(uniformTopCorners: .fixed(radius), uniformBottomCorners: .concentric(minimum: .fixed(radius))))
         } else {
-            clipShape(shape)
-                .background(.regularMaterial, in: shape)
-                .background((tint ?? .clear).opacity(0.12), in: shape)
-                .shadow(color: .black.opacity(0.12), radius: 12, y: 4)
+            surface(tint: tint, in: RoundedRectangle(cornerRadius: radius, style: .continuous))
         }
+    }
+
+    private func surface(tint: Color?, in shape: some Shape) -> some View {
+        clipShape(shape)
+            .background((tint ?? .clear).opacity(0.12), in: shape)
+            // The shadow on the surface alone: on the whole view, every icon and line of text cast one.
+            .background {
+                shape.fill(Color.barSurface)
+                    .shadow(color: .black.opacity(0.12), radius: 16, y: 4)
+            }
+            .overlay(shape.stroke(Color(.separator).opacity(0.5), lineWidth: 1))
     }
 }
 
