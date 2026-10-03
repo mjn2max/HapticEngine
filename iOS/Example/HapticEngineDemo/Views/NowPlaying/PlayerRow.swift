@@ -121,9 +121,20 @@ struct PlayerRow: View {
         .onChange(of: openness, initial: true) { _, openness in
             layout.openness = openness
         }
+        // A new filter means new patterns to look at, which the full size leaves no room for: it steps down
+        // to the summary, which keeps the pattern's details in view with the patterns above.
+        .onChange(of: model.filter) {
+            if size == .full { setSize(.summary) }
+        }
         // Smaller than full, the details show from their top, so the summary shows its whole timeline.
+        //
+        // Not when they're pulled down past their top, as pulling them shrinks the bar: they're already
+        // bouncing back to it. Scrolling them as well ran two returns at once. The scroll's animation moves
+        // them by the distance to the top when it starts, while the bounce takes them there too, so they
+        // ended that distance past it, the summary's top cut off.
         .onChange(of: size) { _, size in
-            if size != .full { withAnimation(Self.scrollSnap) { scrollPosition.scrollTo(edge: .top) } }
+            guard size != .full, overscroll <= 0 else { return }
+            withAnimation(Self.scrollSnap) { scrollPosition.scrollTo(edge: .top) }
         }
         // Another pattern, from the row along the bottom. Scrolled to the end, as trying one after another
         // leaves them, the details stay at their end whatever the new pattern's length, so the row and the

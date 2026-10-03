@@ -10,6 +10,9 @@ IPHONEOS_DEPLOYMENT_TARGET = 18.0
 TARGETED_DEVICE_FAMILY = 1,2
 SWIFT_VERSION = 6.0
 
+// Merged with the generated Info.plist: the launch screen's color.
+INFOPLIST_FILE = Config/Info.plist
+
 CODE_SIGN_STYLE = Automatic
 DEVELOPMENT_TEAM =
 

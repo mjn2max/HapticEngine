@@ -6,7 +6,8 @@
 import Foundation
 import HapticEngine
 
-/// What the demo remembers between launches, in one place: favorites, the filter and the layout.
+/// What the demo remembers between launches, in one place: favorites, the filter, the layout, and whether
+/// the launch ripple was felt.
 ///
 /// Backed by `UserDefaults`, injected so tests get a store of their own. The keys are also launch
 /// arguments: UI tests start from a known state with `-patternFilter all -patternLayout list -favorites ()`.
@@ -18,6 +19,7 @@ struct Preferences {
         static let favorites = "favorites"
         static let filter = "patternFilter"
         static let layout = "patternLayout"
+        static let hasFeltLaunchRipple = "hasFeltLaunchRipple"
     }
 
     init(defaults: UserDefaults = .standard) {
@@ -38,5 +40,11 @@ struct Preferences {
     var layout: PatternLayout {
         get { defaults.string(forKey: Key.layout).flatMap(PatternLayout.init(rawValue:)) ?? .grid }
         nonmutating set { defaults.set(newValue.rawValue, forKey: Key.layout) }
+    }
+
+    /// Whether the haptic ripple that comes with the launch reveal has played: it's only for the first launch.
+    var hasFeltLaunchRipple: Bool {
+        get { defaults.bool(forKey: Key.hasFeltLaunchRipple) }
+        nonmutating set { defaults.set(newValue, forKey: Key.hasFeltLaunchRipple) }
     }
 }

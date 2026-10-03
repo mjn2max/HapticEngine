@@ -33,6 +33,8 @@ struct PatternIcon: View {
                 }
             }
             .animation(.snappy, value: isFavorite)
+            // Lands just after its pattern as the home screen first appears, star and all.
+            .launchRevealAccent()
     }
 }
 

@@ -9,13 +9,16 @@ import SwiftUI
 /// Patterns as rows with their description and length: for reading what each one does.
 struct PatternList: View {
     let patterns: [HapticPattern]
+    /// The row of the launch wave the first of them is in.
+    var firstRow: Double = 0
     @Environment(HapticDemoModel.self) private var model
 
     var body: some View {
         let playing = model.nowPlaying?.pattern
         LazyVStack(spacing: 0) {
-            ForEach(patterns, id: \.self) { pattern in
+            ForEach(Array(patterns.enumerated()), id: \.element) { offset, pattern in
                 PatternRow(pattern: pattern, isPlaying: pattern == playing, isFavorite: model.isFavorite(pattern))
+                    .launchReveal(row: firstRow + Double(offset))
                 if pattern != patterns.last {
                     // Inset to line up with the text, as in system lists.
                     Divider()

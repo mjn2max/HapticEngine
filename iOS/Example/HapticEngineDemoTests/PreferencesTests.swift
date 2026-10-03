@@ -14,6 +14,7 @@ struct PreferencesTests {
         #expect(preferences.favorites.isEmpty)
         #expect(preferences.filter == .all)
         #expect(preferences.layout == .grid)
+        #expect(!preferences.hasFeltLaunchRipple)
     }
 
     @Test func remembersWhatWasSaved() {
@@ -22,11 +23,13 @@ struct PreferencesTests {
         preferences.favorites = [.coin, .rain]
         preferences.filter = .category(.nature)
         preferences.layout = .list
+        preferences.hasFeltLaunchRipple = true
 
         let reopened = Preferences(defaults: defaults)
         #expect(reopened.favorites == [.coin, .rain])
         #expect(reopened.filter == .category(.nature))
         #expect(reopened.layout == .list)
+        #expect(reopened.hasFeltLaunchRipple)
     }
 
     /// Saved by an older version, such as a renamed pattern, a removed category or the old cards layout.

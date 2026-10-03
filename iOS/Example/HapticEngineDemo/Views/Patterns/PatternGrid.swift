@@ -9,15 +9,27 @@ import SwiftUI
 /// Patterns as compact tiles, three or more to a row: the quickest to tap.
 struct PatternGrid: View {
     let patterns: [HapticPattern]
+    /// The row of the launch wave the first of them is in.
+    var firstRow: Double = 0
+    /// How many tiles fit across, for where each one comes in the launch wave: see `columnCount(width:)`.
+    var columnCount = 1
     @Environment(HapticDemoModel.self) private var model
 
-    private let columns = [GridItem(.adaptive(minimum: 100), spacing: 12)]
+    private static let minimumWidth: CGFloat = 100
+    private static let spacing: CGFloat = 12
+    private let columns = [GridItem(.adaptive(minimum: Self.minimumWidth), spacing: Self.spacing)]
+
+    /// How many tiles the grid fits across `width`, as its adaptive column does.
+    static func columnCount(width: CGFloat) -> Int {
+        max(Int((width + spacing) / (minimumWidth + spacing)), 1)
+    }
 
     var body: some View {
         let playing = model.nowPlaying?.pattern
         LazyVGrid(columns: columns, spacing: 12) {
-            ForEach(patterns, id: \.self) { pattern in
+            ForEach(Array(patterns.enumerated()), id: \.element) { offset, pattern in
                 PatternTile(pattern: pattern, isPlaying: pattern == playing, isFavorite: model.isFavorite(pattern))
+                    .launchReveal(row: firstRow + Double(offset / columnCount), column: offset % columnCount)
             }
         }
     }

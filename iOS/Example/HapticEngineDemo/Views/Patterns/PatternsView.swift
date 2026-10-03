@@ -24,6 +24,8 @@ struct PatternsView: View {
 
     @Environment(HapticDemoModel.self) private var model
     @State private var scrollPosition = ScrollPosition(edge: .top)
+    /// The top of the scroll view, in global coordinates: the bottom of the navigation bar.
+    @State private var scrollTop: CGFloat?
 
     var body: some View {
         let search = PatternSearch(query)
@@ -43,7 +45,8 @@ struct PatternsView: View {
             )
             .equatable()
             .padding([.horizontal, .bottom])
-            .padding(.top, 8)
+            // Just clear of the fade below the navigation bar, so at rest nothing's faded.
+            .padding(.top, EdgeFade.topPadding)
         }
         .scrollPosition($scrollPosition)
         // Only scroll room, never layout: the patterns stay where they are as the bar opens over them.
@@ -73,9 +76,16 @@ struct PatternsView: View {
             guard phase == .interacting, isSearchFieldOpen, search.isEmpty else { return }
             withAnimation(.snappy) { isSearchFieldOpen = false }
         }
+        .onGeometryChange(for: CGFloat.self) { $0.frame(in: .global).minY } action: { scrollTop = $0 }
         // The patterns show through the collapsed glass bar, and melt into the open one instead of meeting
-        // it at a line. The system's soft edge effect stays on beneath it, adding a gentle blur.
-        .mask { BottomFade(nowPlaying: nowPlaying).ignoresSafeArea() }
+        // it at a line. The system's soft edge effect stays on beneath it, adding a gentle blur. At the top
+        // they melt away just below the navigation bar, rather than scrolling on behind its title and
+        // buttons.
+        .mask { EdgeFade(nowPlaying: nowPlaying, controlsBottom: navigationBarBottom, top: scrollTop).ignoresSafeArea() }
+        // The edge effect under the navigation bar draws the patterns again itself, which neither the fade
+        // nor the mask reach: a hard-edged strip of them showed below the bar's buttons. The mask fades them
+        // there instead.
+        .topEdgeEffectHidden(true)
         .modifier(RecedeBehindNowPlaying(nowPlaying: nowPlaying, navigationBarBottom: navigationBarBottom))
         // A new filter, or a search, starts at the top, not partway down, as a new mailbox does in Mail:
         // at once, since the patterns are all new. Scrolling to the edge rather than to a view keeps the
@@ -107,6 +117,30 @@ private struct BottomRoom: Equatable {
     }
 }
 
+/// Where each section's patterns start in the launch wave, in rows from the top: a title takes half a row,
+/// and a grid's patterns take a row for each line of tiles.
+struct WaveRows: Equatable {
+    static let titleRows: Double = 0.5
+
+    /// The row of each section's first pattern.
+    let first: [Double]
+    /// Just past the last pattern.
+    let end: Double
+
+    init(sections: [PatternSection], columnCount: Int) {
+        var first: [Double] = []
+        var row: Double = 0
+        for section in sections {
+            if section.title != nil { row += Self.titleRows }
+            first.append(row)
+            let count = section.patterns.count
+            row += Double((count + columnCount - 1) / columnCount)
+        }
+        self.first = first
+        end = row
+    }
+}
+
 /// The sections themselves. Equatable, so the scroll view's other updates, such as the bar opening, leave
 /// them alone: they only update when the patterns shown change, or one of them starts playing.
 private struct PatternSections: View, Equatable {
@@ -123,6 +157,8 @@ private struct PatternSections: View, Equatable {
     let showAll: () -> Void
 
     @Environment(HapticDemoModel.self) private var model
+    /// How many tiles the grid fits across, for where each one comes in the launch wave.
+    @State private var columnCount = 1
 
     nonisolated static func == (lhs: Self, rhs: Self) -> Bool {
         lhs.sections == rhs.sections && lhs.layout == rhs.layout
@@ -133,19 +169,27 @@ private struct PatternSections: View, Equatable {
         if sections.isEmpty {
             emptyView
                 .padding(.top, 40)
+                .launchReveal(row: 0)
         } else {
+            // Where each section starts in the launch wave, so it runs on from one section to the next, and
+            // where the patterns end.
+            let rows = WaveRows(sections: sections, columnCount: layout == .grid ? columnCount : 1)
             VStack(spacing: 24) {
-                patterns
+                patterns(firstRows: rows.first)
                 if let footerCount {
                     ShowAllFooter(shown: footerCount, showAll: showAll)
+                        .launchReveal(row: rows.end)
                 }
+            }
+            .onGeometryChange(for: Int.self) { PatternGrid.columnCount(width: $0.size.width) } action: {
+                columnCount = $0
             }
         }
     }
 
-    private var patterns: some View {
+    private func patterns(firstRows: [Double]) -> some View {
         VStack(alignment: .leading, spacing: 20) {
-            ForEach(sections) { section in
+            ForEach(Array(zip(sections, firstRows)), id: \.0.id) { section, firstRow in
                 VStack(alignment: .leading, spacing: 8) {
                     if let title = section.title {
                         Text(title)
@@ -153,10 +197,11 @@ private struct PatternSections: View, Equatable {
                             .foregroundStyle(.secondary)
                             .padding(.leading, 4)
                             .accessibilityAddTraits(.isHeader)
+                            .launchReveal(row: firstRow - WaveRows.titleRows)
                     }
                     switch layout {
-                    case .grid: PatternGrid(patterns: section.patterns)
-                    case .list: PatternList(patterns: section.patterns)
+                    case .grid: PatternGrid(patterns: section.patterns, firstRow: firstRow, columnCount: columnCount)
+                    case .list: PatternList(patterns: section.patterns, firstRow: firstRow)
                     }
                 }
             }
@@ -235,22 +280,39 @@ private struct RecedeBehindNowPlaying: ViewModifier {
             // alongside it rather than jumping ahead.
             .animation(.easeInOut(duration: 0.3), value: visibility)
             .allowsHitTesting(visibility > 0.5)
-            // The edge effect under the navigation bar draws the patterns again itself, which the fade
-            // doesn't reach: hidden while they're faded, or a strip of them stays under the status bar.
-            .topEdgeEffectHidden(visibility < 1)
     }
 }
 
-/// Opaque down to above the now-playing bar, then fading to clear across its top edge. Used as a mask,
-/// it fades the patterns out as they reach the open bar, so nothing shows through behind its details.
+/// Clear down to just above the bottom of the navigation bar's buttons, fading in from there to just below
+/// the bar; opaque down to above the now-playing bar, then fading to clear across its top edge. Used as a mask, it fades the
+/// patterns out before they reach the navigation bar's title and buttons, so they never show behind them,
+/// and as they reach the open now-playing bar, so nothing shows through behind its details.
+///
+/// The top fade starts up among the buttons rather than at the bar's edge, below the title, so it can be long
+/// and soft while the patterns still start close below the bar. It eases in slowly, so the patterns are all
+/// but invisible where they pass behind the buttons' glass, with no line where the fade begins.
 /// Collapsed, the bar is glass, which the patterns should show through, but faintly: at full strength
 /// their text competed with the bar's. So the fade stops at `glassFloor` beneath the collapsed bar, and
 /// runs on to clear as the bar opens and turns solid.
 ///
 /// The fade eases in and out rather than running straight, like light falling off: a straight fade
 /// starts and stops abruptly, which shows as lines while scrolling.
-private struct BottomFade: View {
+private struct EdgeFade: View {
     let nowPlaying: NowPlayingLayout
+    /// The bottom of the navigation bar's buttons, in global coordinates, where the patterns are fully
+    /// faded. `nil` until known: then the fade starts at the bar's edge.
+    let controlsBottom: CGFloat?
+    /// The bottom of the navigation bar, in global coordinates. `nil` until it's known: no fade at the top.
+    let top: CGFloat?
+
+    /// How far below the navigation bar the patterns become opaque, and so the room above them at rest.
+    static let topPadding: CGFloat = 8
+    /// How far above the bottom of the buttons the patterns are clear: below the title's second line.
+    private static let controlsOverlap: CGFloat = 4
+    /// The shortest the top fade runs, should the buttons sit close to the bar's edge.
+    private static let minimumTopFade: CGFloat = 18
+    /// The top fade's curve: the bottom fade's, squared, so it lingers near clear before rising.
+    private static let topCurve = curve.map { (progress: $0.progress, opacity: (1 - $0.opacity) * (1 - $0.opacity)) }
 
     /// How far above and below the bar's top edge the fade runs.
     private static let above: CGFloat = 56
@@ -270,17 +332,31 @@ private struct BottomFade: View {
         GeometryReader { geometry in
             let frame = geometry.frame(in: .global)
             let height = max(frame.height, 1)
-            let top = nowPlaying.top - frame.minY
+            let fadeIn = fadeIn(frame: frame, height: height)
+            let barTop = nowPlaying.top - frame.minY
             let floor = Self.glassFloor * (1 - nowPlaying.openness)
-            let start = min(max((top - Self.above) / height, 0), 1)
-            let end = min(max((top + Self.below) / height, start), 1)
+            let fadeInEnd = fadeIn.last?.location ?? 0
+            let start = min(max((barTop - Self.above) / height, fadeInEnd), 1)
+            let end = min(max((barTop + Self.below) / height, start), 1)
             LinearGradient(
-                stops: [.init(color: .black, location: 0)] + Self.curve.map { point in
+                stops: fadeIn + Self.curve.map { point in
                     Gradient.Stop(color: .black.opacity(floor + (1 - floor) * point.opacity), location: start + (end - start) * point.progress)
                 },
                 startPoint: .top,
                 endPoint: .bottom
             )
+        }
+    }
+
+    /// Fading in below the navigation bar, the same curve the other way up.
+    private func fadeIn(frame: CGRect, height: CGFloat) -> [Gradient.Stop] {
+        guard let top else { return [.init(color: .black, location: 0)] }
+        let opaque = top + Self.topPadding
+        let clear = min((controlsBottom ?? top) - Self.controlsOverlap, opaque - Self.minimumTopFade)
+        let start = min(max((clear - frame.minY) / height, 0), 1)
+        let end = min(max((opaque - frame.minY) / height, start), 1)
+        return Self.topCurve.map { point in
+            Gradient.Stop(color: .black.opacity(point.opacity), location: start + (end - start) * point.progress)
         }
     }
 }

@@ -139,4 +139,18 @@ struct HapticDemoModelTests {
         let unsupported = HapticDemoModel(engine: SpyEngine(isHapticsSupported: false), preferences: Preferences(defaults: defaults))
         #expect(!unsupported.isHapticsSupported)
     }
+
+    // MARK: Launch ripple
+
+    @Test func claimsTheLaunchRippleOnlyOnTheFirstLaunch() {
+        #expect(makeModel().claimLaunchRipple())
+        #expect(!makeModel().claimLaunchRipple())
+    }
+
+    @Test func neverClaimsTheLaunchRippleWithoutHaptics() {
+        let unsupported = HapticDemoModel(engine: SpyEngine(isHapticsSupported: false), preferences: Preferences(defaults: defaults))
+        #expect(!unsupported.claimLaunchRipple())
+        // Still to come, should haptics play here later.
+        #expect(!Preferences(defaults: defaults).hasFeltLaunchRipple)
+    }
 }

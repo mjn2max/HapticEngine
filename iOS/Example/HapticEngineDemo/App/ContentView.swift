@@ -8,6 +8,8 @@ import SwiftUI
 
 struct ContentView: View {
     @Environment(HapticDemoModel.self) private var model
+    @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     @State private var query = ""
     /// Whether the search field is open in the navigation bar. Otherwise search is only a button.
@@ -29,6 +31,8 @@ struct ContentView: View {
     /// The keyboard covers the now-playing bar, which would show faintly through it, so the bar fades
     /// out while it's up.
     @State private var isKeyboardVisible = false
+    /// When the patterns and the bar started to animate in: see `LaunchReveal`. `nil` until then.
+    @State private var revealStart: Date?
 
     private var isSearching: Bool {
         isSearchFieldOpen || !PatternSearch(query).isEmpty
@@ -122,6 +126,8 @@ struct ContentView: View {
                 // above, then replay or star it here without looking for it again.
                 .overlay(alignment: .bottom) {
                     NowPlayingBar(layout: nowPlaying, bottomInset: bottomInset, maxHeight: nowPlayingMaxHeight)
+                        // Docks from below as the patterns land, like a mini player arriving.
+                        .launchReveal(delay: LaunchReveal.barDelay, distance: 60)
                     .opacity(isKeyboardVisible ? 0 : 1)
                     .animation(.easeOut(duration: 0.2), value: isKeyboardVisible)
                 }
@@ -162,6 +168,19 @@ struct ContentView: View {
         // The keyboard covers the now-playing bar rather than pushing it up. Otherwise the bar's offset,
         // measured from this safe area, would include the keyboard: the bar would leave the screen and
         // the list would lose the room it needs to scroll.
+        .environment(\.launchRevealStart, revealStart)
+        // As the system's launch transition ends. It cross-fades from the launch screen into the app while
+        // zooming it, and runs on for about 0.2 seconds after the app becomes active. Started sooner, the
+        // cascade played under the zoom, which shows only the middle of the screen: patterns there rose
+        // first, enlarged, ahead of those above them. Never on the first frame, either, or there'd be
+        // nothing to animate from.
+        .task(id: scenePhase) {
+            guard scenePhase == .active, revealStart == nil else { return }
+            try? await Task.sleep(for: .milliseconds(220))
+            revealStart = .now
+            // Felt along with the wave on the first launch. Not with Reduce Motion, where there's no wave.
+            if !reduceMotion, model.claimLaunchRipple() { await LaunchRipple.play() }
+        }
         .ignoresSafeArea(.keyboard, edges: .bottom)
         .onGeometryChange(for: CGFloat.self) { $0.safeAreaInsets.bottom } action: { bottomInset = $0 }
         .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }

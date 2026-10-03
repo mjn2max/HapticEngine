@@ -273,6 +273,55 @@ final class NowPlayingBarUITests: XCTestCase {
         }
     }
 
+    /// At the full size there's no room for the patterns, so picking a filter steps the bar down to the
+    /// summary, showing the filter's patterns above it.
+    func testPickingAFilterAtTheFullSizeShowsTheSummary() {
+        relaunch(filter: "category.game")
+        app.buttons["pattern.coin"].tap()
+        header.tap()
+        settle()
+        let summaryTop = header.frame.minY
+        toggleFull.tap()
+        settle()
+        XCTAssertEqual(toggleFull.label, "Fewer Details")
+
+        app.buttons["filterButton"].tap()
+        let nature = app.buttons["Nature"].firstMatch
+        XCTAssertTrue(nature.waitForExistence(timeout: 2))
+        nature.tap()
+        settle()
+        attachScreenshot("filter picked at full size")
+        XCTAssertEqual(toggleFull.label, "More Details")
+        XCTAssertEqual(header.frame.minY, summaryTop, accuracy: 2)
+        // The new filter's patterns show, from the top, and can be tapped.
+        XCTAssertTrue(app.buttons["pattern.raindrop"].isHittable)
+    }
+
+    /// Pulled down on its details rather than its header, the full size shrinks to the summary, which
+    /// shows from its top: the description and timeline in full, the button that opens the rest below.
+    func testPullingTheFullDetailsDownShowsTheWholeSummary() {
+        relaunch(filter: "category.nature")
+        app.buttons["pattern.rain"].tap()
+        header.tap()
+        settle()
+        let summaryToggleTop = toggleFull.frame.minY
+        for (scrolled, fast) in [(false, false), (false, true), (true, false), (true, true)] {
+            toggleFull.tap()
+            settle()
+            if scrolled {
+                scrollDetails(by: -200, fast: false)
+                settle()
+            }
+            // Down on the details, past their top.
+            scrollDetails(by: scrolled ? 420 : 260, fast: fast)
+            settle()
+            let name = "\(scrolled ? "scrolled" : "at top"), \(fast ? "fast" : "slow")"
+            attachScreenshot(name)
+            XCTAssertEqual(toggleFull.label, "More Details", name)
+            XCTAssertEqual(toggleFull.frame.minY, summaryToggleTop, accuracy: 1, name)
+        }
+    }
+
     // MARK: Helpers
 
     private var header: XCUIElement { app.descendants(matching: .any)["nowPlaying"] }

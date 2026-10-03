@@ -76,6 +76,14 @@ final class HapticDemoModel {
         layout = preferences.layout
     }
 
+    /// Whether the launch reveal's haptic ripple should play: once, on the first launch, where haptics play.
+    /// Asking counts as playing it, so it never plays again.
+    func claimLaunchRipple() -> Bool {
+        guard isHapticsSupported, !preferences.hasFeltLaunchRipple else { return false }
+        preferences.hasFeltLaunchRipple = true
+        return true
+    }
+
     func isFavorite(_ pattern: HapticPattern) -> Bool {
         favorites.contains(pattern)
     }
