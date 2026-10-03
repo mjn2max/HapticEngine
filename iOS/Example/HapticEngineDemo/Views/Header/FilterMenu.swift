@@ -26,6 +26,9 @@ struct FilterMenu: View {
                 }
             }
             .pickerStyle(.palette)
+            // A palette stays open after a choice by default. Close it, as picking a filter does, so the
+            // new layout shows at once rather than behind the menu.
+            .menuActionDismissBehavior(.enabled)
 
             // All on its own at the top, then Favorites, then the categories: the way back is always first.
             // One picker per group, since a menu draws its separators between pickers, not inside one.

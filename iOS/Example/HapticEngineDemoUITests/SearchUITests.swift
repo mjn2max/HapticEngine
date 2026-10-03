@@ -207,7 +207,14 @@ final class SearchUITests: XCTestCase {
         app.buttons["Grid"].firstMatch.tap()
 
         XCTAssertTrue(description.waitForNonExistence(timeout: 2))
-        XCTAssertTrue(pattern("tick").exists)
+        XCTAssertTrue(app.buttons["Grid"].firstMatch.waitForNonExistence(timeout: 2), "The menu closes, as picking a filter does")
+        XCTAssertTrue(pattern("tick").isHittable, "The grid shows, not covered by the menu")
+
+        // And back to the list, which closes it too.
+        filterButton.tap()
+        app.buttons["List"].firstMatch.tap()
+        XCTAssertTrue(description.waitForExistence(timeout: 2))
+        XCTAssertTrue(app.buttons["List"].firstMatch.waitForNonExistence(timeout: 2))
     }
 
     func testTheMenuClosesWithItsButtonOrASwipeBack() {
