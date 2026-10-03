@@ -50,40 +50,63 @@ struct ActivityLogView: View {
         }
     }
 
+    /// Grouped by day under a header, as in Phone's Recents: saved for weeks, entries need a date, and a
+    /// time on every row says it once a row instead of once a day.
+    ///
+    /// Lazy row by row, so a log of a thousand entries opens as fast as one of three: each row draws its
+    /// own piece of its day's card, rather than a card holding every row.
     private var entryList: some View {
         let playingEntryID = model.nowPlaying?.entryID
+        let days = ActivityDay.group(model.log)
         return ScrollView {
-            VStack(spacing: 0) {
-                ForEach(model.log) { entry in
-                    SwipeToDelete(
-                        isOpen: Binding(
-                            get: { openEntryID == entry.id },
-                            set: { openEntryID = $0 ? entry.id : nil }
-                        ),
-                        onDelete: {
-                            withAnimation(.snappy) { model.deleteEntry(entry) }
-                        }
-                    ) {
-                        ActivityRow(
-                            entry: entry,
-                            isPlaying: playingEntryID == entry.id,
-                            onPlay: {
-                                // A tap on an open row closes it, rather than playing it by surprise.
-                                if openEntryID != nil {
-                                    openEntryID = nil
-                                } else {
-                                    model.replay(entry)
+            LazyVStack(spacing: 0) {
+                ForEach(days) { day in
+                    Section {
+                        ForEach(day.entries) { entry in
+                            let isLast = entry.id == day.entries.last?.id
+                            SwipeToDelete(
+                                isOpen: Binding(
+                                    get: { openEntryID == entry.id },
+                                    set: { openEntryID = $0 ? entry.id : nil }
+                                ),
+                                onDelete: {
+                                    withAnimation(.snappy) { model.deleteEntry(entry) }
+                                }
+                            ) {
+                                ActivityRow(
+                                    entry: entry,
+                                    isPlaying: playingEntryID == entry.id,
+                                    onPlay: {
+                                        // A tap on an open row closes it, rather than playing it by surprise.
+                                        if openEntryID != nil {
+                                            openEntryID = nil
+                                        } else {
+                                            model.replay(entry)
+                                        }
+                                    }
+                                )
+                            }
+                            .overlay(alignment: .bottom) {
+                                if !isLast {
+                                    Divider()
+                                        .padding(.leading, GroupedCard.dividerInset)
                                 }
                             }
-                        )
-                    }
-                    if entry.id != model.log.last?.id {
-                        Divider()
-                            .padding(.leading, GroupedCard.dividerInset)
+                            .groupedCardRow(isFirst: entry.id == day.entries.first?.id, isLast: isLast)
+                        }
+                    } header: {
+                        Text(day.title)
+                            .font(.footnote.weight(.semibold))
+                            .foregroundStyle(.secondary)
+                            .textCase(.uppercase)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.leading, 12)
+                            .padding(.top, day.id == days.first?.id ? 0 : 24)
+                            .padding(.bottom, 8)
+                            .accessibilityAddTraits(.isHeader)
                     }
                 }
             }
-            .groupedCard()
             .padding()
             .animation(.snappy, value: model.log.first?.id)
         }
@@ -248,6 +271,48 @@ private struct ActivityRow: View {
         .animation(.snappy, value: isPlaying)
         .accessibilityHint("Plays it again")
         .accessibilityValue(isPlaying ? "Playing" : "")
+    }
+}
+
+/// The entries played on one day, newest first, under a header naming the day.
+struct ActivityDay: Identifiable {
+    /// The day's first moment.
+    let id: Date
+    let entries: [HapticDemoModel.LogEntry]
+
+    /// "Today", "Yesterday", the weekday within the week, then the date.
+    var title: String { Self.title(for: id, now: .now) }
+
+    /// Splits a log, newest first, into days, newest first. The log is already in order, so each day
+    /// is a run of entries.
+    static func group(_ log: [HapticDemoModel.LogEntry], calendar: Calendar = .current) -> [ActivityDay] {
+        var days: [ActivityDay] = []
+        var current: (start: Date, entries: [HapticDemoModel.LogEntry])?
+        for entry in log {
+            let start = calendar.startOfDay(for: entry.date)
+            if current?.start == start {
+                current?.entries.append(entry)
+            } else {
+                if let current { days.append(ActivityDay(id: current.start, entries: current.entries)) }
+                current = (start, [entry])
+            }
+        }
+        if let current { days.append(ActivityDay(id: current.start, entries: current.entries)) }
+        return days
+    }
+
+    static func title(for day: Date, now: Date, calendar: Calendar = .current) -> String {
+        if calendar.isDate(day, inSameDayAs: now) { return String(localized: "Today") }
+        if let yesterday = calendar.date(byAdding: .day, value: -1, to: now), calendar.isDate(day, inSameDayAs: yesterday) {
+            return String(localized: "Yesterday")
+        }
+        if let weekAgo = calendar.date(byAdding: .day, value: -6, to: calendar.startOfDay(for: now)), day >= weekAgo {
+            return day.formatted(.dateTime.weekday(.wide))
+        }
+        let sameYear = calendar.isDate(day, equalTo: now, toGranularity: .year)
+        return sameYear
+            ? day.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day())
+            : day.formatted(.dateTime.month(.abbreviated).day().year())
     }
 }
 

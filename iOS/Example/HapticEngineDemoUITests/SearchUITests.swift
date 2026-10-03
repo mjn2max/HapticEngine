@@ -17,7 +17,7 @@ final class SearchUITests: XCTestCase {
         app = XCUIApplication()
         // A known starting point, whatever an earlier run saved: every pattern, as a list, no favorites.
         app.launchArguments = [
-            "-MockHaptics", "YES",
+            "-MockHaptics", "YES", "-ActivityInMemory", "YES",
             "-patternFilter", "all",
             "-patternLayout", "list",
             "-favorites", "()",
@@ -194,17 +194,41 @@ final class SearchUITests: XCTestCase {
 
     // MARK: Menu
 
-    func testTheMenuSwitchesLayout() {
+    func testTheFilterMenuSwitchesLayout() {
         // The list shows each pattern's description; the grid doesn't.
         let description = app.staticTexts["One light, crisp tap"]
         XCTAssertTrue(description.exists)
 
-        appMenu.tap()
-        attachScreenshot("menu")
+        filterButton.tap()
+        attachScreenshot("filter menu")
         app.buttons["Grid"].firstMatch.tap()
 
         XCTAssertTrue(description.waitForNonExistence(timeout: 2))
         XCTAssertTrue(pattern("tick").exists)
+    }
+
+    func testTheMenuClosesWithItsButtonOrASwipeBack() {
+        let close = app.buttons["menu.done"]
+        appMenu.tap()
+        XCTAssertTrue(close.waitForExistence(timeout: 2))
+        attachScreenshot("menu page")
+        close.tap()
+        XCTAssertTrue(close.waitForNonExistence(timeout: 2))
+
+        appMenu.tap()
+        XCTAssertTrue(close.waitForExistence(timeout: 2))
+        app.collectionViews.firstMatch.swipeLeft()
+        XCTAssertTrue(close.waitForNonExistence(timeout: 2))
+        XCTAssertTrue(appMenu.isHittable)
+    }
+
+    func testTheMenuCopiesThePackageURL() {
+        appMenu.tap()
+        let row = app.buttons["menu.package"]
+        XCTAssertTrue(row.waitForExistence(timeout: 2))
+        row.tap()
+        XCTAssertTrue(app.staticTexts["Copied. Paste it in Add Package Dependencies."].waitForExistence(timeout: 1))
+        attachScreenshot("package copied")
     }
 
     func testTheMenuOpensActivity() {
@@ -303,7 +327,7 @@ final class SearchUITests: XCTestCase {
 
     private func openActivity() {
         appMenu.tap()
-        let item = app.buttons["Activity"].firstMatch
+        let item = app.buttons["menu.activity"]
         XCTAssertTrue(item.waitForExistence(timeout: 2))
         item.tap()
         XCTAssertTrue(app.navigationBars["Activity"].waitForExistence(timeout: 2))

@@ -34,6 +34,20 @@ enum GroupedCard {
 }
 
 extension View {
+    /// Draws one row's piece of a `GroupedCard`: the card's corners on the first and last rows only. For
+    /// lazy lists, where a card holding all its rows would draw them all at once.
+    func groupedCardRow(isFirst: Bool, isLast: Bool) -> some View {
+        let radius = GroupedCard.cornerRadius
+        let shape = UnevenRoundedRectangle(
+            topLeadingRadius: isFirst ? radius : 0,
+            bottomLeadingRadius: isLast ? radius : 0,
+            bottomTrailingRadius: isLast ? radius : 0,
+            topTrailingRadius: isFirst ? radius : 0
+        )
+        return background(Color(.secondarySystemGroupedBackground), in: shape)
+            .clipShape(shape)
+    }
+
     /// Draws the view on a `GroupedCard`, clipping rows to its corners.
     func groupedCard() -> some View {
         background(Color(.secondarySystemGroupedBackground), in: .rect(cornerRadius: GroupedCard.cornerRadius))

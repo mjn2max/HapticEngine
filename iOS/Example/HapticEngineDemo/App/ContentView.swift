@@ -33,6 +33,8 @@ struct ContentView: View {
     @State private var isKeyboardVisible = false
     /// When the patterns and the bar started to animate in: see `LaunchReveal`. `nil` until then.
     @State private var revealStart: Date?
+    /// Whether the menu page covers the screen.
+    @State private var isMenuOpen = false
 
     private var isSearching: Bool {
         isSearchFieldOpen || !PatternSearch(query).isEmpty
@@ -85,9 +87,7 @@ struct ContentView: View {
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .topBarLeading) {
-                        AppMenu(layout: $model.layout, isActivityEnabled: model.isHapticsSupported) {
-                            path.append(.activity)
-                        }
+                        AppMenu(open: openMenu)
                     }
                     // Holds the title's place, so the bar shows no title of its own: the title draws over the
                     // bar, see below.
@@ -165,6 +165,15 @@ struct ContentView: View {
                     .animation(.easeOut(duration: 0.2), value: path.isEmpty)
             }
         }
+        // Over everything, the title and search controls included. Slides in from the edge its button is on.
+        .overlay {
+            if isMenuOpen {
+                MenuView(onClose: closeMenu)
+                    .transition(reduceMotion ? .opacity : .move(edge: .leading))
+                    .accessibilityAddTraits(.isModal)
+            }
+        }
+        .sensoryFeedback(.impact(weight: .light), trigger: isMenuOpen) { _, isOpen in isOpen }
         // The keyboard covers the now-playing bar rather than pushing it up. Otherwise the bar's offset,
         // measured from this safe area, would include the keyboard: the bar would leave the screen and
         // the list would lose the room it needs to scroll.
@@ -190,6 +199,27 @@ struct ContentView: View {
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
             isKeyboardVisible = false
         }
+    }
+}
+
+extension ContentView {
+    private static let menuAnimation = Animation.smooth(duration: 0.35)
+
+    private func openMenu() {
+        // The keyboard would stay up over the page.
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+        withAnimation(Self.menuAnimation) { isMenuOpen = true }
+    }
+
+    private func closeMenu(then action: MenuView.Action?) {
+        // Pushed at once, beneath the page, so it's uncovered as the page slides away rather than sliding
+        // in after it.
+        if action == .showActivity {
+            var transaction = Transaction()
+            transaction.disablesAnimations = true
+            withTransaction(transaction) { path.append(.activity) }
+        }
+        withAnimation(Self.menuAnimation) { isMenuOpen = false }
     }
 }
 

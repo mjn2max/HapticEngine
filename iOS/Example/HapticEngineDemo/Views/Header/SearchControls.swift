@@ -57,9 +57,10 @@ struct SearchControls: View {
     /// One capsule throughout: filter and search side by side, like the leading buttons, which stretches
     /// leftward into the field as the filter fades out.
     private var capsule: some View {
-        HStack(spacing: 0) {
+        @Bindable var model = model
+        return HStack(spacing: 0) {
             if !isOpen {
-                FilterMenu(selection: $filter, size: CGSize(width: Self.cellWidth, height: Self.size))
+                FilterMenu(selection: $filter, layout: $model.layout, size: CGSize(width: Self.cellWidth, height: Self.size))
                     .transition(.opacity)
             }
             Button {

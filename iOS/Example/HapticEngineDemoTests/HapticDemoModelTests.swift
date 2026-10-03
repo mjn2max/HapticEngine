@@ -85,10 +85,25 @@ struct HapticDemoModelTests {
 
     @Test func logKeepsTheNewestUpToItsLimit() {
         let model = makeModel()
-        let patterns = Array(HapticPattern.allCases.prefix(HapticDemoModel.logLimit + 5))
+        // Alternating, since playing the same pattern again isn't logged.
+        let patterns = (0..<HapticDemoModel.logLimit + 5).map { $0.isMultiple(of: 2) ? HapticPattern.tick : .coin }
         patterns.forEach(model.play)
         #expect(model.log.count == HapticDemoModel.logLimit)
         #expect(model.log.first?.pattern == patterns.last)
+    }
+
+    @Test func logIsSavedBetweenLaunches() throws {
+        let activity = ActivityStore.inMemory()
+        let model = HapticDemoModel(engine: engine, preferences: Preferences(defaults: defaults), activity: activity, playbackQueue: queue)
+        model.play(.tick)
+        model.play(.coin)
+        model.play(.rain)
+        model.deleteEntry(try #require(model.log.first { $0.pattern == .coin }))
+
+        let relaunched = HapticDemoModel(engine: engine, preferences: Preferences(defaults: defaults), activity: activity, playbackQueue: queue)
+        #expect(relaunched.log == model.log)
+        relaunched.clearLog()
+        #expect(activity.load().isEmpty)
     }
 
     @Test func replayPlaysWithoutLogging() throws {

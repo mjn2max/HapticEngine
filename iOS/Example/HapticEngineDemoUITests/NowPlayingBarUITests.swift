@@ -15,7 +15,7 @@ final class NowPlayingBarUITests: XCTestCase {
         continueAfterFailure = false
         app = XCUIApplication()
         app.launchArguments = [
-            "-MockHaptics", "YES",
+            "-MockHaptics", "YES", "-ActivityInMemory", "YES",
             "-patternFilter", "all",
             "-patternLayout", "list",
             "-favorites", "()",
@@ -167,7 +167,7 @@ final class NowPlayingBarUITests: XCTestCase {
 
     func testOpeningAndClosingLeavesAFilteredListInPlace() {
         app.terminate()
-        app.launchArguments = ["-MockHaptics", "YES", "-patternFilter", "category.game", "-patternLayout", "grid", "-favorites", "()"]
+        app.launchArguments = ["-MockHaptics", "YES", "-ActivityInMemory", "YES", "-patternFilter", "category.game", "-patternLayout", "grid", "-favorites", "()"]
         app.launch()
         let first = app.buttons["pattern.coin"]
         XCTAssertTrue(first.waitForExistence(timeout: 2))
@@ -349,7 +349,7 @@ final class NowPlayingBarUITests: XCTestCase {
 
     private func relaunch(filter: String, layout: String = "list") {
         app.terminate()
-        app.launchArguments = ["-MockHaptics", "YES", "-patternFilter", filter, "-patternLayout", layout, "-favorites", "()"]
+        app.launchArguments = ["-MockHaptics", "YES", "-ActivityInMemory", "YES", "-patternFilter", filter, "-patternLayout", layout, "-favorites", "()"]
         app.launch()
     }
 

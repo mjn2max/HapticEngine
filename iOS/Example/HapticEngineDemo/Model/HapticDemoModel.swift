@@ -12,10 +12,16 @@ import SwiftUI
 @Observable
 final class HapticDemoModel {
     /// A pattern the user switched to.
-    struct LogEntry: Identifiable {
-        let id = UUID()
-        let date = Date()
+    struct LogEntry: Identifiable, Equatable {
+        let id: UUID
+        let date: Date
         let pattern: HapticPattern
+
+        init(id: UUID = UUID(), date: Date = .now, pattern: HapticPattern) {
+            self.id = id
+            self.date = date
+            self.pattern = pattern
+        }
     }
 
     /// The pattern most recently played, while it's still playing.
@@ -33,10 +39,12 @@ final class HapticDemoModel {
     }
 
     /// The most entries the log keeps; the oldest go first.
-    static let logLimit = 50
+    static let logLimit = ActivityStore.limit
 
     private let engine: any HapticEngineProtocol
     private let preferences: Preferences
+    /// Where the log is saved between launches.
+    private let activity: ActivityStore
     /// Where patterns are handed to the engine. Off the main thread: starting the engine again after the
     /// system idled it can take long enough to drop frames just as a tapped pattern starts animating.
     /// Serial, so patterns still play in the order they were tapped.
@@ -55,7 +63,8 @@ final class HapticDemoModel {
         didSet { preferences.layout = layout }
     }
     /// Newest first. Only records a pattern when it differs from the one before, so replays don't add entries.
-    private(set) var log: [LogEntry] = []
+    /// Saved between launches.
+    private(set) var log: [LogEntry]
     private(set) var nowPlaying: Playback?
     /// Stays set after the pattern finishes, so its description can still be read.
     private(set) var lastPlayed: HapticPattern?
@@ -66,14 +75,18 @@ final class HapticDemoModel {
     init(
         engine: any HapticEngineProtocol = HapticEngine(),
         preferences: Preferences = Preferences(),
+        activity: ActivityStore? = nil,
         playbackQueue: DispatchQueue = DispatchQueue(label: "dev.codepassion.HapticEngineDemo.playback", qos: .userInteractive)
     ) {
         self.engine = engine
         self.preferences = preferences
+        // In memory unless given one, so tests and previews start empty and save nothing.
+        self.activity = activity ?? .inMemory()
         self.playbackQueue = playbackQueue
         favorites = preferences.favorites
         filter = preferences.filter
         layout = preferences.layout
+        log = self.activity.load()
     }
 
     /// Whether the launch reveal's haptic ripple should play: once, on the first launch, where haptics play.
@@ -99,8 +112,10 @@ final class HapticDemoModel {
     /// Plays a pattern chosen on the home screen, logging it if it differs from the last one logged.
     func play(_ pattern: HapticPattern) {
         if log.first?.pattern != pattern {
-            log.insert(LogEntry(pattern: pattern), at: 0)
+            let entry = LogEntry(pattern: pattern)
+            log.insert(entry, at: 0)
             if log.count > Self.logLimit { log.removeLast(log.count - Self.logLimit) }
+            activity.add(entry)
         }
         startPlayback(pattern, entryID: log.first?.id)
     }
@@ -131,9 +146,11 @@ final class HapticDemoModel {
 
     func deleteEntry(_ entry: LogEntry) {
         log.removeAll { $0.id == entry.id }
+        activity.delete(entry.id)
     }
 
     func clearLog() {
         log.removeAll()
+        activity.deleteAll()
     }
 }

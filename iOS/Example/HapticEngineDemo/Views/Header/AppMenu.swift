@@ -5,37 +5,25 @@
 
 import SwiftUI
 
-/// The menu at the leading edge of the navigation bar: how the patterns are laid out, and the screens
-/// beyond them. One button, so features can join it without crowding the bar.
+/// The button at the leading edge of the navigation bar, which opens the menu page: the layout, the
+/// screens beyond the patterns, and everything about the app. One button, so features can join the page
+/// without crowding the bar.
+///
+/// The page covers the whole screen, so `ContentView` shows it, over everything it draws.
 struct AppMenu: View {
-    @Binding var layout: PatternLayout
-    let isActivityEnabled: Bool
-    let showActivity: () -> Void
+    let open: () -> Void
 
     var body: some View {
-        Menu {
-            // A row of icons at the top, as in Files: switching layout is one tap once the menu is open.
-            Picker("View As", selection: $layout.animation(.easeOut(duration: 0.25))) {
-                ForEach(PatternLayout.allCases, id: \.self) { layout in
-                    Label(layout.title, systemImage: layout.systemImage)
-                }
-            }
-            .pickerStyle(.palette)
-
-            Section {
-                Button("Activity", systemImage: "clock.arrow.circlepath", action: showActivity)
-                    // Nothing can be played without haptic hardware, so there's no activity to show.
-                    .disabled(!isActivityEnabled)
-            }
-        } label: {
-            Label("Menu", systemImage: "line.3.horizontal")
-        }
-        .sensoryFeedback(.selection, trigger: layout)
-        .accessibilityIdentifier("appMenu")
+        Button("Menu", systemImage: "line.3.horizontal", action: open)
+            .accessibilityIdentifier("appMenu")
     }
 }
 
 #Preview {
-    @Previewable @State var layout = PatternLayout.grid
-    AppMenu(layout: $layout, isActivityEnabled: true) {}
+    NavigationStack {
+        Color.clear
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) { AppMenu {} }
+            }
+    }
 }
