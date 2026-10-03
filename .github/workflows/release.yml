@@ -1,8 +1,12 @@
 name: Release
 
-# Push a tag such as `0.2.0` (no `v` prefix) to release. The tag is the Swift package version; this workflow
-# checks the Android version matches, publishes the Android library to Maven Central, and creates the GitHub
-# release from CHANGELOG.md.
+# Push a tag such as `1.2.0` (no `v` prefix) to release. The tag is the Swift package version; this workflow
+# checks the Android version matches, tests both platforms, publishes the Android library to Maven Central,
+# and drafts the GitHub release from CHANGELOG.md.
+#
+# The tag itself releases the Swift package, so tag only a commit whose CI is green. The GitHub release is
+# a draft: publish it once the Maven Central deployment is released at central.sonatype.com, so both
+# platforms are announced together.
 #
 # Repository secrets:
 #   MAVEN_CENTRAL_USERNAME, MAVEN_CENTRAL_PASSWORD  A user token from central.sonatype.com
@@ -16,15 +20,46 @@ permissions:
   contents: write
 
 jobs:
+  # The same checks as the iOS workflow, on the tagged commit, so nothing is published if they fail.
+  ios:
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Unit tests
+        run: swift test
+
+      - name: Build library for each platform
+        run: |
+          for destination in \
+            'generic/platform=iOS' \
+            'generic/platform=iOS Simulator' \
+            'generic/platform=macOS,variant=Mac Catalyst' \
+            'generic/platform=tvOS'; do
+            xcodebuild build -scheme HapticEngine -destination "$destination" -quiet
+          done
+
   release:
+    needs: ios
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
 
-      - name: Check versions match the tag
+      - name: Check versions match the tag and signing is set up
+        env:
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
         run: |
           tag="${GITHUB_REF_NAME}"
+          if [ -z "$SIGNING_KEY" ]; then
+            echo "::error::The SIGNING_KEY secret is empty; Maven Central rejects unsigned uploads."
+            exit 1
+          fi
           android=$(grep '^VERSION_NAME=' Android/gradle.properties | cut -d= -f2)
           if [ "$android" != "$tag" ]; then
             echo "::error::Android/gradle.properties has VERSION_NAME=$android, but the tag is $tag."
@@ -56,7 +91,7 @@ jobs:
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_KEY_PASSWORD }}
         run: ./gradlew :hapticengine:publishToMavenCentral --no-configuration-cache
 
-      - name: Create GitHub release
+      - name: Draft GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -67,4 +102,4 @@ jobs:
             found && /^## \[/ { exit }
             found { print }
           ' CHANGELOG.md > notes.md
-          gh release create "$tag" --title "$tag" --notes-file notes.md
+          gh release create "$tag" --title "$tag" --notes-file notes.md --draft

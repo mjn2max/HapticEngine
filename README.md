@@ -5,7 +5,8 @@ A small haptics library for **iOS** and **Android** with the same API on both pl
 [`Vibrator`](https://developer.android.com/reference/android/os/Vibrator) /
 [`VibrationEffect`](https://developer.android.com/reference/android/os/VibrationEffect) on Android.
 
-> **Status:** pre-1.0. The API may change between minor versions until 1.0.0.
+> **Status:** 1.0. The public API follows [Semantic Versioning](https://semver.org/): it only breaks in a new
+> major version.
 
 ## Features
 
@@ -52,7 +53,7 @@ Or in `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/mjn2max/HapticEngine.git", from: "0.1.0"),
+    .package(url: "https://github.com/mjn2max/HapticEngine.git", from: "1.0.0"),
 ],
 targets: [
     .target(name: "MyApp", dependencies: ["HapticEngine"]),
@@ -61,11 +62,11 @@ targets: [
 
 ### Android: Maven Central
 
-Available from the first release (0.1.0). In your module's `build.gradle.kts`:
+In your module's `build.gradle.kts`:
 
 ```kotlin
 dependencies {
-    implementation("dev.codepassion:hapticengine:0.1.0")
+    implementation("dev.codepassion:hapticengine:1.0.0")
 }
 ```
 
@@ -91,6 +92,7 @@ haptics.startComplexHaptic() // shorthand for play(.complex); no-op without hapt
 ```kotlin
 import dev.codepassion.hapticengine.HapticEngine
 import dev.codepassion.hapticengine.HapticPattern
+import dev.codepassion.hapticengine.HapticUsage
 
 val haptics: HapticEngine = HapticEngine(context)
 
@@ -112,6 +114,7 @@ val alerts = HapticEngine(context, HapticUsage.Notification)
 | Hardware check | `isHapticsSupported: Bool` | `isHapticsSupported: Boolean` |
 | Vibration setting to follow | Not applicable | `HapticEngine(context, usage: HapticUsage)`, default `Touch` |
 | Play any pattern | `play(_: HapticPattern)` | `play(pattern: HapticPattern)` |
+| Stop the pattern playing | `stop()` | `stop()` |
 | Simple pattern | `startSimpleHaptic()` | `startSimpleHaptic()` |
 | Complex pattern | `startComplexHaptic()` | `startComplexHaptic()` |
 | Tick, success, warning, error | `startTickHaptic()`, `startSuccessHaptic()`, `startWarningHaptic()`, `startErrorHaptic()` | Same |
@@ -119,8 +122,9 @@ val alerts = HapticEngine(context, HapticUsage.Notification)
 | How long a pattern plays | `HapticPattern.duration: TimeInterval` (seconds) | `HapticPattern.durationMs: Long` |
 | A pattern's taps and holds | `HapticPattern.events: [HapticPatternEvent]` | Not yet |
 
-On both platforms an implementation only provides `isHapticsSupported` and `play`; the `start…Haptic()`
-shorthands come from a protocol extension on iOS and default interface methods on Android.
+On both platforms an implementation only provides `isHapticsSupported` and `play`; `stop()` (which does
+nothing by default) and the `start…Haptic()` shorthands come from a protocol extension on iOS and default
+interface methods on Android.
 
 For tests and previews, pass your own implementation of the protocol / interface.
 

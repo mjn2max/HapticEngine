@@ -195,3 +195,39 @@ class PrimitivesTest {
         )
     }
 }
+
+class PrimitiveDelaysTest {
+    private fun step(atMs: Long, primitive: Primitive = Primitive.Click) = PrimitiveStep(primitive, 1f, atMs)
+
+    @Test
+    fun delaysCountFromTheEndOfThePrimitiveBefore() {
+        val steps = listOf(step(0), step(100), step(250))
+        // Each click lasts 20 ms: 0, then 100 - 20, then 250 - 120.
+        assertEquals(listOf(0, 80, 130), HapticPatterns.primitiveDelays(steps) { 20 })
+    }
+
+    @Test
+    fun aPrimitiveEndingRightAtTheNextStepNeedsNoDelay() {
+        assertEquals(listOf(0, 0), HapticPatterns.primitiveDelays(listOf(step(0), step(100))) { 100 })
+    }
+
+    @Test
+    fun aPrimitiveLastingPastTheNextStepFallsBack() {
+        // A thud longer than the 100 ms between Simple's taps would push every later tap late.
+        val simple = HapticPatterns.primitives(HapticPattern.Simple)!!
+        assertNull(HapticPatterns.primitiveDelays(simple) { if (it == Primitive.Thud) 120 else 20 })
+    }
+
+    @Test
+    fun everyPatternKeepsItsTimingWithShortPrimitives() {
+        for (pattern in HapticPattern.entries) {
+            val steps = HapticPatterns.primitives(pattern) ?: continue
+            val delays = HapticPatterns.primitiveDelays(steps) { 20 }
+            assertTrue("$pattern fits 20 ms primitives", delays != null)
+            // Played back, each step starts exactly when the spec says.
+            var endMs = 0L
+            val starts = steps.zip(delays!!) { s, delay -> (endMs + delay).also { endMs = it + 20 } }
+            assertEquals("$pattern", steps.map { it.atMs }, starts)
+        }
+    }
+}

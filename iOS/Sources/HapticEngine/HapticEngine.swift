@@ -15,8 +15,8 @@ import os
 /// Create one instance and keep it for as long as you need haptics, for example
 /// in your app's model. On devices without haptic hardware every method is a no-op.
 ///
-/// Safe to share and call from any thread or actor: calls to ``play(_:)`` are serialized, so one
-/// always finishes stopping the previous pattern before the next starts.
+/// Safe to share and call from any thread or actor: calls to ``play(_:)`` and ``stop()`` are serialized,
+/// so one always finishes stopping the previous pattern before the next starts.
 ///
 /// ```swift
 /// let haptics = HapticEngine()
@@ -38,7 +38,7 @@ public final class HapticEngine: HapticEngineProtocol, @unchecked Sendable {
     /// The player for the last pattern played, kept so the next `play(_:)` can stop it. Guarded by `lock`.
     private var currentPlayer: CHHapticPatternPlayer?
 
-    /// Serializes `play(_:)`, so stopping the previous pattern and starting the next can't interleave, and
+    /// Serializes `play(_:)` and `stop()`, so stopping the previous pattern and starting the next can't interleave, and
     /// guards the pattern cache.
     private let lock = NSLock()
 
@@ -59,9 +59,7 @@ public final class HapticEngine: HapticEngineProtocol, @unchecked Sendable {
 
         guard let hapticPattern = hapticPattern(for: pattern) else { return }
 
-        // Throws if the player already finished or the engine was reset since; either way it's silent.
-        try? currentPlayer?.stop(atTime: CHHapticTimeImmediate)
-        currentPlayer = nil
+        stopCurrentPlayer()
 
         do {
             // Starting a running engine is a no-op; this also recovers after a stop or reset.
@@ -72,6 +70,23 @@ public final class HapticEngine: HapticEngineProtocol, @unchecked Sendable {
         } catch {
             Self.logger.error("Failed to play haptic pattern \(pattern.rawValue, privacy: .public): \(error.localizedDescription, privacy: .public)")
         }
+    }
+
+    /// Stops the pattern that is playing, if any.
+    public func stop() {
+        guard engine != nil else { return }
+
+        lock.lock()
+        defer { lock.unlock() }
+
+        stopCurrentPlayer()
+    }
+
+    /// Call with `lock` held.
+    private func stopCurrentPlayer() {
+        // Throws if the player already finished or the engine was reset since; either way it's silent.
+        try? currentPlayer?.stop(atTime: CHHapticTimeImmediate)
+        currentPlayer = nil
     }
 
     private static func makeEngine() -> CHHapticEngine? {

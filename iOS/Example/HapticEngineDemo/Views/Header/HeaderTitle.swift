@@ -37,7 +37,13 @@ struct HeaderTitle: View {
         }
         .animation(.snappy, value: filter)
         .sensoryFeedback(.selection, trigger: filter)
+        // It shares the bar's 44 points with the buttons, so it stops growing where the system's own
+        // inline titles do; past that, the title would run into the status bar and the count into the list.
+        .dynamicTypeSize(...HeaderTitle.largestTypeSize)
     }
+
+    /// The largest text the header's title and controls draw at.
+    static let largestTypeSize = DynamicTypeSize.xxLarge
 
     private var token: some View {
         let tint = filter.tint ?? .accentColor
@@ -65,6 +71,9 @@ struct HeaderTitle: View {
         }
         .buttonStyle(.plain)
         .padding(.vertical, -4)
+        .accessibilityShowsLargeContentViewer {
+            Label("\(filter.title) · \(count)", systemImage: filter.systemImage)
+        }
         .accessibilityLabel("Showing \(filter.title)")
         .accessibilityHint("Clears the filter to show all patterns")
         .accessibilityIdentifier("clearFilter")

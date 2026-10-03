@@ -14,18 +14,24 @@ struct PatternGrid: View {
     /// How many tiles fit across, for where each one comes in the launch wave: see `columnCount(width:)`.
     var columnCount = 1
     @Environment(HapticDemoModel.self) private var model
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
-    private static let minimumWidth: CGFloat = 100
     private static let spacing: CGFloat = 12
-    private let columns = [GridItem(.adaptive(minimum: Self.minimumWidth), spacing: Self.spacing)]
+
+    /// The narrowest a tile gets. Wider at accessibility sizes, so names fit two columns rather than being
+    /// cut short in three.
+    nonisolated static func minimumWidth(for typeSize: DynamicTypeSize) -> CGFloat {
+        typeSize.isAccessibilitySize ? 160 : 100
+    }
 
     /// How many tiles the grid fits across `width`, as its adaptive column does.
-    static func columnCount(width: CGFloat) -> Int {
-        max(Int((width + spacing) / (minimumWidth + spacing)), 1)
+    nonisolated static func columnCount(width: CGFloat, typeSize: DynamicTypeSize = .large) -> Int {
+        max(Int((width + spacing) / (minimumWidth(for: typeSize) + spacing)), 1)
     }
 
     var body: some View {
         let playing = model.nowPlaying?.pattern
+        let columns = [GridItem(.adaptive(minimum: Self.minimumWidth(for: dynamicTypeSize)), spacing: Self.spacing)]
         LazyVGrid(columns: columns, spacing: 12) {
             ForEach(Array(patterns.enumerated()), id: \.element) { offset, pattern in
                 PatternTile(pattern: pattern, isPlaying: pattern == playing, isFavorite: model.isFavorite(pattern))
@@ -44,6 +50,7 @@ private struct PatternTile: View {
     let isFavorite: Bool
 
     @Environment(HapticDemoModel.self) private var model
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         Button {
@@ -54,7 +61,8 @@ private struct PatternTile: View {
                 Text(pattern.title)
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(.primary)
-                    .lineLimit(1)
+                    .lineLimit(dynamicTypeSize.isAccessibilitySize ? 2 : 1)
+                    .multilineTextAlignment(.center)
                     .minimumScaleFactor(0.8)
             }
             .padding(.vertical, 14)
@@ -69,7 +77,7 @@ private struct PatternTile: View {
         .buttonStyle(CardPressStyle())
         .animation(.snappy, value: isPlaying)
         .accessibilityHint(pattern.subtitle)
-        .accessibilityValue(isPlaying ? "Playing" : "")
+        .accessibilityValue(PatternIcon.accessibilityValue(isPlaying: isPlaying, isFavorite: isFavorite))
         .patternActions(pattern, isFavorite: isFavorite)
     }
 }

@@ -44,6 +44,9 @@ struct FilterMenu: View {
         .tint(selection.tint ?? .primary)
         .sensoryFeedback(.selection, trigger: selection)
         .sensoryFeedback(.selection, trigger: layout)
+        .accessibilityShowsLargeContentViewer {
+            Label(selection.title, systemImage: selection.systemImage)
+        }
         .accessibilityLabel("Show")
         .accessibilityValue(selection.title)
         .accessibilityIdentifier("filterButton")

@@ -73,7 +73,9 @@ private struct PatternRow: View {
         }
         .buttonStyle(RowPressStyle())
         .animation(.snappy, value: isPlaying)
-        .accessibilityValue(isPlaying ? "Playing" : pattern.durationText)
+        .accessibilityValue(
+            PatternIcon.accessibilityValue(isPlaying: isPlaying, isFavorite: isFavorite, detail: pattern.durationText)
+        )
         .patternActions(pattern, isFavorite: isFavorite)
     }
 }

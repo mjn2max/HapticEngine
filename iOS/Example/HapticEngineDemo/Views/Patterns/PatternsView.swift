@@ -157,6 +157,7 @@ private struct PatternSections: View, Equatable {
     let showAll: () -> Void
 
     @Environment(HapticDemoModel.self) private var model
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     /// How many tiles the grid fits across, for where each one comes in the launch wave.
     @State private var columnCount = 1
 
@@ -181,7 +182,9 @@ private struct PatternSections: View, Equatable {
                         .launchReveal(row: rows.end)
                 }
             }
-            .onGeometryChange(for: Int.self) { PatternGrid.columnCount(width: $0.size.width) } action: {
+            .onGeometryChange(for: Int.self) { [dynamicTypeSize] in
+                PatternGrid.columnCount(width: $0.size.width, typeSize: dynamicTypeSize)
+            } action: {
                 columnCount = $0
             }
         }

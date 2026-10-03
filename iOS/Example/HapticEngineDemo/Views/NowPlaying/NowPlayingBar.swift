@@ -169,12 +169,15 @@ private struct MessageRow: View {
                 Text(message)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
-                    // One line, like the player, so every state is the same height.
-                    .lineLimit(dynamicTypeSize.isAccessibilitySize ? 3 : 1)
+                    // One line, like the player, so every state is the same height. Two at accessibility
+                    // sizes, which is all the tip needs, so it leaves the patterns most of the screen.
+                    .lineLimit(dynamicTypeSize.isAccessibilitySize ? 2 : 1)
                     .minimumScaleFactor(0.85)
             }
             Spacer(minLength: 0)
         }
+        // A tip, not content: past this it would take a third of the screen from the patterns.
+        .dynamicTypeSize(...DynamicTypeSize.accessibility2)
         .accessibilityElement(children: .combine)
     }
 }

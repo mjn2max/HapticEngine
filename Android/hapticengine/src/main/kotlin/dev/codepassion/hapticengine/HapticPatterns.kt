@@ -140,6 +140,24 @@ internal object HapticPatterns {
         }
     }
 
+    /**
+     * The delay before each step, each counted from the end of the primitive before, as
+     * `VibrationEffect.Composition.addPrimitive` takes them. `null` if a primitive lasts past the next
+     * step's start on this vibrator: the taps would then drift later than the spec and
+     * [HapticPattern.durationMs], so the pattern should play as a waveform instead.
+     *
+     * @param durationMs how long the vibrator plays each primitive.
+     */
+    fun primitiveDelays(steps: List<PrimitiveStep>, durationMs: (Primitive) -> Int): List<Int>? {
+        var previousEndMs = 0L
+        return steps.map { step ->
+            val delayMs = step.atMs - previousEndMs
+            if (delayMs < 0) return null
+            previousEndMs = step.atMs + durationMs(step.primitive)
+            delayMs.toInt()
+        }
+    }
+
     /** The pattern as a plain waveform, which every vibrator can play. */
     fun waveform(pattern: HapticPattern): Waveform {
         val events = events(pattern)

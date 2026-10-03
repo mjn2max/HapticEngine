@@ -40,6 +40,12 @@ struct LaunchRevealTests {
         #expect(PatternGrid.columnCount(width: width) == columns)
     }
 
+    /// Wider tiles at accessibility sizes: two across an iPhone, not three.
+    @Test(arguments: [(343, 2), (390, 2), (500, 2), (600, 3)])
+    func fitsFewerTilesAtAccessibilitySizes(width: Double, columns: Int) {
+        #expect(PatternGrid.columnCount(width: width, typeSize: .accessibility3) == columns)
+    }
+
     @Test func titledSectionsTakeHalfARowForTheTitleAndARowPerLineOfTiles() {
         let sections = [
             PatternSection(id: "a", title: "A", patterns: [.tick, .coin, .rain, .knock]),

@@ -74,8 +74,8 @@ jobs:
       - name: Unit tests
         run: swift test
 
-  # Reports public API changes against the latest release. Before 1.0 breaking changes are allowed, so it
-  # only reports them; from 1.0 on, it fails the pull request.
+  # Reports public API changes against the latest release. Breaking changes were allowed before 1.0, so
+  # against a 0.x release it only reports them; against 1.0 and later, it fails the pull request.
   api-breakage:
     if: github.event_name == 'pull_request'
     runs-on: macos-latest

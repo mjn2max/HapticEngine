@@ -21,12 +21,22 @@ struct HapticEngineTests {
         HapticEngine().play(pattern)
     }
 
+    @Test func stopsWithoutCrashing() {
+        let engine = HapticEngine()
+        // With nothing playing, then while a pattern plays.
+        engine.stop()
+        engine.play(.complex)
+        engine.stop()
+        engine.stop()
+    }
+
     @Test func canBeSharedAcrossTasks() async {
         // Compiles only because the engine is `Sendable`; on an iPhone the calls also race for real.
         let engine = HapticEngine()
         await withTaskGroup(of: Void.self) { group in
             for pattern in HapticPattern.allCases {
                 group.addTask { engine.play(pattern) }
+                group.addTask { engine.stop() }
             }
         }
     }
@@ -58,6 +68,14 @@ struct HapticEngineProtocolTests {
         spy.startPulseHaptic()
         // Shorthands exist for the ten patterns shared with Android.
         #expect(spy.played == sharedWithAndroid)
+    }
+
+    @Test func stopDefaultsToDoingNothing() {
+        // Types written before `stop()` existed still conform, and calling it is safe.
+        let spy = SpyEngine()
+        spy.play(.tick)
+        spy.stop()
+        #expect(spy.played == [.tick])
     }
 
     @Test func patternRawValuesAreStable() {

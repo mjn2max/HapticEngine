@@ -13,7 +13,7 @@
 ///
 /// Depend on this protocol rather than ``HapticEngine`` so you can substitute a
 /// mock in tests and SwiftUI previews, where haptic hardware is unavailable.
-/// A conforming type only needs ``isHapticsSupported`` and ``play(_:)``; the
+/// A conforming type only needs ``isHapticsSupported`` and ``play(_:)``; ``stop()`` and the
 /// `start…Haptic()` methods are provided for you.
 ///
 /// Conforming types are `Sendable`, so an engine can be shared across actors and tasks.
@@ -27,6 +27,17 @@ public protocol HapticEngineProtocol: Sendable {
     /// Plays a built-in pattern, stopping any pattern that is still playing.
     /// Does nothing when ``isHapticsSupported`` is `false`.
     func play(_ pattern: HapticPattern)
+
+    /// Stops the pattern that is playing, if any. Does nothing when no pattern is playing or
+    /// ``isHapticsSupported`` is `false`.
+    ///
+    /// Has a default implementation that does nothing, so mocks and other conforming types don't
+    /// need to implement it.
+    func stop()
+}
+
+public extension HapticEngineProtocol {
+    func stop() {}
 }
 
 // Shorthands for each pattern. Android's `HapticEngine` interface has the same ones, as default methods.

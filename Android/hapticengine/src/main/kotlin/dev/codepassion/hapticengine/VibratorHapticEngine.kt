@@ -45,6 +45,10 @@ internal class VibratorHapticEngine(context: Context, usage: HapticUsage) : Hapt
         }
     }
 
+    override fun stop() {
+        if (isHapticsSupported) vibrator.cancel()
+    }
+
     private fun makeEffect(pattern: HapticPattern): VibrationEffect {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             HapticPatterns.primitives(pattern)?.let { steps -> composition(steps)?.let { return it } }
@@ -54,7 +58,8 @@ internal class VibratorHapticEngine(context: Context, usage: HapticUsage) : Hapt
 
     /**
      * Haptic primitives, for crisp taps close to iOS. `null` if the vibrator can't play every primitive
-     * the pattern needs, so the pattern falls back to a waveform as a whole rather than playing partly.
+     * the pattern needs, or plays one too long to keep the pattern's timing, so the pattern falls back to
+     * a waveform as a whole rather than playing partly or late.
      */
     // The IDs always come from `Primitive.id`, which returns only `PRIMITIVE_*` constants; lint can't follow
     // them through a list.
@@ -64,14 +69,11 @@ internal class VibratorHapticEngine(context: Context, usage: HapticUsage) : Hapt
         val ids = steps.map { it.primitive.id }.distinct().toIntArray()
         if (!vibrator.areAllPrimitivesSupported(*ids)) return null
         val durations = ids.zip(vibrator.getPrimitiveDurations(*ids).toList()).toMap()
+        val delays = HapticPatterns.primitiveDelays(steps) { durations.getValue(it.id) } ?: return null
 
         val composition = VibrationEffect.startComposition()
-        var previousEndMs = 0L
-        for (step in steps) {
-            // A primitive's delay counts from the end of the one before, not from the start of the pattern.
-            val delayMs = (step.atMs - previousEndMs).coerceAtLeast(0)
-            composition.addPrimitive(step.primitive.id, step.scale.coerceIn(0f, 1f), delayMs.toInt())
-            previousEndMs += delayMs + durations.getValue(step.primitive.id)
+        steps.zip(delays) { step, delayMs ->
+            composition.addPrimitive(step.primitive.id, step.scale.coerceIn(0f, 1f), delayMs)
         }
         return composition.compose()
     }

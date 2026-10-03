@@ -18,6 +18,12 @@ android {
         // VibrationEffect with per-step amplitudes requires API 26.
         minSdk = 26
         consumerProguardFiles("consumer-rules.pro")
+
+        // Compiling against 36.1 would otherwise make every app compile against it too. The library
+        // uses nothing newer than `VibrationAttributes`, from API 33.
+        aarMetadata {
+            minCompileSdk = 33
+        }
     }
 
     compileOptions {

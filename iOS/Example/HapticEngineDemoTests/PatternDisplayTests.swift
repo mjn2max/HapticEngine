@@ -52,4 +52,13 @@ struct PatternDisplayTests {
         #expect(HapticPattern.success.durationText == "150 ms")
         #expect(HapticPattern.complex.durationText == 6.formatted(.number.precision(.fractionLength(0...1))) + " s")
     }
+
+    /// VoiceOver reads this after the name, in place of the hidden icon.
+    @Test func accessibilityValueSaysWhatTheIconShows() {
+        #expect(PatternIcon.accessibilityValue(isPlaying: false, isFavorite: false) == "")
+        #expect(PatternIcon.accessibilityValue(isPlaying: true, isFavorite: false) == "Playing")
+        #expect(PatternIcon.accessibilityValue(isPlaying: true, isFavorite: true) == "Favorite, Playing")
+        #expect(PatternIcon.accessibilityValue(isPlaying: false, isFavorite: true, detail: "150 ms") == "Favorite, 150 ms")
+        #expect(PatternIcon.accessibilityValue(isPlaying: true, isFavorite: false, detail: "150 ms") == "Playing")
+    }
 }

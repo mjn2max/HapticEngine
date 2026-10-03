@@ -48,6 +48,9 @@ struct SearchControls: View {
                 }
             }
         }
+        // Sized to the bar, like the system's bar buttons: at the largest text sizes, touching and holding
+        // a button shows it enlarged instead.
+        .dynamicTypeSize(...HeaderTitle.largestTypeSize)
         // Playing a result puts the keyboard away, so the now-playing bar can show it.
         .onChange(of: model.nowPlaying?.id) { _, playing in
             if playing != nil { isFocused = false }
@@ -75,6 +78,7 @@ struct SearchControls: View {
             }
             .buttonStyle(.plain)
             .accessibilityLabel("Search")
+            .accessibilityShowsLargeContentViewer()
             .accessibilityIdentifier(isOpen ? "" : "searchButton")
             .accessibilityHidden(isOpen)
             if isOpen {

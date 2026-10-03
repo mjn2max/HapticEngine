@@ -6,7 +6,7 @@ import android.content.Context
  * Plays the library's haptic patterns. Mirrors `HapticEngineProtocol` on iOS.
  *
  * Depend on this interface rather than the default engine so you can substitute a fake in tests and
- * Compose previews. An implementation only needs [isHapticsSupported] and [play]; the
+ * Compose previews. An implementation only needs [isHapticsSupported] and [play]; [stop] and the
  * `start…Haptic()` shorthands are provided for you.
  */
 public interface HapticEngine {
@@ -18,6 +18,14 @@ public interface HapticEngine {
      * Does nothing when [isHapticsSupported] is `false`.
      */
     public fun play(pattern: HapticPattern)
+
+    /**
+     * Stops the pattern that is playing, if any. Does nothing when no pattern is playing or
+     * [isHapticsSupported] is `false`.
+     *
+     * Does nothing by default, so fakes and other implementations don't need to override it.
+     */
+    public fun stop() {}
 
     /** Plays [HapticPattern.Simple]. */
     public fun startSimpleHaptic(): Unit = play(HapticPattern.Simple)

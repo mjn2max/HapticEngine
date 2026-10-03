@@ -28,6 +28,15 @@ class HapticEngineTest {
         spy.startPulseHaptic()
         assertEquals(HapticPattern.entries, spy.played)
     }
+
+    @Test
+    fun stopDefaultsToDoingNothing() {
+        // Implementations written before `stop()` existed still compile, and calling it is safe.
+        val spy = SpyEngine()
+        spy.play(HapticPattern.Tick)
+        spy.stop()
+        assertEquals(listOf(HapticPattern.Tick), spy.played)
+    }
 }
 
 class HapticUsageTest {

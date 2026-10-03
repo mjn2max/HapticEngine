@@ -6,10 +6,16 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-10-03
+
 ### Added
+- `stop()` on both platforms, to stop the pattern that is playing. It has a default implementation that
+  does nothing, so existing conforming types and fakes keep compiling.
 - iOS: 90 more patterns, for 100 in all: feedback, alerts, rhythm, texture, nature, mechanical and game
   patterns such as `toggleOn`, `alarm`, `drumroll`, `purr`, `thunder`, `typewriter` and `coin`. They
   are iOS only for now; play them with `play(_:)`.
+- Android: apps can compile against SDK 33 or later; the library no longer asks for the SDK it was built
+  with (36.1).
 - iOS demo: redesigned for 100 patterns. Search them all from the navigation bar, filter by category
   from a menu beside search, and star favorites from a pattern's context menu or the now-playing card.
   The filter, layout and favorites are remembered. The now-playing card moved to the bottom, and the
@@ -87,3 +93,6 @@ All notable changes to this project are documented here. The format follows
 
 ### Removed
 - watchOS support. Core Haptics isn't available there, so the package doesn't build for watchOS.
+
+[Unreleased]: https://github.com/mjn2max/HapticEngine/compare/1.0.0...HEAD
+[1.0.0]: https://github.com/mjn2max/HapticEngine/releases/tag/1.0.0

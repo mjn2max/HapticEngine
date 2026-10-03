@@ -105,6 +105,8 @@ final class SearchUITests: XCTestCase {
     func testTappingTheFieldAfterScrollingBringsTheKeyboardBack() {
         openSearch()
         searchField.typeText("tap")
+        // Scrolled before the results settle, the drag can land on the old list and not count as a scroll.
+        XCTAssertTrue(pattern("tick").waitForExistence(timeout: 2))
         scrollList(.up)
         XCTAssertTrue(keyboard.waitForNonExistence(timeout: 2))
 
@@ -158,6 +160,7 @@ final class SearchUITests: XCTestCase {
         openSearch()
         XCTAssertFalse(filterButton.exists)
         searchField.typeText("tap")
+        XCTAssertTrue(pattern("tick").waitForExistence(timeout: 2))
         scrollList(.up)
         XCTAssertTrue(keyboard.waitForNonExistence(timeout: 2))
         XCTAssertFalse(filterButton.exists, "Results ignore the filter, so it isn't offered")
@@ -315,7 +318,9 @@ final class SearchUITests: XCTestCase {
         let (from, to): (CGFloat, CGFloat) = direction == .up ? (0.5, 0.2) : (0.2, 0.5)
         let start = list.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: from))
         let end = list.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: to))
-        start.press(forDuration: 0.05, thenDragTo: end)
+        // Fast, as a real flick is: on iOS 27 a slow drag doesn't always count as a scroll that dismisses
+        // the keyboard, which made the keyboard tests flaky.
+        start.press(forDuration: 0.05, thenDragTo: end, withVelocity: .fast, thenHoldForDuration: 0)
     }
 
     private func pickFilter(_ title: String) {

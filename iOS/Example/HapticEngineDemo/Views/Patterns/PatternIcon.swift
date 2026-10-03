@@ -35,6 +35,20 @@ struct PatternIcon: View {
             .animation(.snappy, value: isFavorite)
             // Lands just after its pattern as the home screen first appears, star and all.
             .launchRevealAccent()
+            // Decoration: the row or tile around it names the pattern and says it's a favorite. Read out,
+            // the symbol's own name would follow the pattern's, as "Selected" for Success.
+            .accessibilityHidden(true)
+    }
+}
+
+extension PatternIcon {
+    /// What VoiceOver says after a pattern's name, for the star and the playing state the hidden icon
+    /// shows: such as "Favorite, Playing", or "Favorite, 150 ms" in the list.
+    nonisolated static func accessibilityValue(isPlaying: Bool, isFavorite: Bool, detail: String? = nil) -> String {
+        let state = isPlaying ? String(localized: "Playing") : detail
+        return [isFavorite ? String(localized: "Favorite") : nil, state]
+            .compactMap { $0 }
+            .joined(separator: ", ")
     }
 }
 
