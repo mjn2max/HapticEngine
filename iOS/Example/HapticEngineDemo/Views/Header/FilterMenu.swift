@@ -3,6 +3,7 @@
 // HapticEngineDemo
 //
 
+import HapticEngine
 import SwiftUI
 
 /// Chooses what the browser shows and how, from the toolbar beside search. Shows the selected filter's
@@ -34,7 +35,9 @@ struct FilterMenu: View {
             // One picker per group, since a menu draws its separators between pickers, not inside one.
             filterPicker([.all])
             filterPicker([.favorites])
-            filterPicker(PatternFilter.allFilters.filter { $0 != .all && $0 != .favorites })
+            // The hand-built groups, then the ten families: seventeen in one run were hard to scan.
+            filterPicker(HapticPattern.Category.handWritten.map(PatternFilter.category))
+            filterPicker(HapticPattern.Category.families.map(PatternFilter.category))
         } label: {
             Image(systemName: selection.systemImage)
                 .imageScale(.large)

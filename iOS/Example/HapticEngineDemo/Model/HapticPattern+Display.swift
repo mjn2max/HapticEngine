@@ -15,21 +15,15 @@ extension HapticPattern {
 
     var systemImage: String { details.symbol }
 
-    /// `duration` for display, such as "Instant", "250 ms" or "6 s". Formatted once per pattern: every
-    /// row shows it.
-    var durationText: String { Self.durationTexts[self, default: ""] }
-
-    private static let durationTexts: [HapticPattern: String] = Dictionary(
-        uniqueKeysWithValues: allCases.map { pattern in
-            let duration = pattern.duration
-            let text = switch duration {
-            case ..<0.05: "Instant"
-            case ..<1: "\(Int((duration * 1000).rounded())) ms"
-            default: "\(duration.formatted(.number.precision(.fractionLength(0...1)))) s"
-            }
-            return (pattern, text)
+    /// `duration` for display, such as "Instant", "250 ms" or "6 s". Formatted as each row asks: the library
+    /// keeps each pattern's duration once it's built, and formatting all thousand up front built them all.
+    var durationText: String {
+        switch duration {
+        case ..<0.05: "Instant"
+        case ..<1: "\(Int((duration * 1000).rounded())) ms"
+        default: "\(duration.formatted(.number.precision(.fractionLength(0...1)))) s"
         }
-    )
+    }
 
     /// The original ten keep their own colors, with feedback in traffic-light colors. The rest take their
     /// category's color, so related patterns read as a group.
@@ -55,9 +49,29 @@ extension HapticPattern {
         let symbol: String
     }
 
-    // One row per pattern, so each is described in one place and a new pattern can't be missed.
+    /// A family pattern's description, written by `iOS/Scripts/GeneratePatterns.swift` into
+    /// `HapticPattern+Families.swift`.
+    struct FamilyDetails {
+        let title: String
+        let subtitle: String
+        let symbol: String
+        let category: Category
+
+        init(_ title: String, _ subtitle: String, _ symbol: String, _ category: Category) {
+            self.title = title
+            self.subtitle = subtitle
+            self.symbol = symbol
+            self.category = category
+        }
+    }
+
+    // One row per hand-written pattern, so each is described in one place and a new one can't be missed.
+    // The 900 family patterns are described by the generator instead.
     private var details: Details {
-        switch self {
+        if let family = familyDetails {
+            return Details(title: family.title, subtitle: family.subtitle, symbol: family.symbol)
+        }
+        return switch self {
         case .simple: Details(title: "Simple", subtitle: "Sharp tap, then a rising ramp of taps", symbol: "hand.tap")
         case .complex: Details(title: "Complex", subtitle: "Medium, hard, soft, hard over 6 seconds", symbol: "waveform.path")
         case .tick: Details(title: "Tick", subtitle: "One light, crisp tap", symbol: "hand.point.up")
@@ -165,12 +179,14 @@ extension HapticPattern {
         case .shield: Details(title: "Shield", subtitle: "A shimmering hold between two taps", symbol: "shield")
         case .gameOver: Details(title: "Game Over", subtitle: "Four falling taps and a low fade", symbol: "gamecontroller")
         case .victory: Details(title: "Victory", subtitle: "Three quick taps and a triumphant hold", symbol: "trophy")
+        default: preconditionFailure("\(self) isn't described")
         }
     }
 
     /// The section the demo lists the pattern under.
     var category: Category {
-        switch self {
+        if let family = familyDetails { return family.category }
+        return switch self {
         case .tick, .success, .warning, .error,
              .selection, .lightImpact, .mediumImpact, .heavyImpact, .softImpact, .rigidImpact,
              .toggleOn, .toggleOff, .buttonPress, .longPress, .dragStart, .drop,
@@ -196,6 +212,7 @@ extension HapticPattern {
         case .coin, .powerUp, .levelUp, .jump, .landing, .hit,
              .criticalHit, .explosion, .laser, .shield, .gameOver, .victory:
             .game
+        default: preconditionFailure("\(self) has no category")
         }
     }
 
@@ -217,6 +234,33 @@ extension HapticPattern {
         /// Game events.
         case game
 
+        // The ten families, ninety patterns each: a variant at nine levels.
+
+        /// A hit on a material, from feather-light to crushing.
+        case impacts
+        /// Two to eleven taps, from a lazy pace to a rapid one.
+        case tapCounts
+        /// Attention signals, from calm to critical.
+        case signals
+        /// One bar of a meter, from 60 to 180 beats per minute.
+        case meters
+        /// A finger drawn across a surface, from a crawl to a rush.
+        case surfaces
+        /// Waveforms, from one cycle to five.
+        case waves
+        /// Changes in strength or sharpness, from 0.2 to 1.8 seconds.
+        case dynamics
+        /// Weather and water, from faint to extreme.
+        case weather
+        /// Machines running, from idle to the redline.
+        case machines
+        /// Game actions, from tiny to epic.
+        case arcade
+
+        /// The seven groups of the hundred patterns built by hand, then the ten families.
+        static let handWritten: [Category] = [.feedback, .alerts, .rhythm, .texture, .nature, .mechanical, .game]
+        static var families: [Category] { allCases.filter { !handWritten.contains($0) } }
+
         var title: String {
             switch self {
             case .feedback: "Feedback"
@@ -226,6 +270,16 @@ extension HapticPattern {
             case .nature: "Nature"
             case .mechanical: "Mechanical"
             case .game: "Game"
+            case .impacts: "Impacts"
+            case .tapCounts: "Tap Counts"
+            case .signals: "Signals"
+            case .meters: "Meters"
+            case .surfaces: "Surfaces"
+            case .waves: "Waves"
+            case .dynamics: "Dynamics"
+            case .weather: "Weather"
+            case .machines: "Machines"
+            case .arcade: "Arcade"
             }
         }
 
@@ -238,6 +292,16 @@ extension HapticPattern {
             case .nature: "leaf"
             case .mechanical: "gearshape"
             case .game: "gamecontroller"
+            case .impacts: "hammer"
+            case .tapCounts: "number"
+            case .signals: "antenna.radiowaves.left.and.right"
+            case .meters: "music.note"
+            case .surfaces: "hand.draw"
+            case .waves: "waveform.path"
+            case .dynamics: "chart.line.uptrend.xyaxis"
+            case .weather: "cloud.sun"
+            case .machines: "wrench.and.screwdriver"
+            case .arcade: "arcade.stick"
             }
         }
 
@@ -250,6 +314,16 @@ extension HapticPattern {
             case .nature: .green
             case .mechanical: .gray
             case .game: .indigo
+            case .impacts: .brown
+            case .tapCounts: .blue
+            case .signals: .red
+            case .meters: .mint
+            case .surfaces: .orange
+            case .waves: .cyan
+            case .dynamics: .purple
+            case .weather: .green
+            case .machines: .gray
+            case .arcade: .indigo
             }
         }
 

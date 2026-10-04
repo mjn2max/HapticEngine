@@ -80,7 +80,7 @@ struct HapticEngineProtocolTests {
 
     @Test func patternRawValuesAreStable() {
         // Raw values appear in logs and may be persisted by apps, so renaming a case must be deliberate.
-        #expect(HapticPattern.allCases.map(\.rawValue) == [
+        #expect(HapticPattern.allCases.prefix(100).map(\.rawValue) == [
             // Shared with Android
             "simple", "complex", "tick", "success", "warning",
             "error", "heartbeat", "knock", "rumble", "pulse",
@@ -109,7 +109,50 @@ struct HapticEngineProtocolTests {
         ])
     }
 
-    @Test func hasOneHundredPatterns() {
-        #expect(HapticPattern.allCases.count == 100)
+    @Test func familyRawValuesAreStable() {
+        // The 900 family patterns' names, all at once: any rename changes this. If one was meant, update it
+        // to the value the failure shows, and note the rename in CHANGELOG.md.
+        let names = HapticPattern.allCases.dropFirst(100).map(\.rawValue).joined(separator: ",")
+        #expect(fingerprint(names) == 12_892_458_424_837_815_209)
+        // And the ends of each family, readably.
+        let families = Array(HapticPattern.allCases.dropFirst(100)).chunked(into: 90)
+        #expect(families.map { [$0.first!.rawValue, $0.last!.rawValue] } == [
+            ["featherWoodHit", "crushingCeramicHit"],
+            ["twoTapsLazy", "elevenTapsRapid"],
+            ["calmPing", "criticalHorn"],
+            ["marchLargo", "bossaNovaPresto"],
+            ["crawlOverSand", "rushOverCarpet"],
+            ["glacialSwell", "franticWobble"],
+            ["flashCrescendo", "sustainedPlateau"],
+            ["faintDrizzle", "extremeSleet"],
+            ["idleMotor", "redlineSewingMachine"],
+            ["tinyJump", "epicShield"],
+        ])
+    }
+
+    @Test func hasOneThousandPatterns() {
+        #expect(HapticPattern.allCases.count == 1000)
+    }
+
+    @Test func theHandWrittenHundredComeFirstThenTheFamiliesInOrder() {
+        #expect(HapticPattern.allCases.prefix(100).allSatisfy { $0.variant == nil })
+        // Family by family, each variant through its nine levels, as the generator writes them.
+        let expected = PatternFamily.allCases.flatMap { family in
+            (0..<PatternFamily.variantCount).flatMap { variant in
+                (0..<PatternFamily.levelCount).map { PatternVariant(family, variant, $0) }
+            }
+        }
+        #expect(HapticPattern.allCases.dropFirst(100).map(\.variant) == expected)
+    }
+
+    /// FNV-1a: stable across runs and platforms, unlike `hashValue`.
+    private func fingerprint(_ text: String) -> UInt64 {
+        text.utf8.reduce(0xcbf2_9ce4_8422_2325) { ($0 ^ UInt64($1)) &* 0x100_0000_01b3 }
+    }
+}
+
+private extension Array {
+    func chunked(into size: Int) -> [[Element]] {
+        stride(from: 0, to: count, by: size).map { Array(self[$0..<Swift.min($0 + size, count)]) }
     }
 }

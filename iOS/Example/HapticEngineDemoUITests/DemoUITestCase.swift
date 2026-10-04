@@ -71,13 +71,19 @@ class DemoUITestCase: XCTestCase {
     @discardableResult
     func reveal(_ rawValue: String, file: StaticString = #filePath, line: UInt = #line) -> XCUIElement {
         let button = pattern(rawValue)
-        // Down the list first, then back up: the pattern may be above where the list was left.
-        for distance: CGFloat in [-220, 220] {
+        // Up the list, then down: the hundred built by hand, which tests use, are near the top, and at the
+        // top the first scroll finds the edge. Each way stops at the list's edge, found when a scroll no
+        // longer changes which patterns are laid out: a thousand patterns are too many to cross blindly.
+        let patterns = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'pattern.'"))
+        func laidOut() -> [String] { patterns.allElementsBoundByIndex.map(\.identifier) }
+        for distance: CGFloat in [220, -220] {
             var scrolls = 0
-            while !(button.exists && button.isHittable) && scrolls < 25 {
+            while !(button.exists && button.isHittable) && scrolls < 80 {
+                let before = laidOut()
                 let start = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: distance < 0 ? 0.45 : 0.25))
                 start.press(forDuration: 0.05, thenDragTo: start.withOffset(CGVector(dx: 0, dy: distance)), withVelocity: .fast, thenHoldForDuration: 0.1)
                 scrolls += 1
+                if !button.exists, laidOut() == before { break }
             }
         }
         XCTAssertTrue(button.isHittable, "pattern.\(rawValue) scrolled into view", file: file, line: line)

@@ -57,7 +57,7 @@ struct ActivityLogView: View {
     /// own piece of its day's card, rather than a card holding every row.
     private var entryList: some View {
         let playingEntryID = model.nowPlaying?.entryID
-        let days = ActivityDay.group(model.log)
+        let days = model.logDays
         return ScrollView {
             LazyVStack(spacing: 0) {
                 ForEach(days) { day in

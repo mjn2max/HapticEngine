@@ -16,7 +16,7 @@ struct PatternGrid: View {
     @Environment(HapticDemoModel.self) private var model
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
-    private static let spacing: CGFloat = 12
+    nonisolated private static let spacing: CGFloat = 12
 
     /// The narrowest a tile gets. Wider at accessibility sizes, so names fit two columns rather than being
     /// cut short in three.
@@ -50,7 +50,6 @@ private struct PatternTile: View {
     let isFavorite: Bool
 
     @Environment(HapticDemoModel.self) private var model
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         Button {
@@ -61,7 +60,9 @@ private struct PatternTile: View {
                 Text(pattern.title)
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(.primary)
-                    .lineLimit(dynamicTypeSize.isAccessibilitySize ? 2 : 1)
+                    // Two lines, kept even when one is enough, so every tile is one height: family names
+                    // such as "Seven Taps, Steady" were cut short on one.
+                    .lineLimit(2, reservesSpace: true)
                     .multilineTextAlignment(.center)
                     .minimumScaleFactor(0.8)
             }

@@ -69,8 +69,8 @@ struct PatternCatalogTests {
     }
 
     @Test func searchLooksBeyondTheFilter() {
-        #expect(patterns(sections(.favorites, query: "thunder")) == [.thunder])
-        #expect(patterns(sections(.category(.game), query: "thunder")) == [.thunder])
+        #expect(patterns(sections(.favorites, query: "thunder")).contains(.thunder))
+        #expect(patterns(sections(.category(.game), query: "thunder")).contains(.thunder))
     }
 
     @Test func searchWithNoMatchesShowsNothing() {

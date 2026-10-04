@@ -7,6 +7,7 @@
 //
 
 import CoreHaptics
+import Foundation
 
 /// The events that make up each ``HapticPattern``.
 ///
@@ -27,7 +28,9 @@ enum HapticPatterns {
 
     /// The only way in, so playback and tests always build patterns the same way.
     static func events(for pattern: HapticPattern) -> [CHHapticEvent] {
-        switch pattern {
+        // The 900 family patterns are built from their place in their family: see `PatternFamilies.swift`.
+        if let variant = pattern.variant { return events(for: variant) }
+        return switch pattern {
         case .simple: simple()
         case .complex: complex()
         case .tick: tick()
@@ -181,21 +184,20 @@ enum HapticPatterns {
         case .victory:
             taps(at: times(3, every: 0.12), intensities: [0.7], sharpness: 0.8)
                 + [tap(1, 1, at: 0.45), hold(0.8, 0.6, at: 0.45, for: 0.5)]
+
+        // The family patterns returned above; a hand-written case that reaches here is missing its events.
+        default: preconditionFailure("\(pattern) has no events")
         }
     }
 
-    /// Each pattern's events in their public form, worked out once.
-    static let publicEvents: [HapticPattern: [HapticPatternEvent]] = Dictionary(
-        uniqueKeysWithValues: HapticPattern.allCases.map { pattern in
-            (pattern, events(for: pattern).map(HapticPatternEvent.init))
-        }
-    )
-
-    /// How long each pattern plays, worked out once from its events so it can't drift from them.
-    /// From `publicEvents`, so the events are built once for both.
-    static let durations: [HapticPattern: TimeInterval] = publicEvents.mapValues { events in
-        events.map { $0.time + $0.duration }.max() ?? 0
+    /// A pattern's events in their public form, and how long it plays, worked out from those events so the
+    /// two can't drift apart. Each pattern's the first time it's asked for, then kept: building them all at
+    /// once made the first `duration` read build every pattern there is.
+    static func info(for pattern: HapticPattern) -> PatternInfo {
+        infoCache.info(for: pattern)
     }
+
+    private static let infoCache = PatternInfoCache()
 
     /// A full-strength tap, then taps every 100 ms rising from 10% to 90% strength.
     private static func simple() -> [CHHapticEvent] {
@@ -329,7 +331,7 @@ enum HapticPatterns {
     }
 
     /// Back-to-back holds stepping evenly from one intensity to another, since an event's intensity is fixed.
-    private static func ramp(
+    static func ramp(
         from start: Float,
         to end: Float,
         sharpness: Float,
@@ -347,7 +349,7 @@ enum HapticPatterns {
     }
 
     /// `count` back-to-back holds of `each` seconds, cycling through `intensities` and `sharpnesses`.
-    private static func segments(
+    static func segments(
         _ count: Int,
         each: TimeInterval,
         from start: TimeInterval = 0,
@@ -365,27 +367,27 @@ enum HapticPatterns {
     }
 
     /// A tap at each of `times`, cycling through `intensities`.
-    private static func taps(at times: [TimeInterval], intensities: [Float], sharpness: Float) -> [CHHapticEvent] {
+    static func taps(at times: [TimeInterval], intensities: [Float], sharpness: Float) -> [CHHapticEvent] {
         times.enumerated().map { index, time in
             tap(intensities[index % intensities.count], sharpness, at: time)
         }
     }
 
     /// `count` evenly spaced times, starting at `start`.
-    private static func times(_ count: Int, every interval: TimeInterval, from start: TimeInterval = 0) -> [TimeInterval] {
+    static func times(_ count: Int, every interval: TimeInterval, from start: TimeInterval = 0) -> [TimeInterval] {
         (0..<count).map { start + Double($0) * interval }
     }
 
     /// `count` levels stepping evenly from `start` to `end`, both included.
-    private static func levels(from start: Float, to end: Float, count: Int) -> [Float] {
+    static func levels(from start: Float, to end: Float, count: Int) -> [Float] {
         (0..<count).map { start + (end - start) * Float($0) / Float(count - 1) }
     }
 
-    private static func tap(_ intensity: Float, _ sharpness: Float, at time: TimeInterval = 0) -> CHHapticEvent {
+    static func tap(_ intensity: Float, _ sharpness: Float, at time: TimeInterval = 0) -> CHHapticEvent {
         transient(intensity: intensity, sharpness: sharpness, at: time)
     }
 
-    private static func hold(
+    static func hold(
         _ intensity: Float,
         _ sharpness: Float,
         at time: TimeInterval = 0,
@@ -423,5 +425,32 @@ enum HapticPatterns {
             CHHapticEventParameter(parameterID: .hapticIntensity, value: intensity),
             CHHapticEventParameter(parameterID: .hapticSharpness, value: sharpness),
         ]
+    }
+}
+
+/// A pattern's public events, and how long it plays.
+struct PatternInfo: Sendable {
+    let events: [HapticPatternEvent]
+    let duration: TimeInterval
+
+    init(_ pattern: HapticPattern) {
+        events = HapticPatterns.events(for: pattern).map(HapticPatternEvent.init)
+        duration = events.map { $0.time + $0.duration }.max() ?? 0
+    }
+}
+
+/// Patterns' info, built one at a time as they're first asked for. Safe from any thread.
+// `@unchecked` because the dictionary is guarded by `lock`.
+private final class PatternInfoCache: @unchecked Sendable {
+    private let lock = NSLock()
+    private var infos: [HapticPattern: PatternInfo] = [:]
+
+    func info(for pattern: HapticPattern) -> PatternInfo {
+        lock.lock()
+        defer { lock.unlock() }
+        if let info = infos[pattern] { return info }
+        let info = PatternInfo(pattern)
+        infos[pattern] = info
+        return info
     }
 }

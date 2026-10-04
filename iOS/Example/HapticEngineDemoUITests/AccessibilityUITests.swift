@@ -54,7 +54,7 @@ final class AccessibilityUITests: DemoUITestCase {
         // The navigation bar holds a hidden copy of the title, to keep its place: take the one drawn.
         let title = app.staticTexts.matching(identifier: "Haptic Engine").allElementsBoundByIndex
             .first { $0.isHittable } ?? app.staticTexts["Haptic Engine"].firstMatch
-        let count = app.staticTexts["All · 100"]
+        let count = app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH 'All · '")).firstMatch
         XCTAssertTrue(title.waitForExistence(timeout: 2) && count.exists)
         attachScreenshot("largest text, list")
 

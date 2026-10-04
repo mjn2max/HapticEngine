@@ -11,11 +11,18 @@ All notable changes to this project are documented here. The format follows
 ### Added
 - `stop()` on both platforms, to stop the pattern that is playing. It has a default implementation that
   does nothing, so existing conforming types and fakes keep compiling.
-- iOS: 90 more patterns, for 100 in all: feedback, alerts, rhythm, texture, nature, mechanical and game
-  patterns such as `toggleOn`, `alarm`, `drumroll`, `purr`, `thunder`, `typewriter` and `coin`. They
-  are iOS only for now; play them with `play(_:)`.
+- iOS: 990 more patterns, for 1,000 in all, iOS only for now; play them with `play(_:)`. Ninety are built
+  by hand: feedback, alerts, rhythm, texture, nature, mechanical and game patterns such as `toggleOn`,
+  `alarm`, `drumroll`, `purr`, `thunder`, `typewriter` and `coin`. The other 900 come in ten families of
+  ninety, each a variant at nine levels: impacts, tap counts, signals, meters, surfaces, waves, dynamics,
+  weather, machines and arcade, such as `heavyMetalHit`, `waltzAllegro` and `epicLevelUp`.
 - Android: apps can compile against SDK 33 or later; the library no longer asks for the SDK it was built
   with (36.1).
+- iOS demo: the ten pattern families as categories of their own, after the seven hand-built groups in the
+  filter menu.
+- iOS demo on iPad and other devices without haptics: patterns can still be tapped to show their card and
+  timeline, marked as not felt. The full-size card stops at about a phone's height, and the list at a
+  readable width.
 - iOS demo: redesigned for 100 patterns. Search them all from the navigation bar, filter by category
   from a menu beside search, and star favorites from a pattern's context menu or the now-playing card.
   The filter, layout and favorites are remembered. The now-playing card moved to the bottom, and the
@@ -90,6 +97,11 @@ All notable changes to this project are documented here. The format follows
 ### Fixed
 - iOS: haptics now recover after the app is backgrounded or the haptic engine is reset.
 - iOS: removed a silent zero-strength tap at the start of the simple pattern.
+- iOS: reading any pattern's `duration` or `events` no longer builds every pattern's events first; each is
+  built the first time it's asked for.
+- iOS demo: on iPad the list could start partway down, with the first section under the navigation bar,
+  as the window opened at launch.
+- iOS demo: changing the layout in the filter menu now closes the menu, as picking a filter does.
 
 ### Removed
 - watchOS support. Core Haptics isn't available there, so the package doesn't build for watchOS.

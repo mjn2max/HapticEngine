@@ -35,10 +35,13 @@ final class ActivityStore {
     static let limit = 1000
 
     private let context: ModelContext
+    /// How many records are saved, kept as they change so a play needn't ask the store.
+    private var count: Int
 
     init(container: ModelContainer) {
         context = ModelContext(container)
         context.autosaveEnabled = false
+        count = (try? context.fetchCount(FetchDescriptor<ActivityRecord>())) ?? 0
     }
 
     /// In the app's Application Support folder. Should that fail, as when the disk is full, in memory:
@@ -72,28 +75,31 @@ final class ActivityStore {
 
     func add(_ entry: HapticDemoModel.LogEntry) {
         context.insert(ActivityRecord(id: entry.id, date: entry.date, pattern: entry.pattern.rawValue))
+        count += 1
         removeOldest()
         save()
     }
 
     func delete(_ id: UUID) {
         try? context.delete(model: ActivityRecord.self, where: #Predicate { $0.id == id })
+        count = (try? context.fetchCount(FetchDescriptor<ActivityRecord>())) ?? max(count - 1, 0)
         save()
     }
 
     func deleteAll() {
         try? context.delete(model: ActivityRecord.self)
+        count = 0
         save()
     }
 
-    /// Down to the limit.
+    /// Down to the limit. Only looks at the store once there's something to remove.
     private func removeOldest() {
-        let count = (try? context.fetchCount(FetchDescriptor<ActivityRecord>())) ?? 0
         guard count > Self.limit else { return }
         var oldestFirst = FetchDescriptor<ActivityRecord>(sortBy: [SortDescriptor(\.date)])
         oldestFirst.fetchLimit = count - Self.limit
         for record in (try? context.fetch(oldestFirst)) ?? [] {
             context.delete(record)
+            count -= 1
         }
     }
 

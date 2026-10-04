@@ -64,7 +64,12 @@ final class HapticDemoModel {
     }
     /// Newest first. Only records a pattern when it differs from the one before, so replays don't add entries.
     /// Saved between launches.
-    private(set) var log: [LogEntry]
+    private(set) var log: [LogEntry] {
+        didSet { logDays = ActivityDay.group(log) }
+    }
+    /// The log split into days, for the activity screen. Grouped when the log changes, not on every
+    /// redraw: a thousand entries were regrouped each time a replay started or stopped.
+    private(set) var logDays: [ActivityDay] = []
     private(set) var nowPlaying: Playback?
     /// Stays set after the pattern finishes, so its description can still be read.
     private(set) var lastPlayed: HapticPattern?
@@ -87,6 +92,7 @@ final class HapticDemoModel {
         filter = preferences.filter
         layout = preferences.layout
         log = self.activity.load()
+        logDays = ActivityDay.group(log)
     }
 
     /// Whether the launch reveal's haptic ripple should play: once, on the first launch, where haptics play.
