@@ -42,7 +42,7 @@ struct MenuView: View {
                     header
                 } footer: {
                     if !model.isHapticsSupported {
-                        Text("This device has no Taptic Engine, so patterns can't be felt here. Try the demo on an iPhone.")
+                        Text("This device has no Taptic Engine, so patterns can't be felt here, but each one still shows how it plays. Try the demo on an iPhone to feel them.")
                     }
                 }
 
@@ -55,8 +55,6 @@ struct MenuView: View {
                             MenuAccessory.chevron
                         }
                     }
-                    // Nothing can be played without haptic hardware, so there's no activity to show.
-                    .disabled(!model.isHapticsSupported)
                     .accessibilityIdentifier("menu.activity")
 
                     Button(action: copyPackageURL) {

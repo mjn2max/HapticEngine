@@ -87,9 +87,10 @@ final class SearchUITests: XCTestCase {
 
     // MARK: Scrolling
 
-    func testScrollingPutsTheKeyboardAwayButKeepsTheSearch() {
+    func testScrollingPutsTheKeyboardAwayButKeepsTheSearch() throws {
         openSearch()
         searchField.typeText("tap")
+        try skipUnlessTheKeyboardIsOnScreen()
         XCTAssertTrue(pattern("tick").waitForExistence(timeout: 2))
 
         scrollList(.up)
@@ -102,9 +103,10 @@ final class SearchUITests: XCTestCase {
         attachScreenshot("scrolled results")
     }
 
-    func testTappingTheFieldAfterScrollingBringsTheKeyboardBack() {
+    func testTappingTheFieldAfterScrollingBringsTheKeyboardBack() throws {
         openSearch()
         searchField.typeText("tap")
+        try skipUnlessTheKeyboardIsOnScreen()
         // Scrolled before the results settle, the drag can land on the old list and not count as a scroll.
         XCTAssertTrue(pattern("tick").waitForExistence(timeout: 2))
         scrollList(.up)
@@ -160,9 +162,10 @@ final class SearchUITests: XCTestCase {
         openSearch()
         XCTAssertFalse(filterButton.exists)
         searchField.typeText("tap")
+        let hasKeyboard = isKeyboardOnScreen()
         XCTAssertTrue(pattern("tick").waitForExistence(timeout: 2))
         scrollList(.up)
-        XCTAssertTrue(keyboard.waitForNonExistence(timeout: 2))
+        if hasKeyboard { XCTAssertTrue(keyboard.waitForNonExistence(timeout: 2)) }
         XCTAssertFalse(filterButton.exists, "Results ignore the filter, so it isn't offered")
         app.buttons["Cancel"].tap()
         XCTAssertTrue(filterButton.waitForExistence(timeout: 2))
@@ -313,6 +316,17 @@ final class SearchUITests: XCTestCase {
     private var clearFilterToken: XCUIElement { app.buttons["clearFilter"] }
     private var appMenu: XCUIElement { app.buttons["appMenu"] }
     private var keyboard: XCUIElement { app.keyboards.firstMatch }
+
+    /// With a hardware keyboard connected, as the iPad Simulator has, the keyboard stays off screen, so
+    /// there's nothing for scrolling to put away.
+    private func isKeyboardOnScreen() -> Bool {
+        let window = app.windows.firstMatch.frame
+        return keyboard.waitForExistence(timeout: 2) && keyboard.frame.height > 0 && keyboard.frame.minY < window.maxY
+    }
+
+    private func skipUnlessTheKeyboardIsOnScreen() throws {
+        try XCTSkipUnless(isKeyboardOnScreen(), "No on-screen keyboard: a hardware keyboard is connected")
+    }
     private var list: XCUIElement { app.scrollViews["patternList"] }
 
     private func pattern(_ rawValue: String) -> XCUIElement { app.buttons["pattern.\(rawValue)"] }

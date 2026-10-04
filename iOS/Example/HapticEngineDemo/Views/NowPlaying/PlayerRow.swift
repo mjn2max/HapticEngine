@@ -279,12 +279,20 @@ struct PlayerRow: View {
                 // Open, the full description is below, so this line shows the facts instead. Follows the
                 // settled size, not the finger, so the header holds still while the bar is resized:
                 // switching halfway, it flickered as a drag crossed back and forth.
-                Text(size != .collapsed ? "\(pattern.category.title) · \(pattern.durationText)" : pattern.subtitle)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    // One line keeps the bar one height; large text needs the room to wrap.
-                    .lineLimit(dynamicTypeSize.isAccessibilitySize ? 3 : 1)
-                    .contentTransition(.opacity)
+                Group {
+                    if !model.isHapticsSupported {
+                        // Shown, not felt: said where the eye goes, in every size.
+                        Text("Not felt on this device")
+                            .foregroundStyle(.orange)
+                    } else {
+                        Text(size != .collapsed ? "\(pattern.category.title) · \(pattern.durationText)" : pattern.subtitle)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .font(.subheadline)
+                // One line keeps the bar one height; large text needs the room to wrap.
+                .lineLimit(dynamicTypeSize.isAccessibilitySize ? 3 : 1)
+                .contentTransition(.opacity)
             }
             Spacer(minLength: 0)
         }

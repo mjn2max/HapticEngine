@@ -53,9 +53,15 @@ final class NowPlayingBarUITests: XCTestCase {
         XCTAssertTrue(app.buttons["appMenu"].isHittable)
         XCTAssertGreaterThan(header.frame.minY, app.buttons["appMenu"].frame.maxY)
         XCTAssertTrue(app.staticTexts["Events"].exists)
-        // No room is left for the patterns, so they fade out rather than showing as a strip under the
-        // status bar, and can't be tapped by accident.
-        XCTAssertFalse(app.buttons["pattern.tick"].isHittable)
+        let room = header.frame.minY - app.buttons["appMenu"].frame.maxY
+        if room < 200 {
+            // No room is left for the patterns, so they fade out rather than showing as a strip under the
+            // status bar, and can't be tapped by accident.
+            XCTAssertFalse(app.buttons["pattern.tick"].isHittable)
+        } else {
+            // On an iPad the full size stops at about a phone's height: the patterns above stay in use.
+            XCTAssertTrue(app.buttons["pattern.tick"].isHittable, "\(room) points of patterns above the bar")
+        }
 
         toggleFull.tap()
         settle()
@@ -70,7 +76,8 @@ final class NowPlayingBarUITests: XCTestCase {
         XCTAssertLessThan(summaryTop, collapsedTop - 100)
         attachScreenshot("swiped to summary")
 
-        drag(header, by: -220)
+        // Up to just below the navigation bar, wherever that is: a fixed distance falls short on an iPad.
+        drag(header, by: app.buttons["appMenu"].frame.maxY + 40 - summaryTop)
         settle()
         XCTAssertLessThan(header.frame.minY, summaryTop - 100)
         attachScreenshot("swiped to full")
@@ -127,12 +134,14 @@ final class NowPlayingBarUITests: XCTestCase {
         header.tap()
         settle()
         let summaryToggleTop = toggleFull.frame.minY
+        let summaryTop = header.frame.minY
         for flick in [false, true] {
             toggleFull.tap()
             settle()
             scrollDetails(by: -260, fast: flick)
-            // At once, while a flick still carries the details.
-            drag(header, by: 330, pause: flick ? 0 : 0.05)
+            // At once, while a flick still carries the details. Down to the summary's place, which on an
+            // iPad is further than on an iPhone.
+            drag(header, by: summaryTop - header.frame.minY, pause: flick ? 0 : 0.05)
             settle()
             XCTAssertEqual(toggleFull.label, "More Details")
             XCTAssertEqual(toggleFull.frame.minY, summaryToggleTop, accuracy: 1, flick ? "flick" : "scroll")
@@ -141,7 +150,7 @@ final class NowPlayingBarUITests: XCTestCase {
         attachScreenshot("summary after shrinking")
     }
 
-    func testPlayingSimilarPatternsAtTheEndStaysAtTheEnd() {
+    func testPlayingSimilarPatternsAtTheEndStaysAtTheEnd() throws {
         relaunch(filter: "category.nature")
         app.buttons["pattern.rain"].tap()
         header.tap()
@@ -151,12 +160,14 @@ final class NowPlayingBarUITests: XCTestCase {
         let unscrolledToggleTop = toggleFull.frame.minY
         for _ in 1...3 { scrollDetails(by: -400, fast: true) }
         settle()
+        try XCTSkipIf(toggleFull.frame.minY > unscrolledToggleTop - 40, "The details fit without scrolling on this screen")
         // Shorter patterns, then a longer one again.
         for name in ["thunder", "earthquake", "rain"] {
             app.buttons["similar.\(name)"].tap()
             settle()
-            // Still scrolled to the end, rather than back to the top.
-            XCTAssertLessThan(toggleFull.frame.minY, unscrolledToggleTop - 40, name)
+            // Still scrolled to the end, rather than back to the top. How far that is depends on the
+            // pattern and the screen: on an iPad a short pattern's end is only a little way down.
+            XCTAssertLessThan(toggleFull.frame.minY, unscrolledToggleTop - 4, name)
         }
         attachScreenshot("end after trying similar patterns")
         // Smaller, they show from the top again.

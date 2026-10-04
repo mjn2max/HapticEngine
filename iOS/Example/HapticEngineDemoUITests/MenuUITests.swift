@@ -19,7 +19,7 @@ final class MenuUITests: DemoUITestCase {
         XCTAssertTrue(header.label.contains("Haptic Engine"), header.label)
         XCTAssertNotNil(header.label.range(of: #"Version \d+\.\d+"#, options: .regularExpression), header.label)
         XCTAssertTrue(app.staticTexts["Made with care by Huy D. · MIT License"].exists)
-        XCTAssertFalse(app.staticTexts["This device has no Taptic Engine, so patterns can't be felt here. Try the demo on an iPhone."].exists)
+        XCTAssertFalse(app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH 'This device has no Taptic Engine'")).firstMatch.exists)
         attachScreenshot("menu")
     }
 

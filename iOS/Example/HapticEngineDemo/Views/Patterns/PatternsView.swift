@@ -26,6 +26,10 @@ struct PatternsView: View {
     @State private var scrollPosition = ScrollPosition(edge: .top)
     /// The top of the scroll view, in global coordinates: the bottom of the navigation bar.
     @State private var scrollTop: CGFloat?
+    /// Whether the patterns have been scrolled by hand. Until then, they're kept at their top.
+    @State private var hasScrolled = false
+    /// The widest the list grows, so a row's name and length stay within one glance.
+    private static let readableWidth: CGFloat = 700
 
     var body: some View {
         let search = PatternSearch(query)
@@ -44,6 +48,10 @@ struct PatternsView: View {
                 showAll: { withAnimation(.snappy) { filter = .all } }
             )
             .equatable()
+            // A list row is read across, name to length: on an iPad's whole width they sat far apart.
+            // The grid fills the width with more tiles instead.
+            .frame(maxWidth: layout == .list ? Self.readableWidth : .infinity)
+            .frame(maxWidth: .infinity)
             .padding([.horizontal, .bottom])
             // Just clear of the fade below the navigation bar, so at rest nothing's faded.
             .padding(.top, EdgeFade.topPadding)
@@ -68,12 +76,21 @@ struct PatternsView: View {
             guard follows else { return }
             withAnimation(.spring(duration: 0.42, bounce: 0)) { scrollPosition.scrollTo(edge: .bottom) }
         }
+        // On iPad the window grows open at launch, and the scroll view's offset doesn't keep pace as its size
+        // and the navigation bar's room arrive: it could settle partway down, with the first section under
+        // the bar. Until the patterns are scrolled by hand, they stay at their top.
+        .onScrollGeometryChange(for: TopRoom.self) { TopRoom($0) } action: { _, new in
+            guard !hasScrolled, !new.isAtTop else { return }
+            scrollPosition.scrollTo(edge: .top)
+        }
         .scrollDismissesKeyboard(.immediately)
         .accessibilityIdentifier("patternList")
         // Scrolling puts the keyboard away. The field stays, since it costs the patterns no room, and
         // shows what the results are for; with nothing typed, search simply closes.
         .onScrollPhaseChange { _, phase in
-            guard phase == .interacting, isSearchFieldOpen, search.isEmpty else { return }
+            guard phase == .interacting else { return }
+            hasScrolled = true
+            guard isSearchFieldOpen, search.isEmpty else { return }
             withAnimation(.snappy) { isSearchFieldOpen = false }
         }
         .onGeometryChange(for: CGFloat.self) { $0.frame(in: .global).minY } action: { scrollTop = $0 }
@@ -93,6 +110,20 @@ struct PatternsView: View {
         .onChange(of: filter) { scrollPosition.scrollTo(edge: .top) }
         .onChange(of: query) { scrollPosition.scrollTo(edge: .top) }
         .background(Color(.systemGroupedBackground))
+    }
+}
+
+/// Whether the patterns are scrolled to their top, and the geometry that can move them off it.
+private struct TopRoom: Equatable {
+    let inset: CGFloat
+    let container: CGSize
+    let isAtTop: Bool
+
+    init(_ geometry: ScrollGeometry) {
+        inset = geometry.contentInsets.top
+        container = geometry.containerSize
+        // At rest at the top, the offset is minus the top inset.
+        isAtTop = geometry.contentOffset.y + geometry.contentInsets.top <= 1
     }
 }
 
@@ -209,9 +240,6 @@ private struct PatternSections: View, Equatable {
                 }
             }
         }
-        .disabled(!model.isHapticsSupported)
-        // The custom button styles don't dim when disabled, so dim here.
-        .opacity(model.isHapticsSupported ? 1 : 0.4)
         // The old layout leaves at once and the new one fades in from slightly smaller, so the eye can
         // follow a pattern across: every layout keeps the same order and colors.
         .id(layout)

@@ -72,7 +72,7 @@ final class AccessibilityUITests: DemoUITestCase {
         XCTAssertGreaterThan(firstSection.frame.minY, count.frame.maxY, "The count doesn't run into the list")
     }
 
-    func testTheGridHasTwoColumnsAtTheLargestText() {
+    func testTheGridHasWiderTilesAtTheLargestText() {
         launch(Self.largestText.map { $0 == "list" ? "grid" : $0 })
         XCTAssertTrue(pattern("tick").waitForExistence(timeout: 2))
         attachScreenshot("largest text, grid")
@@ -80,7 +80,11 @@ final class AccessibilityUITests: DemoUITestCase {
         let tiles = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'pattern.'")).allElementsBoundByIndex
             .filter { $0.isHittable }
         let columns = Set(tiles.map { Int($0.frame.minX.rounded()) })
-        XCTAssertEqual(columns.count, 2, "Tiles start at \(columns.sorted())")
+        // As many 160-point tiles as fit across, less the 16-point margins: two on an iPhone, more on an
+        // iPad. Three or more on an iPhone would cut the names short.
+        let width = app.windows.firstMatch.frame.width - 32
+        let expected = max(Int((width + 12) / (160 + 12)), 1)
+        XCTAssertEqual(columns.count, expected, "Tiles start at \(columns.sorted())")
     }
 
     func testTheTipStaysShortAtTheLargestText() {

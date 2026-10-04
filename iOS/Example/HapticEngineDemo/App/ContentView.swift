@@ -35,6 +35,7 @@ struct ContentView: View {
     @State private var revealStart: Date?
     /// Whether the menu page covers the screen.
     @State private var isMenuOpen = false
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
     private var isSearching: Bool {
         isSearchFieldOpen || !PatternSearch(query).isEmpty
@@ -62,8 +63,14 @@ struct ContentView: View {
     /// any taller and the bar would be squeezed into it, pushing its contents up against its top edge.
     private var nowPlayingMaxHeight: CGFloat {
         guard barArea > 0 else { return .infinity }
-        return barArea - NowPlayingBar.topSpacing - (NowPlayingBar.margin - bottomInset)
+        let room = barArea - NowPlayingBar.topSpacing - (NowPlayingBar.margin - bottomInset)
+        // An iPad's whole height left most of the full size empty below a pattern's details. About an
+        // iPhone's height there instead: still one size for every pattern, as the bar is everywhere.
+        return horizontalSizeClass == .regular ? min(room, Self.regularMaxHeight) : room
     }
+
+    /// The tallest the bar grows where the screen is wide, as on iPad.
+    private static let regularMaxHeight: CGFloat = 800
 
     /// The menu button's glass, measured on iOS 26. The bar makes it a native bar button, which can't be
     /// measured from here.

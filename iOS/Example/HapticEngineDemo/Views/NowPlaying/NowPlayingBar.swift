@@ -53,7 +53,7 @@ struct NowPlayingBar: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var size = Size.collapsed
 
-    private var isPlayer: Bool { model.isHapticsSupported && model.lastPlayed != nil }
+    private var isPlayer: Bool { model.lastPlayed != nil }
 
     /// Fixed for the tip and the warning, except at accessibility text sizes, where text must never be
     /// cut off. The player sets its own height, which follows the finger while it's dragged.
@@ -65,9 +65,7 @@ struct NowPlayingBar: View {
         // One container, so there's one bar whose contents change. A `Group` would give each state its
         // own padding and glass: switching from the tip to the player drew two bars at once, both blurring.
         ZStack(alignment: .topLeading) {
-            if !model.isHapticsSupported {
-                MessageRow.unsupported
-            } else if let pattern = model.lastPlayed {
+            if let pattern = model.lastPlayed {
                 PlayerRow(
                     pattern: pattern,
                     playback: model.nowPlaying,
@@ -85,6 +83,8 @@ struct NowPlayingBar: View {
                     insertion: .opacity.animation(.easeOut(duration: 0.2).delay(0.1)),
                     removal: .opacity.animation(.easeIn(duration: 0.1))
                 ))
+            } else if !model.isHapticsSupported {
+                MessageRow.unsupported
             } else {
                 MessageRow.tip(tint: .accentColor)
                     .transition(.asymmetric(
@@ -99,7 +99,8 @@ struct NowPlayingBar: View {
         .padding(.vertical, Self.verticalPadding)
         .frame(height: fixedHeight, alignment: .top)
         .frame(minHeight: Self.collapsedHeight)
-        .barBackground(layout: layout, tint: model.isHapticsSupported ? nil : .orange)
+        // Orange while it warns; the player says so itself, in its own colors.
+        .barBackground(layout: layout, tint: model.isHapticsSupported || isPlayer ? nil : .orange)
         .contentShape(.rect(cornerRadius: Self.cornerRadius))
         .onGeometryChange(for: CGFloat.self) { $0.frame(in: .global).minY } action: { layout.top = $0 }
         // A light tap each time it settles on a size, as a haptics demo should.
@@ -147,12 +148,12 @@ private struct MessageRow: View {
         )
     }
 
-    /// On a device without haptic hardware.
+    /// On a device without haptic hardware, such as an iPad: patterns still show how they play.
     static let unsupported = MessageRow(
         systemImage: "exclamationmark.triangle.fill",
         tint: .orange,
         title: "No Haptics on This Device",
-        message: "Patterns only play on an iPhone."
+        message: "Tap a pattern to see how it plays."
     )
 
     var body: some View {
