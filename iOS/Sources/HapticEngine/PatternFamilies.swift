@@ -79,7 +79,8 @@ extension HapticPatterns {
     /// Wood, metal, glass, stone, rubber, plastic, paper, cloth, water, ceramic: the hit, then what the
     /// material does with it. Heavier hits are stronger and their tails longer.
     private static func impact(material: Int, weight: Float) -> [CHHapticEvent] {
-        let strength = 0.2 + 0.8 * weight
+        // From 0.3: below that a hit is hard to feel at all.
+        let strength = 0.3 + 0.7 * weight
         let scale = 0.6 + 0.8 * Double(weight)
         return switch material {
         // A hollow knock and its echo.
@@ -191,7 +192,8 @@ extension HapticPatterns {
         let length: TimeInterval = 0.8
         let every = spacing / (0.5 + 1.5 * Double(speed))
         let grains = (0..<Int(length / every)).map { index in
-            tap(grain * (0.8 + 0.2 * speed), grainSharpness, at: Double(index) * every)
+            // From 0.3, so even silk's grain is felt; the hum beneath may be fainter.
+            tap(0.3 + 0.7 * grain * (0.8 + 0.2 * speed), grainSharpness, at: Double(index) * every)
         }
         return [hold(base * (0.8 + 0.4 * speed), baseSharpness, for: length)] + grains
     }
@@ -241,9 +243,10 @@ extension HapticPatterns {
             case 1: curve = 1 - x
             case 2: curve = x < 0.3 ? x / 0.3 : 1 - (x - 0.3) / 0.7 * 0.8
             case 3: curve = x < 0.7 ? 1 - x / 0.7 * 0.8 : 0.2 + (x - 0.7) / 0.3 * 0.3
-            // Taps, not holds: a staircase you feel each step of.
-            case 4: return tap(0.1 + 0.9 * x, 0.6, at: time)
-            case 5: return tap(0.1 + 0.9 * (1 - x), 0.6, at: time)
+            // Taps, not holds: a staircase you feel each step of. The last lands at the end, so the pattern
+            // lasts its full length, as the holds do.
+            case 4: return tap(0.1 + 0.9 * x, 0.6, at: Double(step) * each * 10 / 9)
+            case 5: return tap(0.1 + 0.9 * (1 - x), 0.6, at: Double(step) * each * 10 / 9)
             // The strength holds; the sharpness changes.
             case 6: return hold(0.7, x, at: time, for: each)
             case 7: return hold(0.9 - 0.6 * x, 1 - x, at: time, for: each)
@@ -256,25 +259,35 @@ extension HapticPatterns {
 
     // MARK: Weather
 
+    /// The closest two drops fall: taps closer than about 10 ms are felt as one.
+    static let minimumGap: TimeInterval = 0.015
+
     /// Drizzle, rain, hail, wind, thunder, surf, stream, tremor, fire, sleet: 1.2 seconds, stronger and
     /// busier as it builds. Drops fall at the same scattered times on every play.
     private static func weather(_ kind: Int, strength level: Int) -> [CHHapticEvent] {
         let strength = Float(level) / 8
         let length: TimeInterval = 1.2
         var scatter = Scatter(seed: UInt64(kind * 100 + level + 1))
-        // The first drop starts the pattern; the rest land anywhere in it.
-        func scattered(_ count: Int) -> [TimeInterval] {
-            [0] + (1..<count).map { _ in scatter.next() * length }.sorted()
+        /// `count` drops, each with a share of its full strength. Each falls somewhere in its own slot of
+        /// the pattern, so none land closer than `minimumGap`: taps that close are felt as one. The first
+        /// starts the pattern at full strength, so every one is felt from the start.
+        func drops(_ count: Int) -> [(time: TimeInterval, share: Float)] {
+            let slot = length / Double(count)
+            return (0..<count).map { index in
+                guard index > 0 else { return (0, 1) }
+                let time = Double(index) * slot + scatter.next() * max(slot - minimumGap, 0)
+                return (time, Float(scatter.next()))
+            }
         }
         switch kind {
         case 0:
-            return scattered(4 + 2 * level).map { tap((0.15 + 0.25 * strength) * (0.7 + 0.3 * Float(scatter.next())), 0.7, at: $0) }
+            return drops(4 + 2 * level).map { tap((0.3 + 0.25 * strength) * (0.7 + 0.3 * $0.share), 0.7, at: $0.time) }
         case 1:
-            return scattered(8 + 4 * level).map { tap((0.3 + 0.5 * strength) * (0.6 + 0.4 * Float(scatter.next())), 0.5, at: $0) }
+            return drops(8 + 4 * level).map { tap((0.3 + 0.5 * strength) * (0.6 + 0.4 * $0.share), 0.5, at: $0.time) }
         case 2:
-            return scattered(5 + 3 * level).map { tap((0.6 + 0.4 * strength) * (0.8 + 0.2 * Float(scatter.next())), 1, at: $0) }
+            return drops(5 + 3 * level).map { tap((0.6 + 0.4 * strength) * (0.8 + 0.2 * $0.share), 1, at: $0.time) }
         case 3:
-            let gusts = (0..<12).map { _ in 0.2 + Float(scatter.next()) * (0.1 + 0.6 * strength) }
+            let gusts = (0..<12).map { index in 0.2 + (index == 0 ? 1 : Float(scatter.next())) * (0.1 + 0.6 * strength) }
             return segments(12, each: 0.1, intensities: gusts, sharpnesses: [0.2])
         case 4:
             let rumble = 0.3 + 0.3 * Double(strength)
@@ -288,16 +301,16 @@ extension HapticPatterns {
             }
         case 6:
             return [hold(0.15 + 0.3 * strength, 0.5, for: length)]
-                + scattered(6 + 2 * level).map { tap(0.2 + 0.2 * Float(scatter.next()), 0.6, at: $0) }
+                + drops(6 + 2 * level).map { tap(0.2 + 0.2 * $0.share, 0.6, at: $0.time) }
         case 7:
             let shakes = (0..<24).map { $0.isMultiple(of: 2) ? Float(0.2) : (0.4 + 0.6 * strength) * (0.8 + 0.2 * Float(scatter.next())) }
             return segments(24, each: 0.05, intensities: shakes, sharpnesses: [0.1])
         case 8:
             return [hold(0.15 + 0.2 * strength, 0.1, for: length)]
-                + scattered(6 + 3 * level).map { tap(0.3 + (0.2 + 0.5 * strength) * Float(scatter.next()), 0.9, at: $0) }
+                + drops(6 + 3 * level).map { tap(0.3 + (0.2 + 0.5 * strength) * $0.share, 0.9, at: $0.time) }
         default:
             return [hold(0.1 + 0.2 * strength, 0.8, for: length)]
-                + scattered(6 + 4 * level).map { tap((0.3 + 0.4 * strength) * (0.7 + 0.3 * Float(scatter.next())), 0.4, at: $0) }
+                + drops(6 + 4 * level).map { tap((0.3 + 0.4 * strength) * (0.7 + 0.3 * $0.share), 0.4, at: $0.time) }
         }
     }
 

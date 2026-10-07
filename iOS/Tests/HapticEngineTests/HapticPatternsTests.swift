@@ -192,6 +192,28 @@ struct HapticPatternRuleTests {
         #expect(pattern.duration <= 6)
     }
 
+    @Test(arguments: HapticPattern.allCases)
+    func tapsAreFeltApart(pattern: HapticPattern) {
+        // Taps closer than about 10 ms are felt as one, so a pattern with them plays fewer than it says.
+        let taps = pattern.events.filter { $0.kind == .tap }.map(\.time).sorted()
+        for (tap, next) in zip(taps, taps.dropFirst()) {
+            #expect(next - tap >= 0.01, "Taps at \(tap) and \(next) s")
+        }
+    }
+
+    @Test(arguments: HapticPattern.allCases)
+    func isStrongEnoughToFeel(pattern: HapticPattern) {
+        // Below 0.3 at its strongest, a pattern is hard to feel at all on many iPhones.
+        #expect((pattern.events.map(\.intensity).max() ?? 0) >= 0.3)
+    }
+
+    @Test(arguments: HapticPattern.allCases.filter { $0.variant?.family == .dynamics })
+    func dynamicsLastTheirStatedLength(pattern: HapticPattern) throws {
+        // Described as 0.2 to 1.8 seconds, by level.
+        let level = try #require(pattern.variant?.level)
+        #expect(abs(pattern.duration - 0.2 * Double(level + 1)) < 0.0001)
+    }
+
     @Test func patternsAreDistinct() {
         let signatures = HapticPattern.allCases.map { HapticPatterns.events(for: $0).map(EventSpec.init).description }
         #expect(Set(signatures).count == HapticPattern.allCases.count)

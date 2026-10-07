@@ -35,9 +35,15 @@ struct FilterMenu: View {
             // One picker per group, since a menu draws its separators between pickers, not inside one.
             filterPicker([.all])
             filterPicker([.favorites])
-            // The hand-built groups, then the ten families: seventeen in one run were hard to scan.
+            // The ten families one level down, and high up: all seventeen didn't fit an iPhone's menu, and the
+            // families, below the fold, looked missing rather than scrollable to.
+            Menu {
+                filterPicker(HapticPattern.Category.families.map(PatternFilter.category))
+            } label: {
+                Label(familiesTitle, systemImage: "square.grid.3x3")
+            }
+            .accessibilityIdentifier("filterFamilies")
             filterPicker(HapticPattern.Category.handWritten.map(PatternFilter.category))
-            filterPicker(HapticPattern.Category.families.map(PatternFilter.category))
         } label: {
             Image(systemName: selection.systemImage)
                 .imageScale(.large)
@@ -56,6 +62,15 @@ struct FilterMenu: View {
         .accessibilityLabel("Show")
         .accessibilityValue(selection.title)
         .accessibilityIdentifier("filterButton")
+    }
+
+    /// Names the family showing, so the submenu says where the selection is.
+    private var familiesTitle: String {
+        if case .category(let category) = selection, HapticPattern.Category.families.contains(category) {
+            "Families: \(category.title)"
+        } else {
+            "Families"
+        }
     }
 
     private func filterPicker(_ filters: [PatternFilter]) -> some View {

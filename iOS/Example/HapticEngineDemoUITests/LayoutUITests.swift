@@ -77,6 +77,30 @@ final class LayoutUITests: DemoUITestCase {
         XCTAssertLessThanOrEqual(similar.frame.maxY - top, 840, "The full size stays phone-tall: from \(top) to \(similar.frame.maxY)")
     }
 
+    /// The way to the families is in sight as the menu opens, above the hand-built groups.
+    func testTheFilterMenuFitsWithTheFamiliesOneLevelDown() {
+        launch()
+        filterButton.tap()
+        let families = app.buttons["filterFamilies"].firstMatch
+        XCTAssertTrue(families.waitForExistence(timeout: 2))
+        for title in ["All", "Favorites", "Feedback"] {
+            XCTAssertTrue(app.buttons[title].firstMatch.isHittable, "\(title) is in sight")
+        }
+        XCTAssertTrue(families.isHittable, "Families is in sight, not below the fold")
+        XCTAssertFalse(app.buttons["Weather"].firstMatch.exists, "The families wait one level down")
+        attachScreenshot("filter menu")
+
+        families.tap()
+        let weather = app.buttons["Weather"].firstMatch
+        XCTAssertTrue(weather.waitForExistence(timeout: 2))
+        attachScreenshot("families submenu")
+        weather.tap()
+        XCTAssertTrue(pattern("faintDrizzle").waitForExistence(timeout: 3))
+        XCTAssertFalse(pattern("tick").exists)
+        XCTAssertEqual(filterButton.value as? String, "Weather")
+        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label CONTAINS 'Weather · 90'")).firstMatch.exists)
+    }
+
     private func assertFirstSectionClearsTheBar(file: StaticString = #filePath, line: UInt = #line) {
         let header = app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH 'Feedback'")).firstMatch
         XCTAssertTrue(header.waitForExistence(timeout: 3), "The first section's header shows", file: file, line: line)
