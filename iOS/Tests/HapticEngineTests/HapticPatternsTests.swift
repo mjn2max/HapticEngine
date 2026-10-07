@@ -214,6 +214,61 @@ struct HapticPatternRuleTests {
         #expect(abs(pattern.duration - 0.2 * Double(level + 1)) < 0.0001)
     }
 
+    /// How a pattern feels over time, every 10 ms: its strength, and its strength weighted by sharpness.
+    /// Taps count as 20 ms long, about how long one is felt.
+    private static func feel(_ pattern: HapticPattern) -> [(Float, Float)] {
+        let events = pattern.events
+        let end = events.map { $0.time + max($0.duration, 0.02) }.max() ?? 0
+        return stride(from: 0.0, to: end, by: 0.01).map { time in
+            let active = events.filter { time >= $0.time - 0.0001 && time < $0.time + max($0.duration, 0.02) }
+            let strongest = active.max { $0.intensity < $1.intensity }
+            return (strongest?.intensity ?? 0, (strongest?.intensity ?? 0) * (strongest?.sharpness ?? 0))
+        }
+    }
+
+    /// How far apart two patterns feel: the average difference in strength and in sharpness while either
+    /// plays, from 0, the same, upward. Silence in both is left out: averaged in, it made two sparse
+    /// patterns of clearly different strengths look alike.
+    private static func feelDistance(_ a: [(Float, Float)], _ b: [(Float, Float)]) -> Float {
+        let count = max(a.count, b.count)
+        var total: Float = 0
+        var playing = 0
+        for index in 0..<count {
+            let x = index < a.count ? a[index] : (0, 0)
+            let y = index < b.count ? b[index] : (0, 0)
+            guard x.0 > 0 || y.0 > 0 else { continue }
+            total += abs(x.0 - y.0) + abs(x.1 - y.1)
+            playing += 1
+        }
+        return total / Float(max(playing, 1))
+    }
+
+    /// The twenty five-level families feel different from every other pattern, not merely differ: two
+    /// patterns whose events differ by a hair would both pass `patternsAreDistinct` and feel the same.
+    /// Patterns whose lengths differ clearly are told apart by that alone, so only those of similar length
+    /// are compared.
+    @Test func familyPatternsFeelDistinct() {
+        let all = HapticPattern.allCases
+        let feels = all.map(Self.feel)
+        let durations = all.map(\.duration)
+        var closest: [(Float, String)] = []
+        for index in 1000..<all.count {
+            for other in all.indices where other != index && (other < 1000 || other > index) {
+                let gap = abs(durations[index] - durations[other])
+                guard gap <= max(0.05, 0.15 * max(durations[index], durations[other])) else { continue }
+                let distance = Self.feelDistance(feels[index], feels[other])
+                if distance < Self.minimumFeelDistance {
+                    closest.append((distance, "\(all[index].rawValue) ~ \(all[other].rawValue)"))
+                }
+            }
+        }
+        closest.sort { $0.0 < $1.0 }
+        #expect(closest.isEmpty, "Too close to tell apart: \(closest.prefix(20).map { "\($0.1) \(String(format: "%.3f", $0.0))" })")
+    }
+
+    /// The smallest feel distance a new pattern may have to any other.
+    static let minimumFeelDistance: Float = 0.06
+
     @Test func patternsAreDistinct() {
         let signatures = HapticPattern.allCases.map { HapticPatterns.events(for: $0).map(EventSpec.init).description }
         #expect(Set(signatures).count == HapticPattern.allCases.count)

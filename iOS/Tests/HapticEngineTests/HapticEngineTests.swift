@@ -112,10 +112,10 @@ struct HapticEngineProtocolTests {
     @Test func familyRawValuesAreStable() {
         // The 900 family patterns' names, all at once: any rename changes this. If one was meant, update it
         // to the value the failure shows, and note the rename in CHANGELOG.md.
-        let names = HapticPattern.allCases.dropFirst(100).map(\.rawValue).joined(separator: ",")
+        let names = HapticPattern.allCases.dropFirst(100).prefix(900).map(\.rawValue).joined(separator: ",")
         #expect(fingerprint(names) == 12_892_458_424_837_815_209)
         // And the ends of each family, readably.
-        let families = Array(HapticPattern.allCases.dropFirst(100)).chunked(into: 90)
+        let families = Array(HapticPattern.allCases.dropFirst(100).prefix(900)).chunked(into: 90)
         #expect(families.map { [$0.first!.rawValue, $0.last!.rawValue] } == [
             ["featherWoodHit", "crushingCeramicHit"],
             ["twoTapsLazy", "elevenTapsRapid"],
@@ -130,8 +130,18 @@ struct HapticEngineProtocolTests {
         ])
     }
 
-    @Test func hasOneThousandPatterns() {
-        #expect(HapticPattern.allCases.count == 1000)
+    @Test func motifFamilyRawValuesAreStable() {
+        // The next 1,000, from the twenty five-level families, the same way as the 900 before them.
+        let names = HapticPattern.allCases.dropFirst(1000).map(\.rawValue).joined(separator: ",")
+        #expect(fingerprint(names) == 17_137_281_602_411_345_683)
+        let families = Array(HapticPattern.allCases.dropFirst(1000)).chunked(into: 50)
+        #expect(families.count == 20)
+        #expect(families.first.map { [$0.first!.rawValue, $0.last!.rawValue] } == ["tinyPurr", "hugeWhale"])
+        #expect(families.last.map { [$0.first!.rawValue, $0.last!.rawValue] } == ["faintPowerOn", "intenseStatic"])
+    }
+
+    @Test func hasTwoThousandPatterns() {
+        #expect(HapticPattern.allCases.count == 2000)
     }
 
     @Test func theHandWrittenHundredComeFirstThenTheFamiliesInOrder() {
@@ -139,7 +149,7 @@ struct HapticEngineProtocolTests {
         // Family by family, each variant through its nine levels, as the generator writes them.
         let expected = PatternFamily.allCases.flatMap { family in
             (0..<PatternFamily.variantCount).flatMap { variant in
-                (0..<PatternFamily.levelCount).map { PatternVariant(family, variant, $0) }
+                (0..<family.levelCount).map { PatternVariant(family, variant, $0) }
             }
         }
         #expect(HapticPattern.allCases.dropFirst(100).map(\.variant) == expected)

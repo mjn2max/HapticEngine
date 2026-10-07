@@ -11,11 +11,13 @@ All notable changes to this project are documented here. The format follows
 ### Added
 - `stop()` on both platforms, to stop the pattern that is playing. It has a default implementation that
   does nothing, so existing conforming types and fakes keep compiling.
-- iOS: 990 more patterns, for 1,000 in all, iOS only for now; play them with `play(_:)`. Ninety are built
+- iOS: 1,990 more patterns, for 2,000 in all, iOS only for now; play them with `play(_:)`. Ninety are built
   by hand: feedback, alerts, rhythm, texture, nature, mechanical and game patterns such as `toggleOn`,
   `alarm`, `drumroll`, `purr`, `thunder`, `typewriter` and `coin`. The other 900 come in ten families of
   ninety, each a variant at nine levels: impacts, tap counts, signals, meters, surfaces, waves, dynamics,
-  weather, machines and arcade, such as `heavyMetalHit`, `waltzAllegro` and `epicLevelUp`.
+  weather, machines and arcade, such as `heavyMetalHit`, `waltzAllegro` and `epicLevelUp`. The last 1,000
+  come in twenty families of fifty, each a motif at five levels, such as `hugeBark`, `quickFunk`,
+  `doubleMail` and `okInMorseSlow`, each tested to feel different from every other pattern.
 - Android: apps can compile against SDK 33 or later; the library no longer asks for the SDK it was built
   with (36.1).
 - iOS demo: a filter panel in place of the filter menu: All, Favorites, Recent, the seven built-in groups and

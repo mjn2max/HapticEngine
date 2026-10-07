@@ -2,7 +2,7 @@
 //
 // GeneratePatterns.swift
 //
-// Writes the 900 family patterns: their cases in `HapticPattern`, `HapticPattern.variant` in the library,
+// Writes the 1,900 family patterns: their cases in `HapticPattern`, `HapticPattern.variant` in the library,
 // and their names, descriptions, symbols and categories in the demo. How each one feels is in
 // `Sources/HapticEngine/PatternFamilies.swift`; this only names them.
 //
@@ -50,6 +50,26 @@ let numbers = ["Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", 
 let timesSaid = ["once", "twice", "three times", "four times", "five times"]
 let cyclesSaid = ["once", "one and a half times", "twice", "two and a half times", "three times",
                   "three and a half times", "four times", "four and a half times", "five times"]
+
+
+// The five-level families: how their levels are named, by how their motifs change.
+let size = levels([("Tiny", "tiny"), ("Small", "small"), ("Medium", "medium"), ("Large", "large"), ("Huge", "huge")])
+let strength = levels([("Faint", "faint"), ("Soft", "soft"), ("Firm", "firm"), ("Strong", "strong"), ("Intense", "intense")])
+let tempo = levels([("Slow", "slow"), ("Easy", "easy"), ("Steady", "steady"), ("Quick", "quick"), ("Rapid", "rapid")])
+// Played 1 + level times, as `MotifFamilies.shaped` repeats them.
+let repeats = levels([("Single", "once"), ("Double", "twice"), ("Triple", "three times"), ("Quadruple", "four times"), ("Quintuple", "five times")])
+
+/// A family of ten motifs at five levels, titled "Huge Bark" and described "A dog's bark, huge".
+func motifFamily(_ id: String, _ heading: String, _ levels: [Level], _ items: [(String, String, String)]) -> Family {
+    Family(
+        id: id,
+        heading: heading,
+        variants: variants(items),
+        levels: levels,
+        title: { "\($1.title) \($0.title)" },
+        subtitle: { variant, level, _ in "\(variant.phrase), \(level.phrase)" }
+    )
+}
 
 let families: [Family] = [
     Family(
@@ -224,6 +244,152 @@ let families: [Family] = [
         title: { "\($1.title) \($0.title)" },
         subtitle: { variant, level, _ in "\(variant.phrase), \(level.phrase)" }
     ),
+    // MARK: Twenty more, ten motifs each at five levels: see PatternFamilies.swift and MotifFamilies.swift.
+] + [
+    motifFamily("animals", "Animals: animal sounds and movements, from tiny to huge", size, [
+        ("Purr", "cat", "A cat's purr"), ("Bark", "dog", "A dog's bark"),
+        ("Hoofbeats", "figure.equestrian.sports", "Hooves on the ground"), ("Hop", "hare", "A rabbit's hops"),
+        ("Peck", "bird", "A bird pecking"), ("Wingbeat", "bird.fill", "Wings beating"),
+        ("Paws", "pawprint", "Soft paws padding"), ("Slither", "lizard", "A snake slithering"),
+        ("Bee", "ant", "A bee buzzing"), ("Whale", "fish", "A whale's song"),
+    ]),
+    motifFamily("emotions", "Emotions: feelings, from tiny to huge", size, [
+        ("Joy", "face.smiling", "Rising bright taps"), ("Calm", "leaf", "A slow, soft swell"),
+        ("Surprise", "exclamationmark", "A sudden sharp tap"), ("Anger", "flame", "Hard, pounding pulses"),
+        ("Sadness", "cloud", "A slowly fading weight"), ("Fear", "bolt.heart", "A quick trembling"),
+        ("Love", "heart", "A warm heartbeat"), ("Laughter", "face.smiling.inverse", "Bubbling, bouncing taps"),
+        ("Sigh", "wind", "A breath in and out"), ("Excitement", "sparkles", "Taps quickening with excitement"),
+    ]),
+    motifFamily("sports", "Sports: moments of play, from faint to intense", strength, [
+        ("Kick", "figure.soccer", "A boot striking a ball"), ("Dribble", "basketball", "A ball bouncing down"),
+        ("Serve", "tennisball", "A toss and a crisp serve"), ("Swish", "figure.basketball", "A clean swish"),
+        ("Bat", "baseball", "The crack of a bat"), ("Whistle", "flag", "A referee's whistle"),
+        ("Goal", "soccerball", "A goal and a cheer"), ("Volley", "volleyball", "A rally of volleys"),
+        ("Punch", "figure.boxing", "Two quick punches"), ("Finish Line", "flag.checkered", "A sprint to the line"),
+    ]),
+    motifFamily("instruments", "Instruments: notes and hits, from faint to intense", strength, [
+        ("Snare", "music.note", "A crisp snare hit"), ("Kick Drum", "speaker.wave.2", "A deep kick drum"),
+        ("Cymbal", "circle.hexagongrid", "A shimmering cymbal"), ("Bass", "guitars", "A plucked bass note"),
+        ("Strum", "guitars.fill", "A strummed chord"), ("Chord", "pianokeys", "A rolled piano chord"),
+        ("Harp", "music.quarternote.3", "A rising harp glissando"), ("Xylophone", "music.note.list", "Rising xylophone notes"),
+        ("Gong", "circle.fill", "A ringing gong"), ("Triangle", "triangle", "A triangle's ring"),
+    ]),
+    motifFamily("vehicles", "Vehicles: on the move, from slow to rapid", tempo, [
+        ("Train", "tram.fill", "Wheels clacking over rails"), ("Motorbike", "scooter", "A motorbike revving"),
+        ("Helicopter", "airplane", "Helicopter blades thumping"), ("Boat", "ferry", "A boat on the swell"),
+        ("Bicycle Bell", "bicycle", "A bicycle bell"), ("Skateboard", "figure.skateboarding", "A skateboard over joints"),
+        ("Subway", "tram", "A subway stop"), ("Rocket", "airplane.departure", "A rocket climbing"),
+        ("Cable Car", "cablecar", "A cable car's bell and roll"), ("Jet", "airplane.circle", "A jet passing over"),
+    ]),
+    motifFamily("controls", "Controls: interface feedback, from faint to intense", strength, [
+        ("Switch", "switch.2", "A switch flipped on"), ("Slider", "slider.horizontal.3", "A slider's detents"),
+        ("Stepper", "plus.forwardslash.minus", "A stepper's click"), ("Pull to Refresh", "arrow.clockwise", "Pulling, then a snap"),
+        ("Page Turn", "book", "A page turning"), ("Key Press", "keyboard", "A key pressed"),
+        ("Scroll Stop", "hand.draw", "A scroll settling"), ("Pop", "bubble", "A button popping"),
+        ("Snap Back", "arrow.uturn.backward", "Springing back"), ("Grab", "hand.raised", "An item grabbed"),
+    ]),
+    motifFamily("body", "Body: the body's rhythms, from faint to intense", strength, [
+        ("Breath", "lungs", "Two slow breaths"), ("Footstep", "figure.walk", "Two footsteps"),
+        ("Finger Snap", "hand.point.up", "A finger snap"), ("Knuckles", "hand.raised.fingers.spread", "Cracking knuckles"),
+        ("Shiver", "thermometer.snowflake", "A shiver"), ("Yawn", "moon.zzz", "A long yawn"),
+        ("Hiccup", "mouth", "Two hiccups"), ("Sneeze", "nose", "A building sneeze"),
+        ("Hug", "figure.2.arms.open", "A warm hug"), ("Flutter", "heart.circle", "A fluttering heart"),
+    ]),
+    motifFamily("kitchen", "Kitchen: cooking sounds, from slow to rapid", tempo, [
+        ("Chop", "carrot", "A knife chopping"), ("Sizzle", "frying.pan", "Oil sizzling"),
+        ("Boil", "cooktop", "Water bubbling"), ("Whisk", "fork.knife", "A whisk beating"),
+        ("Pour", "waterbottle", "Liquid pouring"), ("Kettle", "cup.and.saucer", "A kettle coming to the boil"),
+        ("Toaster", "square.split.1x2", "Bread popping up"), ("Microwave", "microwave", "A microwave finishing"),
+        ("Blender", "tornado", "A blender whirring"), ("Timer Ding", "bell", "A kitchen timer"),
+    ]),
+    motifFamily("tools", "Tools: work in progress, from faint to intense", strength, [
+        ("Hammer", "hammer", "Three hammer blows"), ("Hand Saw", "scissors", "A saw cutting"),
+        ("Screwdriver", "screwdriver", "A screwdriver turning"), ("Wrench", "wrench.adjustable", "A wrench tightening"),
+        ("Power Drill", "wrench.and.screwdriver", "A drill spinning up"), ("Sander", "square.grid.3x3.fill", "A sander buzzing"),
+        ("Stapler", "paperclip", "A stapler pressed"), ("Nail Gun", "hammer.fill", "A nail gun firing"),
+        ("Tape Measure", "ruler", "A tape measure reeling"), ("Chisel", "triangle.fill", "A chisel tapped"),
+    ]),
+    motifFamily("space", "Space: out in orbit, from tiny to huge", size, [
+        ("Launch", "airplane.departure", "A launch rumbling up"), ("Orbit", "globe", "Circling in orbit"),
+        ("Beacon", "dot.radiowaves.left.and.right", "A blinking beacon"), ("Warp", "sparkles", "Jumping to warp"),
+        ("Docking", "link", "Docking, step by step"), ("Meteor", "flame", "A meteor striking"),
+        ("Thruster", "arrow.up.circle", "Thrusters firing"), ("Signal", "antenna.radiowaves.left.and.right", "A fading signal"),
+        ("Comet", "sparkle", "A comet's tail"), ("Black Hole", "circle.circle.fill", "Pulled into a black hole"),
+    ]),
+    motifFamily("ocean", "Ocean: by and under the sea, from tiny to huge", size, [
+        ("Tide", "water.waves", "The tide rolling in"), ("Sonar", "dot.radiowaves.right", "A sonar ping and echo"),
+        ("Bubbles", "bubbles.and.sparkles", "Bubbles rising"), ("Splash", "drop.fill", "A splash and drips"),
+        ("Current", "arrow.right", "A steady current"), ("Buoy Bell", "bell.circle", "A buoy's bell"),
+        ("Undertow", "arrow.down", "A pulling undertow"), ("Sea Spray", "humidity", "Sea spray"),
+        ("Dolphin", "fish.fill", "Dolphin clicks"), ("Ship Horn", "ferry.fill", "A ship's horn"),
+    ]),
+    motifFamily("city", "City: street sounds, from faint to intense", strength, [
+        ("Traffic", "car", "Traffic rumbling"), ("Crosswalk", "figure.walk.circle", "A crosswalk ticking"),
+        ("Elevator", "arrow.up.arrow.down.square", "An elevator arriving"), ("Turnstile", "arrow.triangle.turn.up.right.circle", "A turnstile turning"),
+        ("Jackhammer", "hammer.circle", "A jackhammer"), ("Car Horn", "car.fill", "A car horn"),
+        ("Train Doors", "door.sliding.left.hand.open", "Doors closing"), ("Bus Stop", "bus", "A bus pulling in"),
+        ("Parking", "parkingsign", "Parking sensors"), ("Church Bells", "bell.fill", "Bells ringing"),
+    ]),
+    motifFamily("puzzle", "Puzzle: puzzle game moments, from tiny to huge", size, [
+        ("Match", "puzzlepiece", "A match made"), ("Combo", "bolt", "A rising combo"),
+        ("Line Clear", "line.3.horizontal", "A line cleared"), ("Block Drop", "square.stack", "A block landing"),
+        ("Rotate", "rotate.right", "A piece rotated"), ("Swap", "arrow.left.arrow.right", "Two pieces swapped"),
+        ("Bonus", "star.circle", "A bonus earned"), ("Miss", "xmark.circle", "A missed move"),
+        ("Hint", "lightbulb", "A hint appearing"), ("Level Clear", "checkmark.seal", "A level cleared"),
+    ]),
+    motifFamily("grooves", "Grooves: one bar of a beat, from slow to rapid", tempo, [
+        ("Rock", "guitars", "A rock beat"), ("Funk", "music.mic", "A funk groove"),
+        ("Reggae", "sun.max", "A reggae one-drop"), ("Disco", "sparkles", "A disco beat"),
+        ("Hip Hop", "headphones", "A hip hop beat"), ("Samba", "music.quarternote.3", "A samba rhythm"),
+        ("Tango", "figure.dance", "A tango rhythm"), ("Polka", "music.note", "A polka beat"),
+        ("Techno", "waveform", "A techno pulse"), ("Afrobeat", "music.note.list", "An afrobeat groove"),
+    ]),
+    motifFamily("notifications", "Notifications: alerts, from once to five times", repeats, [
+        ("Mail", "envelope", "New mail"), ("Calendar", "calendar", "A calendar alert"),
+        ("Payment", "creditcard", "A payment sent"), ("Download", "arrow.down.circle", "A download done"),
+        ("Upload", "arrow.up.circle", "An upload done"), ("Battery", "battery.25", "A battery warning"),
+        ("Note", "note.text", "A new note"), ("Sync", "arrow.triangle.2.circlepath", "A sync finished"),
+        ("Friend", "person.crop.circle", "A friend request"), ("News", "newspaper", "Breaking news"),
+    ]),
+    motifFamily("clocks", "Clocks: timekeeping, from slow to rapid", tempo, [
+        ("Tick-Tock", "clock", "A clock's tick-tock"), ("Hour Chime", "bell", "An hour chiming"),
+        ("Cuckoo", "bird", "A cuckoo clock"), ("Stopwatch", "stopwatch", "A stopwatch started"),
+        ("Hourglass", "hourglass", "Sand running through"), ("Pendulum", "metronome", "A swinging pendulum"),
+        ("Alarm Clock", "alarm", "An alarm clock ringing"), ("Egg Timer", "timer", "An egg timer ticking"),
+        ("Grandfather Clock", "clock.fill", "A grandfather clock striking"), ("Digital", "clock.badge", "A digital beep"),
+    ]),
+    motifFamily("elements", "Elements: the elements, from tiny to huge", size, [
+        ("Earth", "globe.americas", "Earth's heavy weight"), ("Air", "wind", "Air moving"),
+        ("Water", "drop", "Water flowing"), ("Lightning", "bolt", "A lightning strike"),
+        ("Ice", "snowflake", "Ice cracking"), ("Lava", "flame.fill", "Lava churning"),
+        ("Steam", "cloud.fog", "Steam hissing"), ("Sand", "hourglass.bottomhalf.filled", "Sand shifting"),
+        ("Crystal", "diamond", "Crystal chiming"), ("Storm", "cloud.bolt.rain", "A storm raging"),
+    ]),
+    motifFamily("magic", "Magic: spells and charms, from tiny to huge", size, [
+        ("Spell", "wand.and.stars", "A spell cast"), ("Portal", "circle.dashed", "A portal opening"),
+        ("Wand", "wand.and.rays", "A wand flick"), ("Charm", "sparkle", "A charm"),
+        ("Curse", "moon.stars", "A curse falling"), ("Heal", "cross.case", "A healing glow"),
+        ("Teleport", "arrow.up.and.down.and.arrow.left.and.right", "Vanishing and reappearing"), ("Summon", "star.circle.fill", "Something summoned"),
+        ("Hex", "hexagon", "A hex"), ("Fizzle", "sparkles", "A spell fizzling"),
+    ]),
+    Family(
+        id: "morse",
+        heading: "Morse: short words in Morse code, from 12 to 26 words a minute",
+        variants: ["OK", "Yes", "No", "Hi", "Go", "On", "Off", "Up", "Win", "End"].map {
+            Variant(title: $0, symbol: "ellipsis", phrase: $0.uppercased())
+        },
+        levels: tempo,
+        title: { "\($0.title) in Morse, \($1.title)" },
+        // 12, 15, 18, 22 and 26 words a minute, as `MotifFamilies.morse` plays them.
+        subtitle: { variant, _, index in "\(variant.phrase) in Morse code at \([12, 15, 18, 22, 26][index]) words a minute" }
+    ),
+    motifFamily("electronics", "Electronics: devices at work, from faint to intense", strength, [
+        ("Power On", "power", "Powering on"), ("Power Off", "power.circle", "Powering off"),
+        ("Charging", "bolt.batteryblock", "Charging up"), ("Vibrate", "iphone.radiowaves.left.and.right", "A phone vibrating"),
+        ("Scanner", "barcode.viewfinder", "A scanner beam"), ("Printer", "printer", "A printer running"),
+        ("Modem", "network", "A modem connecting"), ("Glitch", "exclamationmark.triangle", "A glitch"),
+        ("Click", "cursorarrow.click", "A mouse click"), ("Static", "tv", "Static noise"),
+    ]),
 ]
 
 // MARK: Building
@@ -307,7 +473,7 @@ for (label, values, existing) in [("case name", patterns.map(\.name), handNames)
     let clashes = Set(values).intersection(existing)
     guard clashes.isEmpty else { fail("\(label)s already used by hand-written patterns: \(clashes.sorted())") }
 }
-guard patterns.count == 900 else { fail("Expected 900 patterns, made \(patterns.count)") }
+guard patterns.count == 1900 else { fail("Expected 1,900 patterns, made \(patterns.count)") }
 
 // The cases, after the hand-written ones.
 var cases = begin

@@ -77,33 +77,33 @@ final class LayoutUITests: DemoUITestCase {
         XCTAssertLessThanOrEqual(similar.frame.maxY - top, 840, "The full size stays phone-tall: from \(top) to \(similar.frame.maxY)")
     }
 
-    /// Every place to go is in sight as the filter panel opens, with its count: no submenu, no scrolling.
-    func testTheFilterPanelShowsEveryChoiceAtOnce() {
+    /// The filter panel opens on Show and the built-in groups, all in sight, with every family a scroll
+    /// away, each with its count.
+    func testTheFilterPanelShowsEveryChoice() {
         launch()
         filterButton.tap()
         let done = app.buttons["filter.done"]
         XCTAssertTrue(done.waitForExistence(timeout: 2))
         attachScreenshot("filter panel")
-        let tiles = ["all", "favorites", "recent"] + ["feedback", "alerts", "rhythm", "texture", "nature", "mechanical", "game",
-                     "impacts", "tapCounts", "signals", "meters", "surfaces", "waves", "dynamics", "weather", "machines", "arcade"]
-            .map { "category.\($0)" }
-        for id in tiles {
+        for id in ["all", "favorites", "recent", "feedback", "alerts", "rhythm", "texture", "nature", "mechanical", "game"]
+            .map({ ["all", "favorites", "recent"].contains($0) ? $0 : "category.\($0)" }) {
             XCTAssertTrue(app.buttons["filter.\(id)"].isHittable, "\(id) is in sight")
         }
-        XCTAssertEqual(app.buttons["filter.category.weather"].value as? String, "90 patterns")
         XCTAssertTrue(app.buttons["filter.all"].isSelected)
 
-        app.buttons["filter.category.weather"].tap()
-        XCTAssertTrue(done.waitForNonExistence(timeout: 2), "Picking closes the panel")
-        XCTAssertTrue(pattern("faintDrizzle").waitForExistence(timeout: 3))
-        XCTAssertFalse(pattern("tick").exists)
-        XCTAssertEqual(filterButton.value as? String, "Weather")
+        // The last family, at the far end.
+        let electronics = app.buttons["filter.category.electronics"]
+        for _ in 0..<10 where !electronics.isHittable { app.swipeUp() }
+        XCTAssertTrue(electronics.isHittable, "The last family can be scrolled to")
+        XCTAssertEqual(electronics.value as? String, "50 patterns")
+        attachScreenshot("filter panel, families")
 
-        // Opened again, the choice showing is marked.
-        filterButton.tap()
-        XCTAssertTrue(app.buttons["filter.category.weather"].waitForExistence(timeout: 2))
-        XCTAssertTrue(app.buttons["filter.category.weather"].isSelected)
-        done.tap()
+        electronics.tap()
+        XCTAssertTrue(done.waitForNonExistence(timeout: 2), "Picking closes the panel")
+        XCTAssertTrue(pattern("faintPowerOn").waitForExistence(timeout: 3))
+        XCTAssertFalse(pattern("tick").exists)
+        XCTAssertEqual(filterButton.value as? String, "Electronics")
+        attachScreenshot("electronics")
     }
 
     private func assertFirstSectionClearsTheBar(file: StaticString = #filePath, line: UInt = #line) {

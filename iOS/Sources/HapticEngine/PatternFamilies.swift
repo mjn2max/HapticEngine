@@ -6,12 +6,14 @@
 import CoreHaptics
 import Foundation
 
-/// A family of generated patterns: ten variants, such as materials, meters or machines, each at nine
+/// A family of generated patterns: ten variants, such as materials, meters or machines, each at several
 /// levels, such as strengths, tempos or speeds.
 ///
-/// The 900 patterns after the first hundred are these. How each one feels is decided here; its case, name
-/// and description are written by `iOS/Scripts/GeneratePatterns.swift`, which also writes
-/// `HapticPattern.variant`. Changing a family's feel here needs no regenerating.
+/// The 1,900 patterns after the first hundred are these: the first ten families with nine levels each, then
+/// twenty more with five, fewer and wider steps that are easier to tell apart. How each one feels is decided
+/// here and in `MotifFamilies.swift`; its case, name and description are written by
+/// `iOS/Scripts/GeneratePatterns.swift`, which also writes `HapticPattern.variant`. Changing a family's feel
+/// needs no regenerating.
 enum PatternFamily: Int, CaseIterable, Sendable {
     /// A hit on a material, from feather-light to crushing.
     case impacts
@@ -34,8 +36,15 @@ enum PatternFamily: Int, CaseIterable, Sendable {
     /// Game actions, from tiny to epic.
     case arcade
 
+    // Twenty more, each ten motifs at five levels: see `MotifFamilies.swift`.
+
+    case animals, emotions, sports, instruments, vehicles, controls, body, kitchen, tools, space
+    case ocean, city, puzzle, grooves, notifications, clocks, elements, magic, morse, electronics
+
     static let variantCount = 10
-    static let levelCount = 9
+
+    /// How many levels each variant comes in: nine in the first ten families, five in the rest.
+    var levelCount: Int { rawValue < PatternFamily.animals.rawValue ? 9 : 5 }
 }
 
 /// Where a generated pattern sits in its family.
@@ -43,7 +52,7 @@ struct PatternVariant: Hashable, Sendable {
     let family: PatternFamily
     /// Which of the family's ten, such as a material or a meter.
     let variant: Int
-    /// Which of nine steps, the lowest first, such as a strength or a tempo.
+    /// Which of the family's steps, the lowest first, such as a strength or a tempo.
     let level: Int
 
     init(_ family: PatternFamily, _ variant: Int, _ level: Int) {
@@ -57,7 +66,7 @@ extension HapticPatterns {
     /// A generated pattern's events, in time order.
     static func events(for variant: PatternVariant) -> [CHHapticEvent] {
         // From 0 at the lowest level to 1 at the highest.
-        let level = Float(variant.level) / Float(PatternFamily.levelCount - 1)
+        let level = Float(variant.level) / Float(variant.family.levelCount - 1)
         let events = switch variant.family {
         case .impacts: impact(material: variant.variant, weight: level)
         case .tapCounts: tapCount(variant.variant + 2, pace: variant.level)
@@ -69,6 +78,7 @@ extension HapticPatterns {
         case .weather: weather(variant.variant, strength: variant.level)
         case .machines: machine(variant.variant, speed: variant.level)
         case .arcade: arcade(variant.variant, power: level)
+        default: motifEvents(for: variant)
         }
         // The families mix taps and holds; Core Haptics wants them in time order.
         return events.sorted { $0.relativeTime < $1.relativeTime }

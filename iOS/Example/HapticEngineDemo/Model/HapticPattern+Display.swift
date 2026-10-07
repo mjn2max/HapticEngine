@@ -257,6 +257,49 @@ extension HapticPattern {
         /// Game actions, from tiny to epic.
         case arcade
 
+        // Twenty more families, fifty patterns each: ten motifs at five levels.
+
+        /// Animal sounds and movements.
+        case animals
+        /// Feelings.
+        case emotions
+        /// Moments of play.
+        case sports
+        /// Notes and hits.
+        case instruments
+        /// On the move.
+        case vehicles
+        /// Interface feedback.
+        case controls
+        /// The body's rhythms.
+        case body
+        /// Cooking sounds.
+        case kitchen
+        /// Work in progress.
+        case tools
+        /// Out in orbit.
+        case space
+        /// By and under the sea.
+        case ocean
+        /// Street sounds.
+        case city
+        /// Puzzle game moments.
+        case puzzle
+        /// One bar of a beat.
+        case grooves
+        /// Alerts, once to five times.
+        case notifications
+        /// Timekeeping.
+        case clocks
+        /// The elements.
+        case elements
+        /// Spells and charms.
+        case magic
+        /// Short words in Morse code.
+        case morse
+        /// Devices at work.
+        case electronics
+
         /// The seven groups of the hundred patterns built by hand, then the ten families.
         static let handWritten: [Category] = [.feedback, .alerts, .rhythm, .texture, .nature, .mechanical, .game]
         static var families: [Category] { allCases.filter { !handWritten.contains($0) } }
@@ -280,6 +323,26 @@ extension HapticPattern {
             case .weather: "Weather"
             case .machines: "Machines"
             case .arcade: "Arcade"
+            case .animals: "Animals"
+            case .emotions: "Emotions"
+            case .sports: "Sports"
+            case .instruments: "Instruments"
+            case .vehicles: "Vehicles"
+            case .controls: "Controls"
+            case .body: "Body"
+            case .kitchen: "Kitchen"
+            case .tools: "Tools"
+            case .space: "Space"
+            case .ocean: "Ocean"
+            case .city: "City"
+            case .puzzle: "Puzzle"
+            case .grooves: "Grooves"
+            case .notifications: "Notifications"
+            case .clocks: "Clocks"
+            case .elements: "Elements"
+            case .magic: "Magic"
+            case .morse: "Morse"
+            case .electronics: "Electronics"
             }
         }
 
@@ -302,6 +365,26 @@ extension HapticPattern {
             case .weather: "cloud.sun"
             case .machines: "wrench.and.screwdriver"
             case .arcade: "arcade.stick"
+            case .animals: "pawprint"
+            case .emotions: "face.smiling"
+            case .sports: "sportscourt"
+            case .instruments: "pianokeys"
+            case .vehicles: "car"
+            case .controls: "switch.2"
+            case .body: "figure.stand"
+            case .kitchen: "fork.knife"
+            case .tools: "hammer"
+            case .space: "moon.stars"
+            case .ocean: "water.waves"
+            case .city: "building.2"
+            case .puzzle: "puzzlepiece"
+            case .grooves: "music.note.list"
+            case .notifications: "bell.badge"
+            case .clocks: "clock"
+            case .elements: "flame"
+            case .magic: "wand.and.stars"
+            case .morse: "ellipsis"
+            case .electronics: "bolt"
             }
         }
 
@@ -324,6 +407,26 @@ extension HapticPattern {
             case .weather: .green
             case .machines: .gray
             case .arcade: .indigo
+            case .animals: .brown
+            case .emotions: .pink
+            case .sports: .green
+            case .instruments: .purple
+            case .vehicles: .blue
+            case .controls: .teal
+            case .body: .orange
+            case .kitchen: .red
+            case .tools: .gray
+            case .space: .indigo
+            case .ocean: .cyan
+            case .city: .gray
+            case .puzzle: .mint
+            case .grooves: .pink
+            case .notifications: .red
+            case .clocks: .brown
+            case .elements: .orange
+            case .magic: .purple
+            case .morse: .blue
+            case .electronics: .orange
             }
         }
 
