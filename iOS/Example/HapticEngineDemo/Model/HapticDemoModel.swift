@@ -56,7 +56,11 @@ final class HapticDemoModel {
     }
     /// What the browser shows. Saved between launches.
     var filter: PatternFilter {
-        didSet { preferences.filter = filter }
+        didSet {
+            preferences.filter = filter
+            // Choosing Recent, even again, brings it up to date: see `recentPatterns`.
+            if filter == .recent { refreshRecentPatterns() }
+        }
     }
     /// How the browser lays out the patterns. Saved between launches.
     var layout: PatternLayout {
@@ -70,6 +74,12 @@ final class HapticDemoModel {
     /// The log split into days, for the activity screen. Grouped when the log changes, not on every
     /// redraw: a thousand entries were regrouped each time a replay started or stopped.
     private(set) var logDays: [ActivityDay] = []
+    /// The patterns in the log, newest first, each once: what the Recent filter shows.
+    ///
+    /// Held still while Recent is showing: kept live, playing a pattern there moved it to the top, out
+    /// from under the finger that tapped it. It catches up when Recent is chosen again, and whenever
+    /// entries are removed, which happens on the activity screen, out of sight.
+    private(set) var recentPatterns: [HapticPattern] = []
     private(set) var nowPlaying: Playback?
     /// Stays set after the pattern finishes, so its description can still be read.
     private(set) var lastPlayed: HapticPattern?
@@ -93,6 +103,12 @@ final class HapticDemoModel {
         layout = preferences.layout
         log = self.activity.load()
         logDays = ActivityDay.group(log)
+        refreshRecentPatterns()
+    }
+
+    private func refreshRecentPatterns() {
+        var seen = Set<HapticPattern>()
+        recentPatterns = log.map(\.pattern).filter { seen.insert($0).inserted }
     }
 
     /// Whether the launch reveal's haptic ripple should play: once, on the first launch, where haptics play.
@@ -122,6 +138,7 @@ final class HapticDemoModel {
             log.insert(entry, at: 0)
             if log.count > Self.logLimit { log.removeLast(log.count - Self.logLimit) }
             activity.add(entry)
+            if filter != .recent { refreshRecentPatterns() }
         }
         startPlayback(pattern, entryID: log.first?.id)
     }
@@ -153,10 +170,12 @@ final class HapticDemoModel {
     func deleteEntry(_ entry: LogEntry) {
         log.removeAll { $0.id == entry.id }
         activity.delete(entry.id)
+        refreshRecentPatterns()
     }
 
     func clearLog() {
         log.removeAll()
         activity.deleteAll()
+        refreshRecentPatterns()
     }
 }

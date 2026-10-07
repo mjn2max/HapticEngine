@@ -25,6 +25,58 @@ struct HapticDemoModelTests {
         return engine.plays
     }
 
+    // MARK: Recent
+
+    @Test func recentListsEachPlayedPatternOnceNewestFirst() {
+        let model = makeModel()
+        #expect(model.recentPatterns.isEmpty)
+        for pattern in [HapticPattern.tick, .coin, .tick, .rain] { model.play(pattern) }
+        #expect(model.recentPatterns == [.rain, .tick, .coin])
+    }
+
+    @Test func recentHoldsStillWhileShowingAndCatchesUpWhenChosenAgain() {
+        let model = makeModel()
+        model.play(.tick)
+        model.play(.coin)
+        model.filter = .recent
+        #expect(model.recentPatterns == [.coin, .tick])
+
+        // Playing from Recent leaves its order alone, so nothing moves under the finger.
+        model.play(.tick)
+        model.play(.rain)
+        #expect(model.recentPatterns == [.coin, .tick])
+
+        model.filter = .recent
+        #expect(model.recentPatterns == [.rain, .tick, .coin])
+    }
+
+    @Test func recentFollowsTheLogElsewhere() {
+        let model = makeModel()
+        model.play(.tick)
+        model.play(.coin)
+        #expect(model.recentPatterns == [.coin, .tick])
+    }
+
+    @Test func removingActivityUpdatesRecentAtOnce() throws {
+        let model = makeModel()
+        model.play(.tick)
+        model.play(.coin)
+        model.filter = .recent
+        let coin = try #require(model.log.first)
+        model.deleteEntry(coin)
+        #expect(model.recentPatterns == [.tick])
+        model.clearLog()
+        #expect(model.recentPatterns.isEmpty)
+    }
+
+    @Test func recentIsCountedAndShownByTheCatalog() {
+        let recents: [HapticPattern] = [.rain, .tick]
+        #expect(PatternCatalog.count(of: .recent, favorites: [], recents: recents) == 2)
+        let sections = PatternCatalog.sections(filter: .recent, search: PatternSearch(""), favorites: [], recents: recents)
+        #expect(sections.flatMap(\.patterns) == recents)
+        #expect(PatternCatalog.sections(filter: .recent, search: PatternSearch(""), favorites: [], recents: []).isEmpty)
+    }
+
     // MARK: Playing
 
     @Test func playsOnTheEngineInOrder() {

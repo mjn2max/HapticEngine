@@ -34,7 +34,7 @@ struct PatternsView: View {
     var body: some View {
         let search = PatternSearch(query)
         // Worked out once per update, here, rather than in each place that needs them.
-        let sections = PatternCatalog.sections(filter: filter, search: search, favorites: model.favorites)
+        let sections = PatternCatalog.sections(filter: filter, search: search, favorites: model.favorites, recents: model.recentPatterns)
         // Results replace the browsing sections once something is typed; until then, the filter's patterns
         // stay in view.
         let showsFooter = search.isEmpty && filter != .all && !sections.isEmpty
@@ -43,7 +43,7 @@ struct PatternsView: View {
             PatternSections(
                 sections: sections,
                 layout: layout,
-                emptyState: search.isEmpty ? .noFavorites : .noResults(query),
+                emptyState: !search.isEmpty ? .noResults(query) : filter == .recent ? .noRecent : .noFavorites,
                 footerCount: showsFooter ? sections.reduce(0) { $0 + $1.patterns.count } : nil,
                 showAll: { withAnimation(.snappy) { filter = .all } }
             )
@@ -177,6 +177,7 @@ struct WaveRows: Equatable {
 private struct PatternSections: View, Equatable {
     enum EmptyState: Equatable {
         case noFavorites
+        case noRecent
         case noResults(String)
     }
 
@@ -254,8 +255,14 @@ private struct PatternSections: View, Equatable {
         switch emptyState {
         case .noResults(let query):
             ContentUnavailableView.search(text: query)
+        case .noRecent:
+            ContentUnavailableView {
+                Label("Nothing Played Yet", systemImage: "clock.arrow.circlepath")
+            } description: {
+                Text("Patterns you play show up here, newest first, to feel them again.")
+            }
         case .noFavorites:
-            // Only favorites can be empty: every category has patterns.
+            // Favorites and Recent are the only filters that can be empty: every category has patterns.
             ContentUnavailableView {
                 Label("No Favorites Yet", systemImage: "star")
             } description: {

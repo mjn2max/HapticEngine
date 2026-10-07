@@ -27,7 +27,7 @@ struct ActivityLogView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color(.systemGroupedBackground))
         .animation(.snappy, value: model.log.isEmpty)
-        .navigationTitle("Activity")
+        .navigationTitle("History")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             Button("Clear", role: .destructive) {
@@ -36,11 +36,11 @@ struct ActivityLogView: View {
             .disabled(model.log.isEmpty)
             // Attached to the button so it appears anchored to it.
             .confirmationDialog(
-                "Clear all activity?",
+                "Clear all history?",
                 isPresented: $isConfirmingClear,
                 titleVisibility: .visible
             ) {
-                Button("Clear Activity", role: .destructive) {
+                Button("Clear History", role: .destructive) {
                     withAnimation(.snappy) { model.clearLog() }
                 }
             } message: {
@@ -122,7 +122,7 @@ struct ActivityLogView: View {
                 VStack(spacing: 10) {
                     EmptyActivityBadge()
                         .padding(.bottom, 6)
-                    Text("No Activity Yet")
+                    Text("No History Yet")
                         .font(.title2.bold())
                     Text("Patterns you play show up here, so you can feel them again with one tap.")
                         .font(.subheadline)

@@ -50,12 +50,35 @@ struct MenuView: View {
                     Button {
                         onClose(.showActivity)
                     } label: {
-                        MenuRow("Activity", systemImage: "clock.arrow.circlepath", tint: .blue) {
+                        // History, not Activity, which suggested fitness: the record of plays, with their times.
+                        // Its own clock, so it isn't mistaken for the Recent filter's.
+                        MenuRow("History", systemImage: "clock", tint: .blue) {
                             if !model.log.isEmpty { MenuBadge(count: model.log.count) }
                             MenuAccessory.chevron
                         }
                     }
                     .accessibilityIdentifier("menu.activity")
+
+                    // How the home screen lays out the patterns: a setting, here with the app's others,
+                    // rather than beside the filters, where it read as a way to show the filter panel.
+                    // Choosing one closes the page, so the patterns are seen taking the new layout.
+                    Picker(selection: Binding(
+                        get: { model.layout },
+                        set: { layout in
+                            withAnimation(.easeOut(duration: 0.25)) { model.layout = layout }
+                            onClose(nil)
+                        }
+                    )) {
+                        ForEach(PatternLayout.allCases, id: \.self) { layout in
+                            Text(layout.title)
+                        }
+                    } label: {
+                        MenuRow("Layout", systemImage: model.layout.systemImage, tint: .teal)
+                    }
+                    .pickerStyle(.menu)
+                    .tint(.secondary)
+                    .sensoryFeedback(.selection, trigger: model.layout)
+                    .accessibilityIdentifier("menu.layout")
 
                     Button(action: copyPackageURL) {
                         MenuRow(

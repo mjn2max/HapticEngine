@@ -15,7 +15,7 @@ struct HeaderTitle: View {
     @Environment(HapticDemoModel.self) private var model
 
     private var count: Int {
-        PatternCatalog.count(of: filter, favorites: model.favorites)
+        PatternCatalog.count(of: filter, favorites: model.favorites, recents: model.recentPatterns)
     }
 
     var body: some View {

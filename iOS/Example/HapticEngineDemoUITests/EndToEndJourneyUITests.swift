@@ -46,7 +46,7 @@ final class EndToEndJourneyUITests: DemoUITestCase {
         XCTAssertTrue(filterButton.waitForExistence(timeout: 2))
 
         // Switch to the grid; patterns still play from it.
-        chooseInFilterMenu("Grid")
+        chooseLayout("Grid")
         XCTAssertTrue(app.staticTexts["One light, crisp tap"].waitForNonExistence(timeout: 2), "The grid has no descriptions")
         play("tick")
         attachScreenshot("3 grid")
@@ -56,7 +56,7 @@ final class EndToEndJourneyUITests: DemoUITestCase {
         XCTAssertTrue(menuActivity.label.contains("3") || menuActivity.value as? String == "3",
                       "The menu shows 3 entries: \(menuActivity.label)")
         menuActivity.tap()
-        XCTAssertTrue(app.navigationBars["Activity"].waitForExistence(timeout: 3))
+        XCTAssertTrue(app.navigationBars["History"].waitForExistence(timeout: 3))
         let tick = activityRow("Tick"), thunder = activityRow("Thunder"), success = activityRow("Success")
         XCTAssertTrue(tick.waitForExistence(timeout: 2))
         XCTAssertTrue(thunder.exists && success.exists)

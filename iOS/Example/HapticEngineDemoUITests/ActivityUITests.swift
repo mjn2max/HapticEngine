@@ -11,8 +11,8 @@ final class ActivityUITests: DemoUITestCase {
         launch()
         openActivity()
 
-        XCTAssertTrue(app.staticTexts["No Activity Yet"].exists)
-        XCTAssertFalse(app.navigationBars["Activity"].buttons["Clear"].isEnabled, "Nothing to clear")
+        XCTAssertTrue(app.staticTexts["No History Yet"].exists)
+        XCTAssertFalse(app.navigationBars["History"].buttons["Clear"].isEnabled, "Nothing to clear")
         attachScreenshot("empty")
 
         let suggestion = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Play '")).firstMatch
@@ -21,8 +21,8 @@ final class ActivityUITests: DemoUITestCase {
         suggestion.tap()
 
         XCTAssertTrue(activityRow(title).waitForExistence(timeout: 3), "Playing a suggestion logs it")
-        XCTAssertFalse(app.staticTexts["No Activity Yet"].exists)
-        XCTAssertTrue(app.navigationBars["Activity"].buttons["Clear"].isEnabled)
+        XCTAssertFalse(app.staticTexts["No History Yet"].exists)
+        XCTAssertTrue(app.navigationBars["History"].buttons["Clear"].isEnabled)
     }
 
     func testEntriesAreGroupedUnderTodayNewestFirst() {
@@ -87,7 +87,7 @@ final class ActivityUITests: DemoUITestCase {
         play("success")
         openActivity()
 
-        app.navigationBars["Activity"].buttons["Clear"].tap()
+        app.navigationBars["History"].buttons["Clear"].tap()
         let message = app.staticTexts.matching(NSPredicate(format: "label CONTAINS '2 entries'")).firstMatch
         XCTAssertTrue(message.waitForExistence(timeout: 2), "The dialog says how many entries go")
         attachScreenshot("confirm clear")
@@ -99,12 +99,12 @@ final class ActivityUITests: DemoUITestCase {
         } else {
             app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
         }
-        XCTAssertTrue(app.buttons["Clear Activity"].waitForNonExistence(timeout: 2))
+        XCTAssertTrue(app.buttons["Clear History"].waitForNonExistence(timeout: 2))
         XCTAssertEqual(activityRows.count, 2)
 
-        app.navigationBars["Activity"].buttons["Clear"].tap()
-        app.buttons["Clear Activity"].tap()
-        XCTAssertTrue(app.staticTexts["No Activity Yet"].waitForExistence(timeout: 3))
+        app.navigationBars["History"].buttons["Clear"].tap()
+        app.buttons["Clear History"].tap()
+        XCTAssertTrue(app.staticTexts["No History Yet"].waitForExistence(timeout: 3))
     }
 
     func testTheMenuBadgeFollowsTheLog() {
@@ -114,7 +114,7 @@ final class ActivityUITests: DemoUITestCase {
         openMenu()
         XCTAssertTrue(menuActivity.label.contains("2"), "Badge shows 2: \(menuActivity.label)")
         menuActivity.tap()
-        XCTAssertTrue(app.navigationBars["Activity"].waitForExistence(timeout: 3))
+        XCTAssertTrue(app.navigationBars["History"].waitForExistence(timeout: 3))
 
         swipeToDelete(activityRow("Tick"))
         XCTAssertTrue(activityRow("Tick").waitForNonExistence(timeout: 3))

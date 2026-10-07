@@ -111,16 +111,28 @@ class DemoUITestCase: XCTestCase {
         start.press(forDuration: 0.05, thenDragTo: end, withVelocity: .fast, thenHoldForDuration: 0)
     }
 
-    /// Picks a filter, or a layout, from the menu beside search.
+    /// Picks a filter from the panel beside search.
     func chooseInFilterMenu(_ title: String) {
         filterButton.tap()
         let item = app.buttons[title].firstMatch
         XCTAssertTrue(item.waitForExistence(timeout: 2), "\(title) is in the filter menu")
         item.tap()
-        // Filters and layouts alike close the menu.
+        // Picking closes the panel.
         let closed = NSPredicate(format: "exists == false OR hittable == false")
         XCTAssertEqual(XCTWaiter.wait(for: [expectation(for: closed, evaluatedWith: item)], timeout: 2), .completed,
                        "The filter menu closes after picking \(title)")
+    }
+
+    /// Sets the home screen's layout from the menu page, which closes as it's chosen.
+    func chooseLayout(_ title: String) {
+        openMenu()
+        let layout = app.buttons["menu.layout"]
+        XCTAssertTrue(layout.waitForExistence(timeout: 2))
+        layout.tap()
+        let item = app.buttons[title].firstMatch
+        XCTAssertTrue(item.waitForExistence(timeout: 2), "\(title) is a layout to choose")
+        item.tap()
+        XCTAssertTrue(menuBack.waitForNonExistence(timeout: 2), "Choosing a layout goes back to the patterns")
     }
 
     /// Stars a pattern from its context menu.
@@ -141,24 +153,24 @@ class DemoUITestCase: XCTestCase {
         openMenu()
         XCTAssertTrue(menuActivity.waitForExistence(timeout: 2))
         menuActivity.tap()
-        XCTAssertTrue(app.navigationBars["Activity"].waitForExistence(timeout: 3), "Activity opens")
+        XCTAssertTrue(app.navigationBars["History"].waitForExistence(timeout: 3), "History opens")
     }
 
     func leaveActivity() {
-        app.navigationBars["Activity"].buttons.firstMatch.tap()
+        app.navigationBars["History"].buttons.firstMatch.tap()
         XCTAssertTrue(appMenu.waitForExistence(timeout: 3))
     }
 
     /// Empties the log through the screen, as a person would: for suites using the log saved on disk.
     func clearActivityIfAny() {
         openActivity()
-        let clear = app.navigationBars["Activity"].buttons["Clear"]
+        let clear = app.navigationBars["History"].buttons["Clear"]
         if clear.isEnabled {
             clear.tap()
-            let confirm = app.buttons["Clear Activity"]
+            let confirm = app.buttons["Clear History"]
             XCTAssertTrue(confirm.waitForExistence(timeout: 2))
             confirm.tap()
-            XCTAssertTrue(app.staticTexts["No Activity Yet"].waitForExistence(timeout: 3))
+            XCTAssertTrue(app.staticTexts["No History Yet"].waitForExistence(timeout: 3))
         }
         leaveActivity()
     }

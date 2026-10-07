@@ -153,7 +153,7 @@ final class SearchUITests: XCTestCase {
             filterButton.coordinate(withNormalizedOffset: CGVector(dx: dx, dy: dy)).tap()
             XCTAssertTrue(app.buttons["Nature"].firstMatch.waitForExistence(timeout: 2), "Tapped at \(dx), \(dy)")
             if dx == 0.15 { attachScreenshot("filter menu") }
-            app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.9)).tap()
+            app.buttons["filter.done"].tap()
             XCTAssertTrue(app.buttons["Nature"].firstMatch.waitForNonExistence(timeout: 2))
         }
     }
@@ -200,24 +200,30 @@ final class SearchUITests: XCTestCase {
 
     // MARK: Menu
 
-    func testTheFilterMenuSwitchesLayout() {
+    func testTheMenuPageSwitchesLayout() {
         // The list shows each pattern's description; the grid doesn't.
         let description = app.staticTexts["One light, crisp tap"]
         XCTAssertTrue(description.exists)
 
-        filterButton.tap()
-        attachScreenshot("filter menu")
+        appMenu.tap()
+        let layout = app.buttons["menu.layout"]
+        XCTAssertTrue(layout.waitForExistence(timeout: 2))
+        XCTAssertTrue(layout.label.contains("List") || (layout.value as? String) == "List", "It says what's chosen: \(layout.label)")
+        layout.tap()
+        attachScreenshot("layout choices")
         app.buttons["Grid"].firstMatch.tap()
+        XCTAssertTrue(app.buttons["menu.done"].waitForNonExistence(timeout: 2), "Choosing goes back to the patterns")
 
-        XCTAssertTrue(description.waitForNonExistence(timeout: 2))
-        XCTAssertTrue(app.buttons["Grid"].firstMatch.waitForNonExistence(timeout: 2), "The menu closes, as picking a filter does")
-        XCTAssertTrue(pattern("tick").isHittable, "The grid shows, not covered by the menu")
+        XCTAssertTrue(description.waitForNonExistence(timeout: 2), "The home screen is a grid")
+        XCTAssertTrue(pattern("tick").isHittable)
 
-        // And back to the list, which closes it too.
-        filterButton.tap()
+        // And back to the list.
+        appMenu.tap()
+        XCTAssertTrue(layout.waitForExistence(timeout: 2))
+        layout.tap()
         app.buttons["List"].firstMatch.tap()
+        XCTAssertTrue(app.buttons["menu.done"].waitForNonExistence(timeout: 2))
         XCTAssertTrue(description.waitForExistence(timeout: 2))
-        XCTAssertTrue(app.buttons["List"].firstMatch.waitForNonExistence(timeout: 2))
     }
 
     func testTheMenuClosesWithItsButtonOrASwipeBack() {
@@ -356,7 +362,7 @@ final class SearchUITests: XCTestCase {
         let item = app.buttons["menu.activity"]
         XCTAssertTrue(item.waitForExistence(timeout: 2))
         item.tap()
-        XCTAssertTrue(app.navigationBars["Activity"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.navigationBars["History"].waitForExistence(timeout: 2))
     }
 
     private func openSearch() {

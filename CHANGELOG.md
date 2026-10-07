@@ -18,8 +18,12 @@ All notable changes to this project are documented here. The format follows
   weather, machines and arcade, such as `heavyMetalHit`, `waltzAllegro` and `epicLevelUp`.
 - Android: apps can compile against SDK 33 or later; the library no longer asks for the SDK it was built
   with (36.1).
-- iOS demo: the ten pattern families as categories of their own, under Families in the filter menu, so the
-  menu still fits an iPhone.
+- iOS demo: a filter panel in place of the filter menu: All, Favorites, Recent, the seven built-in groups and
+  the ten pattern families as tiles with their counts, all in sight at once. A sheet on iPhone, a popover on
+  iPad.
+- iOS demo: a Recent filter, the patterns played lately, newest first, each once.
+- iOS demo: the layout moved to the menu page; choosing one goes back to the patterns. The activity log is
+  now called History.
 - iOS demo on iPad and other devices without haptics: patterns can still be tapped to show their card and
   timeline, marked as not felt. The full-size card stops at about a phone's height, and the list at a
   readable width.

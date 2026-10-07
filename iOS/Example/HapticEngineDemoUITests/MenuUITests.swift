@@ -25,12 +25,12 @@ final class MenuUITests: DemoUITestCase {
 
     func testEveryRowIsThere() {
         openMenu()
-        for row in ["Activity", "Use in Your App", "Source Code", "Report an Issue", "License"] {
+        for row in ["History", "Use in Your App", "Source Code", "Report an Issue", "License"] {
             let element = menuRow(row)
             XCTAssertTrue(element.exists, "\(row) row")
             XCTAssertTrue(element.isHittable, "\(row) row can be tapped")
         }
-        XCTAssertTrue(menuActivity.isEnabled, "Activity opens where haptics play")
+        XCTAssertTrue(menuActivity.isEnabled, "History opens where haptics play")
     }
 
     func testTheLicenseOpensAndGoesBackToTheMenu() {

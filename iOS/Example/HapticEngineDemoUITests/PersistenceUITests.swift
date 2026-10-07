@@ -47,7 +47,7 @@ final class PersistenceUITests: DemoUITestCase {
     func testTheFilterAndLayoutAreKept() {
         launch()
         chooseInFilterMenu("Nature")
-        chooseInFilterMenu("Grid")
+        chooseLayout("Grid")
         XCTAssertTrue(pattern("thunder").waitForExistence(timeout: 2))
 
         launch(Self.savedOnly)

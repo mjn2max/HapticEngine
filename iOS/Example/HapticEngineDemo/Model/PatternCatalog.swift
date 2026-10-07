@@ -18,7 +18,12 @@ struct PatternSection: Identifiable, Equatable {
 enum PatternCatalog {
     /// A search shows every category with a match, whatever the filter: someone searching wants a pattern
     /// wherever it is. Otherwise the filter's patterns show, under category headings only for all.
-    static func sections(filter: PatternFilter, search: PatternSearch, favorites: [HapticPattern]) -> [PatternSection] {
+    static func sections(
+        filter: PatternFilter,
+        search: PatternSearch,
+        favorites: [HapticPattern],
+        recents: [HapticPattern] = []
+    ) -> [PatternSection] {
         if !search.isEmpty {
             return categorySections(where: search.matches)
         }
@@ -27,16 +32,19 @@ enum PatternCatalog {
             return categorySections { _ in true }
         case .favorites:
             return favorites.isEmpty ? [] : [PatternSection(id: "favorites", title: nil, patterns: favorites)]
+        case .recent:
+            return recents.isEmpty ? [] : [PatternSection(id: "recent", title: nil, patterns: recents)]
         case .category(let category):
             return [PatternSection(id: category.rawValue, title: nil, patterns: category.patterns)]
         }
     }
 
     /// How many patterns `filter` shows.
-    static func count(of filter: PatternFilter, favorites: [HapticPattern]) -> Int {
+    static func count(of filter: PatternFilter, favorites: [HapticPattern], recents: [HapticPattern] = []) -> Int {
         switch filter {
         case .all: HapticPattern.allCases.count
         case .favorites: favorites.count
+        case .recent: recents.count
         case .category(let category): category.patterns.count
         }
     }

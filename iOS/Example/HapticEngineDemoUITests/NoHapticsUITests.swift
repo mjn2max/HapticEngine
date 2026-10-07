@@ -46,7 +46,7 @@ final class NoHapticsUITests: DemoUITestCase {
         XCTAssertTrue(menuActivity.isEnabled)
         attachScreenshot("menu without haptics")
         menuActivity.tap()
-        XCTAssertTrue(app.navigationBars["Activity"].waitForExistence(timeout: 3))
+        XCTAssertTrue(app.navigationBars["History"].waitForExistence(timeout: 3))
         XCTAssertTrue(activityRow("Tick").waitForExistence(timeout: 2))
     }
 

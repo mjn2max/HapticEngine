@@ -77,28 +77,33 @@ final class LayoutUITests: DemoUITestCase {
         XCTAssertLessThanOrEqual(similar.frame.maxY - top, 840, "The full size stays phone-tall: from \(top) to \(similar.frame.maxY)")
     }
 
-    /// The way to the families is in sight as the menu opens, above the hand-built groups.
-    func testTheFilterMenuFitsWithTheFamiliesOneLevelDown() {
+    /// Every place to go is in sight as the filter panel opens, with its count: no submenu, no scrolling.
+    func testTheFilterPanelShowsEveryChoiceAtOnce() {
         launch()
         filterButton.tap()
-        let families = app.buttons["filterFamilies"].firstMatch
-        XCTAssertTrue(families.waitForExistence(timeout: 2))
-        for title in ["All", "Favorites", "Feedback"] {
-            XCTAssertTrue(app.buttons[title].firstMatch.isHittable, "\(title) is in sight")
+        let done = app.buttons["filter.done"]
+        XCTAssertTrue(done.waitForExistence(timeout: 2))
+        attachScreenshot("filter panel")
+        let tiles = ["all", "favorites", "recent"] + ["feedback", "alerts", "rhythm", "texture", "nature", "mechanical", "game",
+                     "impacts", "tapCounts", "signals", "meters", "surfaces", "waves", "dynamics", "weather", "machines", "arcade"]
+            .map { "category.\($0)" }
+        for id in tiles {
+            XCTAssertTrue(app.buttons["filter.\(id)"].isHittable, "\(id) is in sight")
         }
-        XCTAssertTrue(families.isHittable, "Families is in sight, not below the fold")
-        XCTAssertFalse(app.buttons["Weather"].firstMatch.exists, "The families wait one level down")
-        attachScreenshot("filter menu")
+        XCTAssertEqual(app.buttons["filter.category.weather"].value as? String, "90 patterns")
+        XCTAssertTrue(app.buttons["filter.all"].isSelected)
 
-        families.tap()
-        let weather = app.buttons["Weather"].firstMatch
-        XCTAssertTrue(weather.waitForExistence(timeout: 2))
-        attachScreenshot("families submenu")
-        weather.tap()
+        app.buttons["filter.category.weather"].tap()
+        XCTAssertTrue(done.waitForNonExistence(timeout: 2), "Picking closes the panel")
         XCTAssertTrue(pattern("faintDrizzle").waitForExistence(timeout: 3))
         XCTAssertFalse(pattern("tick").exists)
         XCTAssertEqual(filterButton.value as? String, "Weather")
-        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label CONTAINS 'Weather · 90'")).firstMatch.exists)
+
+        // Opened again, the choice showing is marked.
+        filterButton.tap()
+        XCTAssertTrue(app.buttons["filter.category.weather"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.buttons["filter.category.weather"].isSelected)
+        done.tap()
     }
 
     private func assertFirstSectionClearsTheBar(file: StaticString = #filePath, line: UInt = #line) {
