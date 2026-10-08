@@ -95,16 +95,16 @@ struct MotifStep: Sendable {
 
 /// The motifs of the twenty families, ten each, in the order the generator names them.
 enum MotifLibrary {
-    private static func t(_ time: Double, _ intensity: Float, _ sharpness: Float) -> MotifStep {
+    static func t(_ time: Double, _ intensity: Float, _ sharpness: Float) -> MotifStep {
         MotifStep(time: time, intensity: intensity, sharpness: sharpness, duration: 0)
     }
 
-    private static func h(_ time: Double, _ intensity: Float, _ sharpness: Float, _ duration: Double) -> MotifStep {
+    static func h(_ time: Double, _ intensity: Float, _ sharpness: Float, _ duration: Double) -> MotifStep {
         MotifStep(time: time, intensity: intensity, sharpness: sharpness, duration: duration)
     }
 
     /// `count` taps `every` seconds apart, cycling through `intensities`, and through `sharpnesses` if given.
-    private static func ticks(_ count: Int, every: Double, from start: Double = 0, _ intensities: [Float], _ sharpness: Float, sharpnesses: [Float] = []) -> [MotifStep] {
+    static func ticks(_ count: Int, every: Double, from start: Double = 0, _ intensities: [Float], _ sharpness: Float, sharpnesses: [Float] = []) -> [MotifStep] {
         (0..<count).map { index in
             t(start + Double(index) * every, intensities[index % intensities.count],
               sharpnesses.isEmpty ? sharpness : sharpnesses[index % sharpnesses.count])
@@ -112,7 +112,7 @@ enum MotifLibrary {
     }
 
     /// `count` back-to-back holds of `each` seconds, cycling through `intensities` and `sharpnesses`.
-    private static func holds(_ count: Int, each: Double, from start: Double = 0, _ intensities: [Float], _ sharpnesses: [Float]) -> [MotifStep] {
+    static func holds(_ count: Int, each: Double, from start: Double = 0, _ intensities: [Float], _ sharpnesses: [Float]) -> [MotifStep] {
         (0..<count).map { index in
             h(start + Double(index) * each, intensities[index % intensities.count], sharpnesses[index % sharpnesses.count], each)
         }
@@ -120,7 +120,7 @@ enum MotifLibrary {
 
     /// One bar of sixteen steps at 120 beats per minute: X an accent, x a crisp hit, o a low one, h an open
     /// hi-hat held briefly, . a rest.
-    private static func groove(_ steps: String) -> [MotifStep] {
+    static func groove(_ steps: String) -> [MotifStep] {
         steps.enumerated().compactMap { index, step in
             let time = Double(index) * 0.125
             return switch step {
@@ -154,6 +154,26 @@ enum MotifLibrary {
         case .elements: (.size, elements)
         case .magic: (.size, magic)
         case .electronics: (.strength, electronics)
+        case .feedbackTaps: (.strength, feedbackTaps)
+        case .feedbackToggles: (.size, feedbackToggles)
+        case .feedbackGestures: (.tempo, feedbackGestures)
+        case .feedbackResults: (.repeats, feedbackResults)
+        case .alertsChimes: (.repeats, alertsChimes)
+        case .alertsCalls: (.tempo, alertsCalls)
+        case .alertsWarnings: (.strength, alertsWarnings)
+        case .rhythmBeats: (.tempo, rhythmBeats)
+        case .rhythmPulses: (.repeats, rhythmPulses)
+        case .rhythmFootwork: (.tempo, rhythmFootwork)
+        case .textureGrains: (.strength, textureGrains)
+        case .textureHums: (.size, textureHums)
+        case .textureSwells: (.tempo, textureSwells)
+        case .natureCreatures: (.size, natureCreatures)
+        case .natureWater: (.strength, natureWater)
+        case .natureSky: (.tempo, natureSky)
+        case .mechanicalParts: (.strength, mechanicalParts)
+        case .mechanicalDevices: (.tempo, mechanicalDevices)
+        case .gameMoves: (.size, gameMoves)
+        case .gameRewards: (.repeats, gameRewards)
         default: preconditionFailure("\(family) has no motifs")
         }
     }

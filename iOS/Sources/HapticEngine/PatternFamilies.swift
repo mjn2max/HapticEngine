@@ -9,8 +9,9 @@ import Foundation
 /// A family of generated patterns: ten variants, such as materials, meters or machines, each at several
 /// levels, such as strengths, tempos or speeds.
 ///
-/// The 1,900 patterns after the first hundred are these: the first ten families with nine levels each, then
-/// twenty more with five, fewer and wider steps that are easier to tell apart. How each one feels is decided
+/// The 2,900 patterns after the first hundred are these: the first ten families with nine levels each, then
+/// forty more with five, fewer and wider steps that are easier to tell apart. The last twenty of those join
+/// the hand-built groups in the demo, such as Feedback, rather than standing as families. How each one feels is decided
 /// here and in `MotifFamilies.swift`; its case, name and description are written by
 /// `iOS/Scripts/GeneratePatterns.swift`, which also writes `HapticPattern.variant`. Changing a family's feel
 /// needs no regenerating.
@@ -40,6 +41,17 @@ enum PatternFamily: Int, CaseIterable, Sendable {
 
     case animals, emotions, sports, instruments, vehicles, controls, body, kitchen, tools, space
     case ocean, city, puzzle, grooves, notifications, clocks, elements, magic, morse, electronics
+
+    // Twenty more at five levels, shown with the hand-built groups rather than as families of their own:
+    // their names say which group, such as `feedbackTaps` for Feedback.
+
+    case feedbackTaps, feedbackToggles, feedbackGestures, feedbackResults
+    case alertsChimes, alertsCalls, alertsWarnings
+    case rhythmBeats, rhythmPulses, rhythmFootwork
+    case textureGrains, textureHums, textureSwells
+    case natureCreatures, natureWater, natureSky
+    case mechanicalParts, mechanicalDevices
+    case gameMoves, gameRewards
 
     static let variantCount = 10
 

@@ -2,7 +2,7 @@
 //
 // GeneratePatterns.swift
 //
-// Writes the 1,900 family patterns: their cases in `HapticPattern`, `HapticPattern.variant` in the library,
+// Writes the 2,900 family patterns: their cases in `HapticPattern`, `HapticPattern.variant` in the library,
 // and their names, descriptions, symbols and categories in the demo. How each one feels is in
 // `Sources/HapticEngine/PatternFamilies.swift`; this only names them.
 //
@@ -36,6 +36,8 @@ struct Family {
     let levels: [Level]
     let title: (Variant, Level) -> String
     let subtitle: (Variant, Level, Int) -> String
+    /// The demo category it's listed under, when not one of its own: a hand-built group, such as "feedback".
+    var category: String? = nil
 }
 
 func variants(_ items: [(String, String, String)]) -> [Variant] {
@@ -60,14 +62,15 @@ let tempo = levels([("Slow", "slow"), ("Easy", "easy"), ("Steady", "steady"), ("
 let repeats = levels([("Single", "once"), ("Double", "twice"), ("Triple", "three times"), ("Quadruple", "four times"), ("Quintuple", "five times")])
 
 /// A family of ten motifs at five levels, titled "Huge Bark" and described "A dog's bark, huge".
-func motifFamily(_ id: String, _ heading: String, _ levels: [Level], _ items: [(String, String, String)]) -> Family {
+func motifFamily(_ id: String, _ heading: String, _ levels: [Level], _ items: [(String, String, String)], in category: String? = nil) -> Family {
     Family(
         id: id,
         heading: heading,
         variants: variants(items),
         levels: levels,
         title: { "\($1.title) \($0.title)" },
-        subtitle: { variant, level, _ in "\(variant.phrase), \(level.phrase)" }
+        subtitle: { variant, level, _ in "\(variant.phrase), \(level.phrase)" },
+        category: category
     )
 }
 
@@ -390,6 +393,148 @@ let families: [Family] = [
         ("Modem", "network", "A modem connecting"), ("Glitch", "exclamationmark.triangle", "A glitch"),
         ("Click", "cursorarrow.click", "A mouse click"), ("Static", "tv", "Static noise"),
     ]),
+    // MARK: Twenty more, listed with the hand-built groups rather than as families of their own.
+] + [
+    motifFamily("feedbackTaps", "Feedback taps: buttons and other targets, from faint to intense", strength, [
+        ("Button", "button.programmable", "A button pressed"), ("Card Tap", "rectangle.portrait", "A card tapped"),
+        ("Icon Tap", "app", "An icon tapped"), ("Chip", "capsule", "A chip selected"),
+        ("Tab", "rectangle.split.3x1", "A tab chosen"), ("Badge", "app.badge", "A badge cleared"),
+        ("Checkbox", "checkmark.square", "A box checked"), ("Radio", "circle.inset.filled", "A radio button chosen"),
+        ("Link", "link.circle", "A link followed"), ("Menu Item", "filemenu.and.selection", "A menu item chosen"),
+    ], in: "feedback"),
+    motifFamily("feedbackToggles", "Feedback toggles: switches and catches, from tiny to huge", size, [
+        ("Flip", "arrow.left.arrow.right.circle", "Flipped over"), ("Latch", "lock.open", "A latch catching"),
+        ("Dial Click", "dial.low", "A dial clicking round"), ("Lever", "arrow.down.square", "A lever pulled"),
+        ("Knob", "dial.high", "A knob turned"), ("Rocker", "power.dotted", "A rocker switch"),
+        ("Push Button", "button.horizontal", "A push button"), ("Slide Lock", "lock.rectangle", "A lock slid open"),
+        ("Thumb Switch", "hand.thumbsup", "A thumb switch"), ("Detent", "slider.vertical.3", "A detent"),
+    ], in: "feedback"),
+    motifFamily("feedbackGestures", "Feedback gestures: touches and swipes, from slow to rapid", tempo, [
+        ("Fling", "hand.point.right", "A fling"), ("Pinch", "arrow.down.right.and.arrow.up.left", "A pinch closing"),
+        ("Spread", "arrow.up.left.and.arrow.down.right", "A pinch opening"), ("Drag", "hand.draw.fill", "Dragged, then dropped"),
+        ("Long Hold", "hand.tap.fill", "Held, then released"), ("Flick", "hand.point.up.left", "A flick"),
+        ("Pan", "arrow.up.and.down.and.arrow.left.and.right", "Panning around"), ("Edge Swipe", "rectangle.lefthalf.inset.filled", "A swipe from the edge"),
+        ("Twist", "arrow.triangle.2.circlepath.circle", "A twist"), ("Double Press", "hand.tap", "Pressed twice"),
+    ], in: "feedback"),
+    motifFamily("feedbackResults", "Feedback results: actions done, from once to five times", repeats, [
+        ("Save", "square.and.arrow.down", "Saved"), ("Send", "paperplane", "Sent"),
+        ("Copy", "doc.on.doc", "Copied"), ("Remove Item", "trash", "Removed"),
+        ("Revert", "arrow.uturn.backward.circle", "Reverted"), ("Add", "plus.circle", "Added"),
+        ("Discard", "xmark.bin", "Discarded"), ("Upload Done", "icloud.and.arrow.up", "Uploaded"),
+        ("Like", "hand.thumbsup.fill", "Liked"), ("Share", "square.and.arrow.up", "Shared"),
+    ], in: "feedback"),
+    motifFamily("alertsChimes", "Alert chimes: bells and tones, from once to five times", repeats, [
+        ("Door Chime", "bell.and.waves.left.and.right", "A two-tone door chime"), ("Wind Chime", "wind", "Wind chimes"),
+        ("Tone Pair", "music.note", "A pair of tones"), ("Arpeggio", "music.quarternote.3", "A rising arpeggio"),
+        ("Low Bell", "bell", "A low bell"), ("Harmonic", "waveform", "A held harmonic"),
+        ("Glass Chime", "wineglass", "A glass chime"), ("Twin Bell", "bell.badge", "Twin bells"),
+        ("Soft Gong", "circle.fill", "A soft gong"), ("Bright Tone", "sun.max", "A bright tone"),
+    ], in: "alerts"),
+    motifFamily("alertsCalls", "Alert calls: rings and calls, from slow to rapid", tempo, [
+        ("Ringtone", "phone", "A phone ringing"), ("Intercom", "speaker.wave.2.circle", "An intercom buzz"),
+        ("Pager", "bell.circle.fill", "A pager going off"), ("Walkie-Talkie", "antenna.radiowaves.left.and.right", "A walkie-talkie click"),
+        ("Buzzer", "bell.slash", "A long buzzer"), ("Hotline", "phone.fill", "A hotline ringing"),
+        ("Telegraph", "dot.radiowaves.right", "A telegraph key"), ("Hold Music", "music.note.list", "On hold"),
+        ("Busy Signal", "phone.down", "A busy signal"), ("Voicemail", "recordingtape", "A voicemail waiting"),
+    ], in: "alerts"),
+    motifFamily("alertsWarnings", "Alert warnings: something's wrong, from faint to intense", strength, [
+        ("Caution", "exclamationmark.triangle", "Caution"), ("Hazard", "light.beacon.max", "A hazard flashing"),
+        ("Overheat", "thermometer.sun", "Heat building"), ("Low Signal", "cellularbars", "A signal fading"),
+        ("Storage Full", "externaldrive.badge.exclamationmark", "Storage full"), ("Timeout", "clock.badge.exclamationmark", "Timed out"),
+        ("Blocked", "nosign", "Blocked"), ("Denied", "hand.raised.slash", "Denied"),
+        ("Error Tone", "xmark.octagon", "An error tone"), ("Critical Alert", "exclamationmark.octagon", "A critical alert"),
+    ], in: "alerts"),
+    motifFamily("rhythmBeats", "Rhythm beats: drum patterns, from slow to rapid", tempo, [
+        ("Backbeat", "music.note", "A backbeat"), ("Offbeat", "music.note.list", "Offbeat hits"),
+        ("Half Time", "metronome", "A half-time feel"), ("Double Time", "metronome.fill", "A double-time feel"),
+        ("Triplet", "music.quarternote.3", "Triplets"), ("Syncopated", "waveform.path", "A syncopated beat"),
+        ("Cross Beat", "xmark", "A cross rhythm"), ("Breakbeat", "speaker.wave.3", "A breakbeat"),
+        ("Paradiddle", "hands.clap", "A paradiddle"), ("Flam", "hand.tap", "Flams"),
+    ], in: "rhythm"),
+    motifFamily("rhythmPulses", "Rhythm pulses: single beats, from once to five times", repeats, [
+        ("Thump", "circle.fill", "A thump"), ("Pound", "hammer", "A pound"),
+        ("Patter", "drop.triangle", "A patter"), ("Bump", "arrow.up.circle", "A bump"),
+        ("Thud", "square.fill", "A thud"), ("Strike", "bolt", "A strike"),
+        ("Rap", "hand.raised", "A rap on a door"), ("Tap Pair", "hand.tap.fill", "A pair of taps"),
+        ("Drumbeat", "music.note", "A drumbeat"), ("Heave", "arrow.up", "A heave"),
+    ], in: "rhythm"),
+    motifFamily("rhythmFootwork", "Rhythm footwork: steps, from slow to rapid", tempo, [
+        ("Walking", "figure.walk", "Walking"), ("Running", "figure.run", "Running"),
+        ("Marching Feet", "figure.walk.motion", "Marching"), ("Tiptoe", "shoeprints.fill", "Tiptoeing"),
+        ("Skipping", "figure.jumprope", "Skipping"), ("Stomping", "figure.stand", "Stomping"),
+        ("Tap Dance", "figure.dance", "Tap dancing"), ("Jogging", "figure.run.circle", "Jogging"),
+        ("Climbing Stairs", "figure.stairs", "Climbing stairs"), ("Shuffling Feet", "figure.walk.arrival", "Shuffling along"),
+    ], in: "rhythm"),
+    motifFamily("textureGrains", "Texture grains: grainy surfaces, from faint to intense", strength, [
+        ("Grit", "circle.grid.3x3.fill", "Fine grit"), ("Pebbles", "circle.grid.2x2", "Pebbles"),
+        ("Salt", "aqi.low", "Grains of salt"), ("Gravel Path", "road.lanes", "A gravel path"),
+        ("Crumbs", "circle.dotted", "Crumbs"), ("Velcro", "rectangle.split.2x1", "Velcro pulled apart"),
+        ("Bubble Wrap", "bubble.left.and.bubble.right", "Bubble wrap popping"), ("Corrugated", "line.3.horizontal", "Corrugated card"),
+        ("Beads", "smallcircle.filled.circle", "Beads rolling"), ("Sawdust", "aqi.medium", "Sawdust"),
+    ], in: "texture"),
+    motifFamily("textureHums", "Texture hums: steady sounds, from tiny to huge", size, [
+        ("Drone", "waveform", "A low drone"), ("Whirr", "fan", "A whirr"),
+        ("Murmur", "bubble.left", "A murmur"), ("Vibration", "iphone.radiowaves.left.and.right", "A vibration"),
+        ("Resonance", "dot.radiowaves.left.and.right", "A fading resonance"), ("Thrum", "speaker.wave.2", "A thrum"),
+        ("Fizz", "bubbles.and.sparkles", "A fizz"), ("Crackle", "flame", "A crackle"),
+        ("Hiss", "wind", "A hiss"), ("Warble", "waveform.path.ecg", "A warble"),
+    ], in: "texture"),
+    motifFamily("textureSwells", "Texture swells: rising and falling, from slow to rapid", tempo, [
+        ("Crest", "water.waves", "A crest"), ("Undulation", "water.waves.and.arrow.up", "An undulation"),
+        ("Glide", "arrow.right.circle", "A glide sharpening"), ("Billow", "cloud", "A billow"),
+        ("Flare", "sun.max.fill", "A flare"), ("Fade In", "speaker.wave.1", "Fading in"),
+        ("Fade Away", "speaker.slash", "Fading away"), ("Breathing", "lungs", "Breathing"),
+        ("Tremolo", "waveform.path", "A tremolo"), ("Lull", "moon", "A lull"),
+    ], in: "texture"),
+    motifFamily("natureCreatures", "Nature creatures: wildlife, from tiny to huge", size, [
+        ("Frog", "tortoise", "A frog croaking"), ("Owl", "moon.stars", "An owl hooting"),
+        ("Hummingbird", "bird", "A hummingbird hovering"), ("Squirrel", "leaf", "A squirrel chattering"),
+        ("Snake Rattle", "lizard", "A rattlesnake"), ("Lion Roar", "pawprint", "A lion's roar"),
+        ("Elephant", "pawprint.fill", "An elephant's stomp"), ("Mosquito", "ant", "A mosquito"),
+        ("Firefly", "sparkle", "Fireflies"), ("Bat Wings", "bird.fill", "Bat wings"),
+    ], in: "nature"),
+    motifFamily("natureWater", "Nature water: water in motion, from faint to intense", strength, [
+        ("Drip", "drop", "A slow drip"), ("Puddle", "drop.circle", "A puddle splash"),
+        ("Waterfall", "water.waves", "A waterfall"), ("Brook", "drop.triangle", "A babbling brook"),
+        ("Fountain", "humidity.fill", "A fountain"), ("Geyser", "arrow.up.circle.fill", "A geyser erupting"),
+        ("Lake Lap", "water.waves.and.arrow.down", "Water lapping a shore"), ("Icicle", "snowflake", "Icicles dripping"),
+        ("Hot Spring", "flame", "A hot spring"), ("River Rapids", "arrow.right.to.line", "River rapids"),
+    ], in: "nature"),
+    motifFamily("natureSky", "Nature sky: weather overhead, from slow to rapid", tempo, [
+        ("Breeze", "wind", "A breeze"), ("Gale", "tornado", "A gale"),
+        ("Sunrise", "sunrise", "A sunrise"), ("Sunset", "sunset", "A sunset"),
+        ("Rainbow", "rainbow", "A rainbow"), ("Snowfall", "cloud.snow", "Falling snow"),
+        ("Fog Roll", "cloud.fog", "Fog rolling in"), ("Aurora", "sparkles", "An aurora"),
+        ("Starlight", "star", "Starlight"), ("Overcast", "smoke", "An overcast sky"),
+    ], in: "nature"),
+    motifFamily("mechanicalParts", "Mechanical parts: moving parts, from faint to intense", strength, [
+        ("Cog", "gearshape", "A cog turning"), ("Spring Coil", "arrow.up.and.down", "A spring bouncing"),
+        ("Piston", "rectangle.compress.vertical", "A piston pumping"), ("Valve", "spigot", "A valve releasing"),
+        ("Gear Shift", "gearshape.2", "A gear shift"), ("Bearing", "circle.circle", "A bearing spinning"),
+        ("Hinge", "door.left.hand.open", "A hinge swinging"), ("Latch Bolt", "lock", "A bolt sliding home"),
+        ("Crank", "arrow.clockwise.circle", "A crank turning"), ("Pulley", "arrow.up.arrow.down.circle", "A pulley hauling"),
+    ], in: "mechanical"),
+    motifFamily("mechanicalDevices", "Mechanical devices: machines at home, from slow to rapid", tempo, [
+        ("Turntable", "opticaldisc", "A turntable spinning"), ("Projector", "film", "A projector running"),
+        ("Cassette", "recordingtape", "A cassette playing"), ("Vending Machine", "takeoutbag.and.cup.and.straw", "A vending machine"),
+        ("Washing Machine", "washer", "A washing machine"), ("Dishwasher", "dishwasher", "A dishwasher"),
+        ("Lawn Mower", "leaf.fill", "A lawn mower"), ("Vacuum", "wind", "A vacuum cleaner"),
+        ("Air Conditioner", "air.conditioner.horizontal", "An air conditioner"), ("Coffee Machine", "cup.and.saucer.fill", "A coffee machine"),
+    ], in: "mechanical"),
+    motifFamily("gameMoves", "Game moves: a character's moves, from tiny to huge", size, [
+        ("Sprint", "figure.run", "A sprint"), ("Slide", "arrow.right", "A slide"),
+        ("Roll", "arrow.clockwise", "A roll"), ("Ledge Climb", "figure.climbing", "Climbing a ledge"),
+        ("Wall Jump", "arrow.up.right", "A wall jump"), ("Dodge", "arrow.left", "A dodge"),
+        ("Block", "shield.lefthalf.filled", "A block"), ("Parry", "shield.righthalf.filled", "A parry"),
+        ("Grapple", "link", "A grapple"), ("Crouch", "arrow.down.circle", "A crouch"),
+    ], in: "game"),
+    motifFamily("gameRewards", "Game rewards: things collected, from once to five times", repeats, [
+        ("Gem", "diamond", "A gem collected"), ("Star", "star.fill", "A star collected"),
+        ("Key", "key", "A key collected"), ("Chest", "shippingbox", "A chest opened"),
+        ("Heart", "heart.fill", "A heart collected"), ("Trophy", "trophy", "A trophy won"),
+        ("Medal", "medal", "A medal won"), ("Token", "circle.circle.fill", "A token collected"),
+        ("Crown", "crown", "A crown won"), ("Scroll", "scroll", "A scroll found"),
+    ], in: "game"),
 ]
 
 // MARK: Building
@@ -473,7 +618,7 @@ for (label, values, existing) in [("case name", patterns.map(\.name), handNames)
     let clashes = Set(values).intersection(existing)
     guard clashes.isEmpty else { fail("\(label)s already used by hand-written patterns: \(clashes.sorted())") }
 }
-guard patterns.count == 1900 else { fail("Expected 1,900 patterns, made \(patterns.count)") }
+guard patterns.count == 2900 else { fail("Expected 2,900 patterns, made \(patterns.count)") }
 
 // The cases, after the hand-written ones.
 var cases = begin
@@ -531,7 +676,7 @@ extension HapticPattern {
 
 """
 for pattern in patterns {
-    demoSource += "        case .\(pattern.name): FamilyDetails(\"\(pattern.title)\", \"\(pattern.subtitle)\", \"\(pattern.symbol)\", .\(pattern.family.id))\n"
+    demoSource += "        case .\(pattern.name): FamilyDetails(\"\(pattern.title)\", \"\(pattern.subtitle)\", \"\(pattern.symbol)\", .\(pattern.family.category ?? pattern.family.id))\n"
 }
 demoSource += """
         default: nil

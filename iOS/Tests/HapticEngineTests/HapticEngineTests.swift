@@ -132,16 +132,26 @@ struct HapticEngineProtocolTests {
 
     @Test func motifFamilyRawValuesAreStable() {
         // The next 1,000, from the twenty five-level families, the same way as the 900 before them.
-        let names = HapticPattern.allCases.dropFirst(1000).map(\.rawValue).joined(separator: ",")
+        let names = HapticPattern.allCases.dropFirst(1000).prefix(1000).map(\.rawValue).joined(separator: ",")
         #expect(fingerprint(names) == 17_137_281_602_411_345_683)
-        let families = Array(HapticPattern.allCases.dropFirst(1000)).chunked(into: 50)
+        let families = Array(HapticPattern.allCases.dropFirst(1000).prefix(1000)).chunked(into: 50)
         #expect(families.count == 20)
         #expect(families.first.map { [$0.first!.rawValue, $0.last!.rawValue] } == ["tinyPurr", "hugeWhale"])
         #expect(families.last.map { [$0.first!.rawValue, $0.last!.rawValue] } == ["faintPowerOn", "intenseStatic"])
     }
 
-    @Test func hasTwoThousandPatterns() {
-        #expect(HapticPattern.allCases.count == 2000)
+    @Test func builtInGroupRawValuesAreStable() {
+        // The last 1,000, shown with the hand-built groups in the demo, the same way again.
+        let names = HapticPattern.allCases.dropFirst(2000).map(\.rawValue).joined(separator: ",")
+        #expect(fingerprint(names) == 12_716_613_784_444_698_158)
+        let sets = Array(HapticPattern.allCases.dropFirst(2000)).chunked(into: 50)
+        #expect(sets.count == 20)
+        #expect(sets.first.map { [$0.first!.rawValue, $0.last!.rawValue] } == ["faintButton", "intenseMenuItem"])
+        #expect(sets.last.map { [$0.first!.rawValue, $0.last!.rawValue] } == ["singleGem", "quintupleScroll"])
+    }
+
+    @Test func hasThreeThousandPatterns() {
+        #expect(HapticPattern.allCases.count == 3000)
     }
 
     @Test func theHandWrittenHundredComeFirstThenTheFamiliesInOrder() {

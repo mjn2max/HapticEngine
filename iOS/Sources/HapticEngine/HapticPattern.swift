@@ -15,8 +15,9 @@ import Foundation
 /// ```
 ///
 /// The first ten patterns are also in the Android library. The rest are iOS only for now: ninety more built
-/// by hand, then 900 in ten families of ninety, such as impacts, meters and weather, each a variant at one
-/// of nine levels, like ``heavyMetalHit`` or ``waltzAllegro``.
+/// by hand, then 2,900 generated in families, each a variant at one of several levels: 900 in ten families
+/// of ninety, like ``heavyMetalHit`` or ``waltzAllegro``, then 2,000 in forty sets of fifty, like
+/// ``hugeBark``, ``firmButton`` or ``tripleGem``.
 public enum HapticPattern: String, CaseIterable, Sendable {
     // MARK: Shared with Android
 
@@ -6098,6 +6099,3046 @@ public enum HapticPattern: String, CaseIterable, Sendable {
 
     /// Static noise, intense.
     case intenseStatic
+
+    // MARK: Feedback taps: buttons and other targets, from faint to intense
+
+    /// A button pressed, faint.
+    case faintButton
+
+    /// A button pressed, soft.
+    case softButton
+
+    /// A button pressed, firm.
+    case firmButton
+
+    /// A button pressed, strong.
+    case strongButton
+
+    /// A button pressed, intense.
+    case intenseButton
+
+    /// A card tapped, faint.
+    case faintCardTap
+
+    /// A card tapped, soft.
+    case softCardTap
+
+    /// A card tapped, firm.
+    case firmCardTap
+
+    /// A card tapped, strong.
+    case strongCardTap
+
+    /// A card tapped, intense.
+    case intenseCardTap
+
+    /// An icon tapped, faint.
+    case faintIconTap
+
+    /// An icon tapped, soft.
+    case softIconTap
+
+    /// An icon tapped, firm.
+    case firmIconTap
+
+    /// An icon tapped, strong.
+    case strongIconTap
+
+    /// An icon tapped, intense.
+    case intenseIconTap
+
+    /// A chip selected, faint.
+    case faintChip
+
+    /// A chip selected, soft.
+    case softChip
+
+    /// A chip selected, firm.
+    case firmChip
+
+    /// A chip selected, strong.
+    case strongChip
+
+    /// A chip selected, intense.
+    case intenseChip
+
+    /// A tab chosen, faint.
+    case faintTab
+
+    /// A tab chosen, soft.
+    case softTab
+
+    /// A tab chosen, firm.
+    case firmTab
+
+    /// A tab chosen, strong.
+    case strongTab
+
+    /// A tab chosen, intense.
+    case intenseTab
+
+    /// A badge cleared, faint.
+    case faintBadge
+
+    /// A badge cleared, soft.
+    case softBadge
+
+    /// A badge cleared, firm.
+    case firmBadge
+
+    /// A badge cleared, strong.
+    case strongBadge
+
+    /// A badge cleared, intense.
+    case intenseBadge
+
+    /// A box checked, faint.
+    case faintCheckbox
+
+    /// A box checked, soft.
+    case softCheckbox
+
+    /// A box checked, firm.
+    case firmCheckbox
+
+    /// A box checked, strong.
+    case strongCheckbox
+
+    /// A box checked, intense.
+    case intenseCheckbox
+
+    /// A radio button chosen, faint.
+    case faintRadio
+
+    /// A radio button chosen, soft.
+    case softRadio
+
+    /// A radio button chosen, firm.
+    case firmRadio
+
+    /// A radio button chosen, strong.
+    case strongRadio
+
+    /// A radio button chosen, intense.
+    case intenseRadio
+
+    /// A link followed, faint.
+    case faintLink
+
+    /// A link followed, soft.
+    case softLink
+
+    /// A link followed, firm.
+    case firmLink
+
+    /// A link followed, strong.
+    case strongLink
+
+    /// A link followed, intense.
+    case intenseLink
+
+    /// A menu item chosen, faint.
+    case faintMenuItem
+
+    /// A menu item chosen, soft.
+    case softMenuItem
+
+    /// A menu item chosen, firm.
+    case firmMenuItem
+
+    /// A menu item chosen, strong.
+    case strongMenuItem
+
+    /// A menu item chosen, intense.
+    case intenseMenuItem
+
+    // MARK: Feedback toggles: switches and catches, from tiny to huge
+
+    /// Flipped over, tiny.
+    case tinyFlip
+
+    /// Flipped over, small.
+    case smallFlip
+
+    /// Flipped over, medium.
+    case mediumFlip
+
+    /// Flipped over, large.
+    case largeFlip
+
+    /// Flipped over, huge.
+    case hugeFlip
+
+    /// A latch catching, tiny.
+    case tinyLatch
+
+    /// A latch catching, small.
+    case smallLatch
+
+    /// A latch catching, medium.
+    case mediumLatch
+
+    /// A latch catching, large.
+    case largeLatch
+
+    /// A latch catching, huge.
+    case hugeLatch
+
+    /// A dial clicking round, tiny.
+    case tinyDialClick
+
+    /// A dial clicking round, small.
+    case smallDialClick
+
+    /// A dial clicking round, medium.
+    case mediumDialClick
+
+    /// A dial clicking round, large.
+    case largeDialClick
+
+    /// A dial clicking round, huge.
+    case hugeDialClick
+
+    /// A lever pulled, tiny.
+    case tinyLever
+
+    /// A lever pulled, small.
+    case smallLever
+
+    /// A lever pulled, medium.
+    case mediumLever
+
+    /// A lever pulled, large.
+    case largeLever
+
+    /// A lever pulled, huge.
+    case hugeLever
+
+    /// A knob turned, tiny.
+    case tinyKnob
+
+    /// A knob turned, small.
+    case smallKnob
+
+    /// A knob turned, medium.
+    case mediumKnob
+
+    /// A knob turned, large.
+    case largeKnob
+
+    /// A knob turned, huge.
+    case hugeKnob
+
+    /// A rocker switch, tiny.
+    case tinyRocker
+
+    /// A rocker switch, small.
+    case smallRocker
+
+    /// A rocker switch, medium.
+    case mediumRocker
+
+    /// A rocker switch, large.
+    case largeRocker
+
+    /// A rocker switch, huge.
+    case hugeRocker
+
+    /// A push button, tiny.
+    case tinyPushButton
+
+    /// A push button, small.
+    case smallPushButton
+
+    /// A push button, medium.
+    case mediumPushButton
+
+    /// A push button, large.
+    case largePushButton
+
+    /// A push button, huge.
+    case hugePushButton
+
+    /// A lock slid open, tiny.
+    case tinySlideLock
+
+    /// A lock slid open, small.
+    case smallSlideLock
+
+    /// A lock slid open, medium.
+    case mediumSlideLock
+
+    /// A lock slid open, large.
+    case largeSlideLock
+
+    /// A lock slid open, huge.
+    case hugeSlideLock
+
+    /// A thumb switch, tiny.
+    case tinyThumbSwitch
+
+    /// A thumb switch, small.
+    case smallThumbSwitch
+
+    /// A thumb switch, medium.
+    case mediumThumbSwitch
+
+    /// A thumb switch, large.
+    case largeThumbSwitch
+
+    /// A thumb switch, huge.
+    case hugeThumbSwitch
+
+    /// A detent, tiny.
+    case tinyDetent
+
+    /// A detent, small.
+    case smallDetent
+
+    /// A detent, medium.
+    case mediumDetent
+
+    /// A detent, large.
+    case largeDetent
+
+    /// A detent, huge.
+    case hugeDetent
+
+    // MARK: Feedback gestures: touches and swipes, from slow to rapid
+
+    /// A fling, slow.
+    case slowFling
+
+    /// A fling, easy.
+    case easyFling
+
+    /// A fling, steady.
+    case steadyFling
+
+    /// A fling, quick.
+    case quickFling
+
+    /// A fling, rapid.
+    case rapidFling
+
+    /// A pinch closing, slow.
+    case slowPinch
+
+    /// A pinch closing, easy.
+    case easyPinch
+
+    /// A pinch closing, steady.
+    case steadyPinch
+
+    /// A pinch closing, quick.
+    case quickPinch
+
+    /// A pinch closing, rapid.
+    case rapidPinch
+
+    /// A pinch opening, slow.
+    case slowSpread
+
+    /// A pinch opening, easy.
+    case easySpread
+
+    /// A pinch opening, steady.
+    case steadySpread
+
+    /// A pinch opening, quick.
+    case quickSpread
+
+    /// A pinch opening, rapid.
+    case rapidSpread
+
+    /// Dragged, then dropped, slow.
+    case slowDrag
+
+    /// Dragged, then dropped, easy.
+    case easyDrag
+
+    /// Dragged, then dropped, steady.
+    case steadyDrag
+
+    /// Dragged, then dropped, quick.
+    case quickDrag
+
+    /// Dragged, then dropped, rapid.
+    case rapidDrag
+
+    /// Held, then released, slow.
+    case slowLongHold
+
+    /// Held, then released, easy.
+    case easyLongHold
+
+    /// Held, then released, steady.
+    case steadyLongHold
+
+    /// Held, then released, quick.
+    case quickLongHold
+
+    /// Held, then released, rapid.
+    case rapidLongHold
+
+    /// A flick, slow.
+    case slowFlick
+
+    /// A flick, easy.
+    case easyFlick
+
+    /// A flick, steady.
+    case steadyFlick
+
+    /// A flick, quick.
+    case quickFlick
+
+    /// A flick, rapid.
+    case rapidFlick
+
+    /// Panning around, slow.
+    case slowPan
+
+    /// Panning around, easy.
+    case easyPan
+
+    /// Panning around, steady.
+    case steadyPan
+
+    /// Panning around, quick.
+    case quickPan
+
+    /// Panning around, rapid.
+    case rapidPan
+
+    /// A swipe from the edge, slow.
+    case slowEdgeSwipe
+
+    /// A swipe from the edge, easy.
+    case easyEdgeSwipe
+
+    /// A swipe from the edge, steady.
+    case steadyEdgeSwipe
+
+    /// A swipe from the edge, quick.
+    case quickEdgeSwipe
+
+    /// A swipe from the edge, rapid.
+    case rapidEdgeSwipe
+
+    /// A twist, slow.
+    case slowTwist
+
+    /// A twist, easy.
+    case easyTwist
+
+    /// A twist, steady.
+    case steadyTwist
+
+    /// A twist, quick.
+    case quickTwist
+
+    /// A twist, rapid.
+    case rapidTwist
+
+    /// Pressed twice, slow.
+    case slowDoublePress
+
+    /// Pressed twice, easy.
+    case easyDoublePress
+
+    /// Pressed twice, steady.
+    case steadyDoublePress
+
+    /// Pressed twice, quick.
+    case quickDoublePress
+
+    /// Pressed twice, rapid.
+    case rapidDoublePress
+
+    // MARK: Feedback results: actions done, from once to five times
+
+    /// Saved, once.
+    case singleSave
+
+    /// Saved, twice.
+    case doubleSave
+
+    /// Saved, three times.
+    case tripleSave
+
+    /// Saved, four times.
+    case quadrupleSave
+
+    /// Saved, five times.
+    case quintupleSave
+
+    /// Sent, once.
+    case singleSend
+
+    /// Sent, twice.
+    case doubleSend
+
+    /// Sent, three times.
+    case tripleSend
+
+    /// Sent, four times.
+    case quadrupleSend
+
+    /// Sent, five times.
+    case quintupleSend
+
+    /// Copied, once.
+    case singleCopy
+
+    /// Copied, twice.
+    case doubleCopy
+
+    /// Copied, three times.
+    case tripleCopy
+
+    /// Copied, four times.
+    case quadrupleCopy
+
+    /// Copied, five times.
+    case quintupleCopy
+
+    /// Removed, once.
+    case singleRemoveItem
+
+    /// Removed, twice.
+    case doubleRemoveItem
+
+    /// Removed, three times.
+    case tripleRemoveItem
+
+    /// Removed, four times.
+    case quadrupleRemoveItem
+
+    /// Removed, five times.
+    case quintupleRemoveItem
+
+    /// Reverted, once.
+    case singleRevert
+
+    /// Reverted, twice.
+    case doubleRevert
+
+    /// Reverted, three times.
+    case tripleRevert
+
+    /// Reverted, four times.
+    case quadrupleRevert
+
+    /// Reverted, five times.
+    case quintupleRevert
+
+    /// Added, once.
+    case singleAdd
+
+    /// Added, twice.
+    case doubleAdd
+
+    /// Added, three times.
+    case tripleAdd
+
+    /// Added, four times.
+    case quadrupleAdd
+
+    /// Added, five times.
+    case quintupleAdd
+
+    /// Discarded, once.
+    case singleDiscard
+
+    /// Discarded, twice.
+    case doubleDiscard
+
+    /// Discarded, three times.
+    case tripleDiscard
+
+    /// Discarded, four times.
+    case quadrupleDiscard
+
+    /// Discarded, five times.
+    case quintupleDiscard
+
+    /// Uploaded, once.
+    case singleUploadDone
+
+    /// Uploaded, twice.
+    case doubleUploadDone
+
+    /// Uploaded, three times.
+    case tripleUploadDone
+
+    /// Uploaded, four times.
+    case quadrupleUploadDone
+
+    /// Uploaded, five times.
+    case quintupleUploadDone
+
+    /// Liked, once.
+    case singleLike
+
+    /// Liked, twice.
+    case doubleLike
+
+    /// Liked, three times.
+    case tripleLike
+
+    /// Liked, four times.
+    case quadrupleLike
+
+    /// Liked, five times.
+    case quintupleLike
+
+    /// Shared, once.
+    case singleShare
+
+    /// Shared, twice.
+    case doubleShare
+
+    /// Shared, three times.
+    case tripleShare
+
+    /// Shared, four times.
+    case quadrupleShare
+
+    /// Shared, five times.
+    case quintupleShare
+
+    // MARK: Alert chimes: bells and tones, from once to five times
+
+    /// A two-tone door chime, once.
+    case singleDoorChime
+
+    /// A two-tone door chime, twice.
+    case doubleDoorChime
+
+    /// A two-tone door chime, three times.
+    case tripleDoorChime
+
+    /// A two-tone door chime, four times.
+    case quadrupleDoorChime
+
+    /// A two-tone door chime, five times.
+    case quintupleDoorChime
+
+    /// Wind chimes, once.
+    case singleWindChime
+
+    /// Wind chimes, twice.
+    case doubleWindChime
+
+    /// Wind chimes, three times.
+    case tripleWindChime
+
+    /// Wind chimes, four times.
+    case quadrupleWindChime
+
+    /// Wind chimes, five times.
+    case quintupleWindChime
+
+    /// A pair of tones, once.
+    case singleTonePair
+
+    /// A pair of tones, twice.
+    case doubleTonePair
+
+    /// A pair of tones, three times.
+    case tripleTonePair
+
+    /// A pair of tones, four times.
+    case quadrupleTonePair
+
+    /// A pair of tones, five times.
+    case quintupleTonePair
+
+    /// A rising arpeggio, once.
+    case singleArpeggio
+
+    /// A rising arpeggio, twice.
+    case doubleArpeggio
+
+    /// A rising arpeggio, three times.
+    case tripleArpeggio
+
+    /// A rising arpeggio, four times.
+    case quadrupleArpeggio
+
+    /// A rising arpeggio, five times.
+    case quintupleArpeggio
+
+    /// A low bell, once.
+    case singleLowBell
+
+    /// A low bell, twice.
+    case doubleLowBell
+
+    /// A low bell, three times.
+    case tripleLowBell
+
+    /// A low bell, four times.
+    case quadrupleLowBell
+
+    /// A low bell, five times.
+    case quintupleLowBell
+
+    /// A held harmonic, once.
+    case singleHarmonic
+
+    /// A held harmonic, twice.
+    case doubleHarmonic
+
+    /// A held harmonic, three times.
+    case tripleHarmonic
+
+    /// A held harmonic, four times.
+    case quadrupleHarmonic
+
+    /// A held harmonic, five times.
+    case quintupleHarmonic
+
+    /// A glass chime, once.
+    case singleGlassChime
+
+    /// A glass chime, twice.
+    case doubleGlassChime
+
+    /// A glass chime, three times.
+    case tripleGlassChime
+
+    /// A glass chime, four times.
+    case quadrupleGlassChime
+
+    /// A glass chime, five times.
+    case quintupleGlassChime
+
+    /// Twin bells, once.
+    case singleTwinBell
+
+    /// Twin bells, twice.
+    case doubleTwinBell
+
+    /// Twin bells, three times.
+    case tripleTwinBell
+
+    /// Twin bells, four times.
+    case quadrupleTwinBell
+
+    /// Twin bells, five times.
+    case quintupleTwinBell
+
+    /// A soft gong, once.
+    case singleSoftGong
+
+    /// A soft gong, twice.
+    case doubleSoftGong
+
+    /// A soft gong, three times.
+    case tripleSoftGong
+
+    /// A soft gong, four times.
+    case quadrupleSoftGong
+
+    /// A soft gong, five times.
+    case quintupleSoftGong
+
+    /// A bright tone, once.
+    case singleBrightTone
+
+    /// A bright tone, twice.
+    case doubleBrightTone
+
+    /// A bright tone, three times.
+    case tripleBrightTone
+
+    /// A bright tone, four times.
+    case quadrupleBrightTone
+
+    /// A bright tone, five times.
+    case quintupleBrightTone
+
+    // MARK: Alert calls: rings and calls, from slow to rapid
+
+    /// A phone ringing, slow.
+    case slowRingtone
+
+    /// A phone ringing, easy.
+    case easyRingtone
+
+    /// A phone ringing, steady.
+    case steadyRingtone
+
+    /// A phone ringing, quick.
+    case quickRingtone
+
+    /// A phone ringing, rapid.
+    case rapidRingtone
+
+    /// An intercom buzz, slow.
+    case slowIntercom
+
+    /// An intercom buzz, easy.
+    case easyIntercom
+
+    /// An intercom buzz, steady.
+    case steadyIntercom
+
+    /// An intercom buzz, quick.
+    case quickIntercom
+
+    /// An intercom buzz, rapid.
+    case rapidIntercom
+
+    /// A pager going off, slow.
+    case slowPager
+
+    /// A pager going off, easy.
+    case easyPager
+
+    /// A pager going off, steady.
+    case steadyPager
+
+    /// A pager going off, quick.
+    case quickPager
+
+    /// A pager going off, rapid.
+    case rapidPager
+
+    /// A walkie-talkie click, slow.
+    case slowWalkieTalkie
+
+    /// A walkie-talkie click, easy.
+    case easyWalkieTalkie
+
+    /// A walkie-talkie click, steady.
+    case steadyWalkieTalkie
+
+    /// A walkie-talkie click, quick.
+    case quickWalkieTalkie
+
+    /// A walkie-talkie click, rapid.
+    case rapidWalkieTalkie
+
+    /// A long buzzer, slow.
+    case slowBuzzer
+
+    /// A long buzzer, easy.
+    case easyBuzzer
+
+    /// A long buzzer, steady.
+    case steadyBuzzer
+
+    /// A long buzzer, quick.
+    case quickBuzzer
+
+    /// A long buzzer, rapid.
+    case rapidBuzzer
+
+    /// A hotline ringing, slow.
+    case slowHotline
+
+    /// A hotline ringing, easy.
+    case easyHotline
+
+    /// A hotline ringing, steady.
+    case steadyHotline
+
+    /// A hotline ringing, quick.
+    case quickHotline
+
+    /// A hotline ringing, rapid.
+    case rapidHotline
+
+    /// A telegraph key, slow.
+    case slowTelegraph
+
+    /// A telegraph key, easy.
+    case easyTelegraph
+
+    /// A telegraph key, steady.
+    case steadyTelegraph
+
+    /// A telegraph key, quick.
+    case quickTelegraph
+
+    /// A telegraph key, rapid.
+    case rapidTelegraph
+
+    /// On hold, slow.
+    case slowHoldMusic
+
+    /// On hold, easy.
+    case easyHoldMusic
+
+    /// On hold, steady.
+    case steadyHoldMusic
+
+    /// On hold, quick.
+    case quickHoldMusic
+
+    /// On hold, rapid.
+    case rapidHoldMusic
+
+    /// A busy signal, slow.
+    case slowBusySignal
+
+    /// A busy signal, easy.
+    case easyBusySignal
+
+    /// A busy signal, steady.
+    case steadyBusySignal
+
+    /// A busy signal, quick.
+    case quickBusySignal
+
+    /// A busy signal, rapid.
+    case rapidBusySignal
+
+    /// A voicemail waiting, slow.
+    case slowVoicemail
+
+    /// A voicemail waiting, easy.
+    case easyVoicemail
+
+    /// A voicemail waiting, steady.
+    case steadyVoicemail
+
+    /// A voicemail waiting, quick.
+    case quickVoicemail
+
+    /// A voicemail waiting, rapid.
+    case rapidVoicemail
+
+    // MARK: Alert warnings: something's wrong, from faint to intense
+
+    /// Caution, faint.
+    case faintCaution
+
+    /// Caution, soft.
+    case softCaution
+
+    /// Caution, firm.
+    case firmCaution
+
+    /// Caution, strong.
+    case strongCaution
+
+    /// Caution, intense.
+    case intenseCaution
+
+    /// A hazard flashing, faint.
+    case faintHazard
+
+    /// A hazard flashing, soft.
+    case softHazard
+
+    /// A hazard flashing, firm.
+    case firmHazard
+
+    /// A hazard flashing, strong.
+    case strongHazard
+
+    /// A hazard flashing, intense.
+    case intenseHazard
+
+    /// Heat building, faint.
+    case faintOverheat
+
+    /// Heat building, soft.
+    case softOverheat
+
+    /// Heat building, firm.
+    case firmOverheat
+
+    /// Heat building, strong.
+    case strongOverheat
+
+    /// Heat building, intense.
+    case intenseOverheat
+
+    /// A signal fading, faint.
+    case faintLowSignal
+
+    /// A signal fading, soft.
+    case softLowSignal
+
+    /// A signal fading, firm.
+    case firmLowSignal
+
+    /// A signal fading, strong.
+    case strongLowSignal
+
+    /// A signal fading, intense.
+    case intenseLowSignal
+
+    /// Storage full, faint.
+    case faintStorageFull
+
+    /// Storage full, soft.
+    case softStorageFull
+
+    /// Storage full, firm.
+    case firmStorageFull
+
+    /// Storage full, strong.
+    case strongStorageFull
+
+    /// Storage full, intense.
+    case intenseStorageFull
+
+    /// Timed out, faint.
+    case faintTimeout
+
+    /// Timed out, soft.
+    case softTimeout
+
+    /// Timed out, firm.
+    case firmTimeout
+
+    /// Timed out, strong.
+    case strongTimeout
+
+    /// Timed out, intense.
+    case intenseTimeout
+
+    /// Blocked, faint.
+    case faintBlocked
+
+    /// Blocked, soft.
+    case softBlocked
+
+    /// Blocked, firm.
+    case firmBlocked
+
+    /// Blocked, strong.
+    case strongBlocked
+
+    /// Blocked, intense.
+    case intenseBlocked
+
+    /// Denied, faint.
+    case faintDenied
+
+    /// Denied, soft.
+    case softDenied
+
+    /// Denied, firm.
+    case firmDenied
+
+    /// Denied, strong.
+    case strongDenied
+
+    /// Denied, intense.
+    case intenseDenied
+
+    /// An error tone, faint.
+    case faintErrorTone
+
+    /// An error tone, soft.
+    case softErrorTone
+
+    /// An error tone, firm.
+    case firmErrorTone
+
+    /// An error tone, strong.
+    case strongErrorTone
+
+    /// An error tone, intense.
+    case intenseErrorTone
+
+    /// A critical alert, faint.
+    case faintCriticalAlert
+
+    /// A critical alert, soft.
+    case softCriticalAlert
+
+    /// A critical alert, firm.
+    case firmCriticalAlert
+
+    /// A critical alert, strong.
+    case strongCriticalAlert
+
+    /// A critical alert, intense.
+    case intenseCriticalAlert
+
+    // MARK: Rhythm beats: drum patterns, from slow to rapid
+
+    /// A backbeat, slow.
+    case slowBackbeat
+
+    /// A backbeat, easy.
+    case easyBackbeat
+
+    /// A backbeat, steady.
+    case steadyBackbeat
+
+    /// A backbeat, quick.
+    case quickBackbeat
+
+    /// A backbeat, rapid.
+    case rapidBackbeat
+
+    /// Offbeat hits, slow.
+    case slowOffbeat
+
+    /// Offbeat hits, easy.
+    case easyOffbeat
+
+    /// Offbeat hits, steady.
+    case steadyOffbeat
+
+    /// Offbeat hits, quick.
+    case quickOffbeat
+
+    /// Offbeat hits, rapid.
+    case rapidOffbeat
+
+    /// A half-time feel, slow.
+    case slowHalfTime
+
+    /// A half-time feel, easy.
+    case easyHalfTime
+
+    /// A half-time feel, steady.
+    case steadyHalfTime
+
+    /// A half-time feel, quick.
+    case quickHalfTime
+
+    /// A half-time feel, rapid.
+    case rapidHalfTime
+
+    /// A double-time feel, slow.
+    case slowDoubleTime
+
+    /// A double-time feel, easy.
+    case easyDoubleTime
+
+    /// A double-time feel, steady.
+    case steadyDoubleTime
+
+    /// A double-time feel, quick.
+    case quickDoubleTime
+
+    /// A double-time feel, rapid.
+    case rapidDoubleTime
+
+    /// Triplets, slow.
+    case slowTriplet
+
+    /// Triplets, easy.
+    case easyTriplet
+
+    /// Triplets, steady.
+    case steadyTriplet
+
+    /// Triplets, quick.
+    case quickTriplet
+
+    /// Triplets, rapid.
+    case rapidTriplet
+
+    /// A syncopated beat, slow.
+    case slowSyncopated
+
+    /// A syncopated beat, easy.
+    case easySyncopated
+
+    /// A syncopated beat, steady.
+    case steadySyncopated
+
+    /// A syncopated beat, quick.
+    case quickSyncopated
+
+    /// A syncopated beat, rapid.
+    case rapidSyncopated
+
+    /// A cross rhythm, slow.
+    case slowCrossBeat
+
+    /// A cross rhythm, easy.
+    case easyCrossBeat
+
+    /// A cross rhythm, steady.
+    case steadyCrossBeat
+
+    /// A cross rhythm, quick.
+    case quickCrossBeat
+
+    /// A cross rhythm, rapid.
+    case rapidCrossBeat
+
+    /// A breakbeat, slow.
+    case slowBreakbeat
+
+    /// A breakbeat, easy.
+    case easyBreakbeat
+
+    /// A breakbeat, steady.
+    case steadyBreakbeat
+
+    /// A breakbeat, quick.
+    case quickBreakbeat
+
+    /// A breakbeat, rapid.
+    case rapidBreakbeat
+
+    /// A paradiddle, slow.
+    case slowParadiddle
+
+    /// A paradiddle, easy.
+    case easyParadiddle
+
+    /// A paradiddle, steady.
+    case steadyParadiddle
+
+    /// A paradiddle, quick.
+    case quickParadiddle
+
+    /// A paradiddle, rapid.
+    case rapidParadiddle
+
+    /// Flams, slow.
+    case slowFlam
+
+    /// Flams, easy.
+    case easyFlam
+
+    /// Flams, steady.
+    case steadyFlam
+
+    /// Flams, quick.
+    case quickFlam
+
+    /// Flams, rapid.
+    case rapidFlam
+
+    // MARK: Rhythm pulses: single beats, from once to five times
+
+    /// A thump, once.
+    case singleThump
+
+    /// A thump, twice.
+    case doubleThump
+
+    /// A thump, three times.
+    case tripleThump
+
+    /// A thump, four times.
+    case quadrupleThump
+
+    /// A thump, five times.
+    case quintupleThump
+
+    /// A pound, once.
+    case singlePound
+
+    /// A pound, twice.
+    case doublePound
+
+    /// A pound, three times.
+    case triplePound
+
+    /// A pound, four times.
+    case quadruplePound
+
+    /// A pound, five times.
+    case quintuplePound
+
+    /// A patter, once.
+    case singlePatter
+
+    /// A patter, twice.
+    case doublePatter
+
+    /// A patter, three times.
+    case triplePatter
+
+    /// A patter, four times.
+    case quadruplePatter
+
+    /// A patter, five times.
+    case quintuplePatter
+
+    /// A bump, once.
+    case singleBump
+
+    /// A bump, twice.
+    case doubleBump
+
+    /// A bump, three times.
+    case tripleBump
+
+    /// A bump, four times.
+    case quadrupleBump
+
+    /// A bump, five times.
+    case quintupleBump
+
+    /// A thud, once.
+    case singleThud
+
+    /// A thud, twice.
+    case doubleThud
+
+    /// A thud, three times.
+    case tripleThud
+
+    /// A thud, four times.
+    case quadrupleThud
+
+    /// A thud, five times.
+    case quintupleThud
+
+    /// A strike, once.
+    case singleStrike
+
+    /// A strike, twice.
+    case doubleStrike
+
+    /// A strike, three times.
+    case tripleStrike
+
+    /// A strike, four times.
+    case quadrupleStrike
+
+    /// A strike, five times.
+    case quintupleStrike
+
+    /// A rap on a door, once.
+    case singleRap
+
+    /// A rap on a door, twice.
+    case doubleRap
+
+    /// A rap on a door, three times.
+    case tripleRap
+
+    /// A rap on a door, four times.
+    case quadrupleRap
+
+    /// A rap on a door, five times.
+    case quintupleRap
+
+    /// A pair of taps, once.
+    case singleTapPair
+
+    /// A pair of taps, twice.
+    case doubleTapPair
+
+    /// A pair of taps, three times.
+    case tripleTapPair
+
+    /// A pair of taps, four times.
+    case quadrupleTapPair
+
+    /// A pair of taps, five times.
+    case quintupleTapPair
+
+    /// A drumbeat, once.
+    case singleDrumbeat
+
+    /// A drumbeat, twice.
+    case doubleDrumbeat
+
+    /// A drumbeat, three times.
+    case tripleDrumbeat
+
+    /// A drumbeat, four times.
+    case quadrupleDrumbeat
+
+    /// A drumbeat, five times.
+    case quintupleDrumbeat
+
+    /// A heave, once.
+    case singleHeave
+
+    /// A heave, twice.
+    case doubleHeave
+
+    /// A heave, three times.
+    case tripleHeave
+
+    /// A heave, four times.
+    case quadrupleHeave
+
+    /// A heave, five times.
+    case quintupleHeave
+
+    // MARK: Rhythm footwork: steps, from slow to rapid
+
+    /// Walking, slow.
+    case slowWalking
+
+    /// Walking, easy.
+    case easyWalking
+
+    /// Walking, steady.
+    case steadyWalking
+
+    /// Walking, quick.
+    case quickWalking
+
+    /// Walking, rapid.
+    case rapidWalking
+
+    /// Running, slow.
+    case slowRunning
+
+    /// Running, easy.
+    case easyRunning
+
+    /// Running, steady.
+    case steadyRunning
+
+    /// Running, quick.
+    case quickRunning
+
+    /// Running, rapid.
+    case rapidRunning
+
+    /// Marching, slow.
+    case slowMarchingFeet
+
+    /// Marching, easy.
+    case easyMarchingFeet
+
+    /// Marching, steady.
+    case steadyMarchingFeet
+
+    /// Marching, quick.
+    case quickMarchingFeet
+
+    /// Marching, rapid.
+    case rapidMarchingFeet
+
+    /// Tiptoeing, slow.
+    case slowTiptoe
+
+    /// Tiptoeing, easy.
+    case easyTiptoe
+
+    /// Tiptoeing, steady.
+    case steadyTiptoe
+
+    /// Tiptoeing, quick.
+    case quickTiptoe
+
+    /// Tiptoeing, rapid.
+    case rapidTiptoe
+
+    /// Skipping, slow.
+    case slowSkipping
+
+    /// Skipping, easy.
+    case easySkipping
+
+    /// Skipping, steady.
+    case steadySkipping
+
+    /// Skipping, quick.
+    case quickSkipping
+
+    /// Skipping, rapid.
+    case rapidSkipping
+
+    /// Stomping, slow.
+    case slowStomping
+
+    /// Stomping, easy.
+    case easyStomping
+
+    /// Stomping, steady.
+    case steadyStomping
+
+    /// Stomping, quick.
+    case quickStomping
+
+    /// Stomping, rapid.
+    case rapidStomping
+
+    /// Tap dancing, slow.
+    case slowTapDance
+
+    /// Tap dancing, easy.
+    case easyTapDance
+
+    /// Tap dancing, steady.
+    case steadyTapDance
+
+    /// Tap dancing, quick.
+    case quickTapDance
+
+    /// Tap dancing, rapid.
+    case rapidTapDance
+
+    /// Jogging, slow.
+    case slowJogging
+
+    /// Jogging, easy.
+    case easyJogging
+
+    /// Jogging, steady.
+    case steadyJogging
+
+    /// Jogging, quick.
+    case quickJogging
+
+    /// Jogging, rapid.
+    case rapidJogging
+
+    /// Climbing stairs, slow.
+    case slowClimbingStairs
+
+    /// Climbing stairs, easy.
+    case easyClimbingStairs
+
+    /// Climbing stairs, steady.
+    case steadyClimbingStairs
+
+    /// Climbing stairs, quick.
+    case quickClimbingStairs
+
+    /// Climbing stairs, rapid.
+    case rapidClimbingStairs
+
+    /// Shuffling along, slow.
+    case slowShufflingFeet
+
+    /// Shuffling along, easy.
+    case easyShufflingFeet
+
+    /// Shuffling along, steady.
+    case steadyShufflingFeet
+
+    /// Shuffling along, quick.
+    case quickShufflingFeet
+
+    /// Shuffling along, rapid.
+    case rapidShufflingFeet
+
+    // MARK: Texture grains: grainy surfaces, from faint to intense
+
+    /// Fine grit, faint.
+    case faintGrit
+
+    /// Fine grit, soft.
+    case softGrit
+
+    /// Fine grit, firm.
+    case firmGrit
+
+    /// Fine grit, strong.
+    case strongGrit
+
+    /// Fine grit, intense.
+    case intenseGrit
+
+    /// Pebbles, faint.
+    case faintPebbles
+
+    /// Pebbles, soft.
+    case softPebbles
+
+    /// Pebbles, firm.
+    case firmPebbles
+
+    /// Pebbles, strong.
+    case strongPebbles
+
+    /// Pebbles, intense.
+    case intensePebbles
+
+    /// Grains of salt, faint.
+    case faintSalt
+
+    /// Grains of salt, soft.
+    case softSalt
+
+    /// Grains of salt, firm.
+    case firmSalt
+
+    /// Grains of salt, strong.
+    case strongSalt
+
+    /// Grains of salt, intense.
+    case intenseSalt
+
+    /// A gravel path, faint.
+    case faintGravelPath
+
+    /// A gravel path, soft.
+    case softGravelPath
+
+    /// A gravel path, firm.
+    case firmGravelPath
+
+    /// A gravel path, strong.
+    case strongGravelPath
+
+    /// A gravel path, intense.
+    case intenseGravelPath
+
+    /// Crumbs, faint.
+    case faintCrumbs
+
+    /// Crumbs, soft.
+    case softCrumbs
+
+    /// Crumbs, firm.
+    case firmCrumbs
+
+    /// Crumbs, strong.
+    case strongCrumbs
+
+    /// Crumbs, intense.
+    case intenseCrumbs
+
+    /// Velcro pulled apart, faint.
+    case faintVelcro
+
+    /// Velcro pulled apart, soft.
+    case softVelcro
+
+    /// Velcro pulled apart, firm.
+    case firmVelcro
+
+    /// Velcro pulled apart, strong.
+    case strongVelcro
+
+    /// Velcro pulled apart, intense.
+    case intenseVelcro
+
+    /// Bubble wrap popping, faint.
+    case faintBubbleWrap
+
+    /// Bubble wrap popping, soft.
+    case softBubbleWrap
+
+    /// Bubble wrap popping, firm.
+    case firmBubbleWrap
+
+    /// Bubble wrap popping, strong.
+    case strongBubbleWrap
+
+    /// Bubble wrap popping, intense.
+    case intenseBubbleWrap
+
+    /// Corrugated card, faint.
+    case faintCorrugated
+
+    /// Corrugated card, soft.
+    case softCorrugated
+
+    /// Corrugated card, firm.
+    case firmCorrugated
+
+    /// Corrugated card, strong.
+    case strongCorrugated
+
+    /// Corrugated card, intense.
+    case intenseCorrugated
+
+    /// Beads rolling, faint.
+    case faintBeads
+
+    /// Beads rolling, soft.
+    case softBeads
+
+    /// Beads rolling, firm.
+    case firmBeads
+
+    /// Beads rolling, strong.
+    case strongBeads
+
+    /// Beads rolling, intense.
+    case intenseBeads
+
+    /// Sawdust, faint.
+    case faintSawdust
+
+    /// Sawdust, soft.
+    case softSawdust
+
+    /// Sawdust, firm.
+    case firmSawdust
+
+    /// Sawdust, strong.
+    case strongSawdust
+
+    /// Sawdust, intense.
+    case intenseSawdust
+
+    // MARK: Texture hums: steady sounds, from tiny to huge
+
+    /// A low drone, tiny.
+    case tinyDrone
+
+    /// A low drone, small.
+    case smallDrone
+
+    /// A low drone, medium.
+    case mediumDrone
+
+    /// A low drone, large.
+    case largeDrone
+
+    /// A low drone, huge.
+    case hugeDrone
+
+    /// A whirr, tiny.
+    case tinyWhirr
+
+    /// A whirr, small.
+    case smallWhirr
+
+    /// A whirr, medium.
+    case mediumWhirr
+
+    /// A whirr, large.
+    case largeWhirr
+
+    /// A whirr, huge.
+    case hugeWhirr
+
+    /// A murmur, tiny.
+    case tinyMurmur
+
+    /// A murmur, small.
+    case smallMurmur
+
+    /// A murmur, medium.
+    case mediumMurmur
+
+    /// A murmur, large.
+    case largeMurmur
+
+    /// A murmur, huge.
+    case hugeMurmur
+
+    /// A vibration, tiny.
+    case tinyVibration
+
+    /// A vibration, small.
+    case smallVibration
+
+    /// A vibration, medium.
+    case mediumVibration
+
+    /// A vibration, large.
+    case largeVibration
+
+    /// A vibration, huge.
+    case hugeVibration
+
+    /// A fading resonance, tiny.
+    case tinyResonance
+
+    /// A fading resonance, small.
+    case smallResonance
+
+    /// A fading resonance, medium.
+    case mediumResonance
+
+    /// A fading resonance, large.
+    case largeResonance
+
+    /// A fading resonance, huge.
+    case hugeResonance
+
+    /// A thrum, tiny.
+    case tinyThrum
+
+    /// A thrum, small.
+    case smallThrum
+
+    /// A thrum, medium.
+    case mediumThrum
+
+    /// A thrum, large.
+    case largeThrum
+
+    /// A thrum, huge.
+    case hugeThrum
+
+    /// A fizz, tiny.
+    case tinyFizz
+
+    /// A fizz, small.
+    case smallFizz
+
+    /// A fizz, medium.
+    case mediumFizz
+
+    /// A fizz, large.
+    case largeFizz
+
+    /// A fizz, huge.
+    case hugeFizz
+
+    /// A crackle, tiny.
+    case tinyCrackle
+
+    /// A crackle, small.
+    case smallCrackle
+
+    /// A crackle, medium.
+    case mediumCrackle
+
+    /// A crackle, large.
+    case largeCrackle
+
+    /// A crackle, huge.
+    case hugeCrackle
+
+    /// A hiss, tiny.
+    case tinyHiss
+
+    /// A hiss, small.
+    case smallHiss
+
+    /// A hiss, medium.
+    case mediumHiss
+
+    /// A hiss, large.
+    case largeHiss
+
+    /// A hiss, huge.
+    case hugeHiss
+
+    /// A warble, tiny.
+    case tinyWarble
+
+    /// A warble, small.
+    case smallWarble
+
+    /// A warble, medium.
+    case mediumWarble
+
+    /// A warble, large.
+    case largeWarble
+
+    /// A warble, huge.
+    case hugeWarble
+
+    // MARK: Texture swells: rising and falling, from slow to rapid
+
+    /// A crest, slow.
+    case slowCrest
+
+    /// A crest, easy.
+    case easyCrest
+
+    /// A crest, steady.
+    case steadyCrest
+
+    /// A crest, quick.
+    case quickCrest
+
+    /// A crest, rapid.
+    case rapidCrest
+
+    /// An undulation, slow.
+    case slowUndulation
+
+    /// An undulation, easy.
+    case easyUndulation
+
+    /// An undulation, steady.
+    case steadyUndulation
+
+    /// An undulation, quick.
+    case quickUndulation
+
+    /// An undulation, rapid.
+    case rapidUndulation
+
+    /// A glide sharpening, slow.
+    case slowGlide
+
+    /// A glide sharpening, easy.
+    case easyGlide
+
+    /// A glide sharpening, steady.
+    case steadyGlide
+
+    /// A glide sharpening, quick.
+    case quickGlide
+
+    /// A glide sharpening, rapid.
+    case rapidGlide
+
+    /// A billow, slow.
+    case slowBillow
+
+    /// A billow, easy.
+    case easyBillow
+
+    /// A billow, steady.
+    case steadyBillow
+
+    /// A billow, quick.
+    case quickBillow
+
+    /// A billow, rapid.
+    case rapidBillow
+
+    /// A flare, slow.
+    case slowFlare
+
+    /// A flare, easy.
+    case easyFlare
+
+    /// A flare, steady.
+    case steadyFlare
+
+    /// A flare, quick.
+    case quickFlare
+
+    /// A flare, rapid.
+    case rapidFlare
+
+    /// Fading in, slow.
+    case slowFadeIn
+
+    /// Fading in, easy.
+    case easyFadeIn
+
+    /// Fading in, steady.
+    case steadyFadeIn
+
+    /// Fading in, quick.
+    case quickFadeIn
+
+    /// Fading in, rapid.
+    case rapidFadeIn
+
+    /// Fading away, slow.
+    case slowFadeAway
+
+    /// Fading away, easy.
+    case easyFadeAway
+
+    /// Fading away, steady.
+    case steadyFadeAway
+
+    /// Fading away, quick.
+    case quickFadeAway
+
+    /// Fading away, rapid.
+    case rapidFadeAway
+
+    /// Breathing, slow.
+    case slowBreathing
+
+    /// Breathing, easy.
+    case easyBreathing
+
+    /// Breathing, steady.
+    case steadyBreathing
+
+    /// Breathing, quick.
+    case quickBreathing
+
+    /// Breathing, rapid.
+    case rapidBreathing
+
+    /// A tremolo, slow.
+    case slowTremolo
+
+    /// A tremolo, easy.
+    case easyTremolo
+
+    /// A tremolo, steady.
+    case steadyTremolo
+
+    /// A tremolo, quick.
+    case quickTremolo
+
+    /// A tremolo, rapid.
+    case rapidTremolo
+
+    /// A lull, slow.
+    case slowLull
+
+    /// A lull, easy.
+    case easyLull
+
+    /// A lull, steady.
+    case steadyLull
+
+    /// A lull, quick.
+    case quickLull
+
+    /// A lull, rapid.
+    case rapidLull
+
+    // MARK: Nature creatures: wildlife, from tiny to huge
+
+    /// A frog croaking, tiny.
+    case tinyFrog
+
+    /// A frog croaking, small.
+    case smallFrog
+
+    /// A frog croaking, medium.
+    case mediumFrog
+
+    /// A frog croaking, large.
+    case largeFrog
+
+    /// A frog croaking, huge.
+    case hugeFrog
+
+    /// An owl hooting, tiny.
+    case tinyOwl
+
+    /// An owl hooting, small.
+    case smallOwl
+
+    /// An owl hooting, medium.
+    case mediumOwl
+
+    /// An owl hooting, large.
+    case largeOwl
+
+    /// An owl hooting, huge.
+    case hugeOwl
+
+    /// A hummingbird hovering, tiny.
+    case tinyHummingbird
+
+    /// A hummingbird hovering, small.
+    case smallHummingbird
+
+    /// A hummingbird hovering, medium.
+    case mediumHummingbird
+
+    /// A hummingbird hovering, large.
+    case largeHummingbird
+
+    /// A hummingbird hovering, huge.
+    case hugeHummingbird
+
+    /// A squirrel chattering, tiny.
+    case tinySquirrel
+
+    /// A squirrel chattering, small.
+    case smallSquirrel
+
+    /// A squirrel chattering, medium.
+    case mediumSquirrel
+
+    /// A squirrel chattering, large.
+    case largeSquirrel
+
+    /// A squirrel chattering, huge.
+    case hugeSquirrel
+
+    /// A rattlesnake, tiny.
+    case tinySnakeRattle
+
+    /// A rattlesnake, small.
+    case smallSnakeRattle
+
+    /// A rattlesnake, medium.
+    case mediumSnakeRattle
+
+    /// A rattlesnake, large.
+    case largeSnakeRattle
+
+    /// A rattlesnake, huge.
+    case hugeSnakeRattle
+
+    /// A lion's roar, tiny.
+    case tinyLionRoar
+
+    /// A lion's roar, small.
+    case smallLionRoar
+
+    /// A lion's roar, medium.
+    case mediumLionRoar
+
+    /// A lion's roar, large.
+    case largeLionRoar
+
+    /// A lion's roar, huge.
+    case hugeLionRoar
+
+    /// An elephant's stomp, tiny.
+    case tinyElephant
+
+    /// An elephant's stomp, small.
+    case smallElephant
+
+    /// An elephant's stomp, medium.
+    case mediumElephant
+
+    /// An elephant's stomp, large.
+    case largeElephant
+
+    /// An elephant's stomp, huge.
+    case hugeElephant
+
+    /// A mosquito, tiny.
+    case tinyMosquito
+
+    /// A mosquito, small.
+    case smallMosquito
+
+    /// A mosquito, medium.
+    case mediumMosquito
+
+    /// A mosquito, large.
+    case largeMosquito
+
+    /// A mosquito, huge.
+    case hugeMosquito
+
+    /// Fireflies, tiny.
+    case tinyFirefly
+
+    /// Fireflies, small.
+    case smallFirefly
+
+    /// Fireflies, medium.
+    case mediumFirefly
+
+    /// Fireflies, large.
+    case largeFirefly
+
+    /// Fireflies, huge.
+    case hugeFirefly
+
+    /// Bat wings, tiny.
+    case tinyBatWings
+
+    /// Bat wings, small.
+    case smallBatWings
+
+    /// Bat wings, medium.
+    case mediumBatWings
+
+    /// Bat wings, large.
+    case largeBatWings
+
+    /// Bat wings, huge.
+    case hugeBatWings
+
+    // MARK: Nature water: water in motion, from faint to intense
+
+    /// A slow drip, faint.
+    case faintDrip
+
+    /// A slow drip, soft.
+    case softDrip
+
+    /// A slow drip, firm.
+    case firmDrip
+
+    /// A slow drip, strong.
+    case strongDrip
+
+    /// A slow drip, intense.
+    case intenseDrip
+
+    /// A puddle splash, faint.
+    case faintPuddle
+
+    /// A puddle splash, soft.
+    case softPuddle
+
+    /// A puddle splash, firm.
+    case firmPuddle
+
+    /// A puddle splash, strong.
+    case strongPuddle
+
+    /// A puddle splash, intense.
+    case intensePuddle
+
+    /// A waterfall, faint.
+    case faintWaterfall
+
+    /// A waterfall, soft.
+    case softWaterfall
+
+    /// A waterfall, firm.
+    case firmWaterfall
+
+    /// A waterfall, strong.
+    case strongWaterfall
+
+    /// A waterfall, intense.
+    case intenseWaterfall
+
+    /// A babbling brook, faint.
+    case faintBrook
+
+    /// A babbling brook, soft.
+    case softBrook
+
+    /// A babbling brook, firm.
+    case firmBrook
+
+    /// A babbling brook, strong.
+    case strongBrook
+
+    /// A babbling brook, intense.
+    case intenseBrook
+
+    /// A fountain, faint.
+    case faintFountain
+
+    /// A fountain, soft.
+    case softFountain
+
+    /// A fountain, firm.
+    case firmFountain
+
+    /// A fountain, strong.
+    case strongFountain
+
+    /// A fountain, intense.
+    case intenseFountain
+
+    /// A geyser erupting, faint.
+    case faintGeyser
+
+    /// A geyser erupting, soft.
+    case softGeyser
+
+    /// A geyser erupting, firm.
+    case firmGeyser
+
+    /// A geyser erupting, strong.
+    case strongGeyser
+
+    /// A geyser erupting, intense.
+    case intenseGeyser
+
+    /// Water lapping a shore, faint.
+    case faintLakeLap
+
+    /// Water lapping a shore, soft.
+    case softLakeLap
+
+    /// Water lapping a shore, firm.
+    case firmLakeLap
+
+    /// Water lapping a shore, strong.
+    case strongLakeLap
+
+    /// Water lapping a shore, intense.
+    case intenseLakeLap
+
+    /// Icicles dripping, faint.
+    case faintIcicle
+
+    /// Icicles dripping, soft.
+    case softIcicle
+
+    /// Icicles dripping, firm.
+    case firmIcicle
+
+    /// Icicles dripping, strong.
+    case strongIcicle
+
+    /// Icicles dripping, intense.
+    case intenseIcicle
+
+    /// A hot spring, faint.
+    case faintHotSpring
+
+    /// A hot spring, soft.
+    case softHotSpring
+
+    /// A hot spring, firm.
+    case firmHotSpring
+
+    /// A hot spring, strong.
+    case strongHotSpring
+
+    /// A hot spring, intense.
+    case intenseHotSpring
+
+    /// River rapids, faint.
+    case faintRiverRapids
+
+    /// River rapids, soft.
+    case softRiverRapids
+
+    /// River rapids, firm.
+    case firmRiverRapids
+
+    /// River rapids, strong.
+    case strongRiverRapids
+
+    /// River rapids, intense.
+    case intenseRiverRapids
+
+    // MARK: Nature sky: weather overhead, from slow to rapid
+
+    /// A breeze, slow.
+    case slowBreeze
+
+    /// A breeze, easy.
+    case easyBreeze
+
+    /// A breeze, steady.
+    case steadyBreeze
+
+    /// A breeze, quick.
+    case quickBreeze
+
+    /// A breeze, rapid.
+    case rapidBreeze
+
+    /// A gale, slow.
+    case slowGale
+
+    /// A gale, easy.
+    case easyGale
+
+    /// A gale, steady.
+    case steadyGale
+
+    /// A gale, quick.
+    case quickGale
+
+    /// A gale, rapid.
+    case rapidGale
+
+    /// A sunrise, slow.
+    case slowSunrise
+
+    /// A sunrise, easy.
+    case easySunrise
+
+    /// A sunrise, steady.
+    case steadySunrise
+
+    /// A sunrise, quick.
+    case quickSunrise
+
+    /// A sunrise, rapid.
+    case rapidSunrise
+
+    /// A sunset, slow.
+    case slowSunset
+
+    /// A sunset, easy.
+    case easySunset
+
+    /// A sunset, steady.
+    case steadySunset
+
+    /// A sunset, quick.
+    case quickSunset
+
+    /// A sunset, rapid.
+    case rapidSunset
+
+    /// A rainbow, slow.
+    case slowRainbow
+
+    /// A rainbow, easy.
+    case easyRainbow
+
+    /// A rainbow, steady.
+    case steadyRainbow
+
+    /// A rainbow, quick.
+    case quickRainbow
+
+    /// A rainbow, rapid.
+    case rapidRainbow
+
+    /// Falling snow, slow.
+    case slowSnowfall
+
+    /// Falling snow, easy.
+    case easySnowfall
+
+    /// Falling snow, steady.
+    case steadySnowfall
+
+    /// Falling snow, quick.
+    case quickSnowfall
+
+    /// Falling snow, rapid.
+    case rapidSnowfall
+
+    /// Fog rolling in, slow.
+    case slowFogRoll
+
+    /// Fog rolling in, easy.
+    case easyFogRoll
+
+    /// Fog rolling in, steady.
+    case steadyFogRoll
+
+    /// Fog rolling in, quick.
+    case quickFogRoll
+
+    /// Fog rolling in, rapid.
+    case rapidFogRoll
+
+    /// An aurora, slow.
+    case slowAurora
+
+    /// An aurora, easy.
+    case easyAurora
+
+    /// An aurora, steady.
+    case steadyAurora
+
+    /// An aurora, quick.
+    case quickAurora
+
+    /// An aurora, rapid.
+    case rapidAurora
+
+    /// Starlight, slow.
+    case slowStarlight
+
+    /// Starlight, easy.
+    case easyStarlight
+
+    /// Starlight, steady.
+    case steadyStarlight
+
+    /// Starlight, quick.
+    case quickStarlight
+
+    /// Starlight, rapid.
+    case rapidStarlight
+
+    /// An overcast sky, slow.
+    case slowOvercast
+
+    /// An overcast sky, easy.
+    case easyOvercast
+
+    /// An overcast sky, steady.
+    case steadyOvercast
+
+    /// An overcast sky, quick.
+    case quickOvercast
+
+    /// An overcast sky, rapid.
+    case rapidOvercast
+
+    // MARK: Mechanical parts: moving parts, from faint to intense
+
+    /// A cog turning, faint.
+    case faintCog
+
+    /// A cog turning, soft.
+    case softCog
+
+    /// A cog turning, firm.
+    case firmCog
+
+    /// A cog turning, strong.
+    case strongCog
+
+    /// A cog turning, intense.
+    case intenseCog
+
+    /// A spring bouncing, faint.
+    case faintSpringCoil
+
+    /// A spring bouncing, soft.
+    case softSpringCoil
+
+    /// A spring bouncing, firm.
+    case firmSpringCoil
+
+    /// A spring bouncing, strong.
+    case strongSpringCoil
+
+    /// A spring bouncing, intense.
+    case intenseSpringCoil
+
+    /// A piston pumping, faint.
+    case faintPiston
+
+    /// A piston pumping, soft.
+    case softPiston
+
+    /// A piston pumping, firm.
+    case firmPiston
+
+    /// A piston pumping, strong.
+    case strongPiston
+
+    /// A piston pumping, intense.
+    case intensePiston
+
+    /// A valve releasing, faint.
+    case faintValve
+
+    /// A valve releasing, soft.
+    case softValve
+
+    /// A valve releasing, firm.
+    case firmValve
+
+    /// A valve releasing, strong.
+    case strongValve
+
+    /// A valve releasing, intense.
+    case intenseValve
+
+    /// A gear shift, faint.
+    case faintGearShift
+
+    /// A gear shift, soft.
+    case softGearShift
+
+    /// A gear shift, firm.
+    case firmGearShift
+
+    /// A gear shift, strong.
+    case strongGearShift
+
+    /// A gear shift, intense.
+    case intenseGearShift
+
+    /// A bearing spinning, faint.
+    case faintBearing
+
+    /// A bearing spinning, soft.
+    case softBearing
+
+    /// A bearing spinning, firm.
+    case firmBearing
+
+    /// A bearing spinning, strong.
+    case strongBearing
+
+    /// A bearing spinning, intense.
+    case intenseBearing
+
+    /// A hinge swinging, faint.
+    case faintHinge
+
+    /// A hinge swinging, soft.
+    case softHinge
+
+    /// A hinge swinging, firm.
+    case firmHinge
+
+    /// A hinge swinging, strong.
+    case strongHinge
+
+    /// A hinge swinging, intense.
+    case intenseHinge
+
+    /// A bolt sliding home, faint.
+    case faintLatchBolt
+
+    /// A bolt sliding home, soft.
+    case softLatchBolt
+
+    /// A bolt sliding home, firm.
+    case firmLatchBolt
+
+    /// A bolt sliding home, strong.
+    case strongLatchBolt
+
+    /// A bolt sliding home, intense.
+    case intenseLatchBolt
+
+    /// A crank turning, faint.
+    case faintCrank
+
+    /// A crank turning, soft.
+    case softCrank
+
+    /// A crank turning, firm.
+    case firmCrank
+
+    /// A crank turning, strong.
+    case strongCrank
+
+    /// A crank turning, intense.
+    case intenseCrank
+
+    /// A pulley hauling, faint.
+    case faintPulley
+
+    /// A pulley hauling, soft.
+    case softPulley
+
+    /// A pulley hauling, firm.
+    case firmPulley
+
+    /// A pulley hauling, strong.
+    case strongPulley
+
+    /// A pulley hauling, intense.
+    case intensePulley
+
+    // MARK: Mechanical devices: machines at home, from slow to rapid
+
+    /// A turntable spinning, slow.
+    case slowTurntable
+
+    /// A turntable spinning, easy.
+    case easyTurntable
+
+    /// A turntable spinning, steady.
+    case steadyTurntable
+
+    /// A turntable spinning, quick.
+    case quickTurntable
+
+    /// A turntable spinning, rapid.
+    case rapidTurntable
+
+    /// A projector running, slow.
+    case slowProjector
+
+    /// A projector running, easy.
+    case easyProjector
+
+    /// A projector running, steady.
+    case steadyProjector
+
+    /// A projector running, quick.
+    case quickProjector
+
+    /// A projector running, rapid.
+    case rapidProjector
+
+    /// A cassette playing, slow.
+    case slowCassette
+
+    /// A cassette playing, easy.
+    case easyCassette
+
+    /// A cassette playing, steady.
+    case steadyCassette
+
+    /// A cassette playing, quick.
+    case quickCassette
+
+    /// A cassette playing, rapid.
+    case rapidCassette
+
+    /// A vending machine, slow.
+    case slowVendingMachine
+
+    /// A vending machine, easy.
+    case easyVendingMachine
+
+    /// A vending machine, steady.
+    case steadyVendingMachine
+
+    /// A vending machine, quick.
+    case quickVendingMachine
+
+    /// A vending machine, rapid.
+    case rapidVendingMachine
+
+    /// A washing machine, slow.
+    case slowWashingMachine
+
+    /// A washing machine, easy.
+    case easyWashingMachine
+
+    /// A washing machine, steady.
+    case steadyWashingMachine
+
+    /// A washing machine, quick.
+    case quickWashingMachine
+
+    /// A washing machine, rapid.
+    case rapidWashingMachine
+
+    /// A dishwasher, slow.
+    case slowDishwasher
+
+    /// A dishwasher, easy.
+    case easyDishwasher
+
+    /// A dishwasher, steady.
+    case steadyDishwasher
+
+    /// A dishwasher, quick.
+    case quickDishwasher
+
+    /// A dishwasher, rapid.
+    case rapidDishwasher
+
+    /// A lawn mower, slow.
+    case slowLawnMower
+
+    /// A lawn mower, easy.
+    case easyLawnMower
+
+    /// A lawn mower, steady.
+    case steadyLawnMower
+
+    /// A lawn mower, quick.
+    case quickLawnMower
+
+    /// A lawn mower, rapid.
+    case rapidLawnMower
+
+    /// A vacuum cleaner, slow.
+    case slowVacuum
+
+    /// A vacuum cleaner, easy.
+    case easyVacuum
+
+    /// A vacuum cleaner, steady.
+    case steadyVacuum
+
+    /// A vacuum cleaner, quick.
+    case quickVacuum
+
+    /// A vacuum cleaner, rapid.
+    case rapidVacuum
+
+    /// An air conditioner, slow.
+    case slowAirConditioner
+
+    /// An air conditioner, easy.
+    case easyAirConditioner
+
+    /// An air conditioner, steady.
+    case steadyAirConditioner
+
+    /// An air conditioner, quick.
+    case quickAirConditioner
+
+    /// An air conditioner, rapid.
+    case rapidAirConditioner
+
+    /// A coffee machine, slow.
+    case slowCoffeeMachine
+
+    /// A coffee machine, easy.
+    case easyCoffeeMachine
+
+    /// A coffee machine, steady.
+    case steadyCoffeeMachine
+
+    /// A coffee machine, quick.
+    case quickCoffeeMachine
+
+    /// A coffee machine, rapid.
+    case rapidCoffeeMachine
+
+    // MARK: Game moves: a character's moves, from tiny to huge
+
+    /// A sprint, tiny.
+    case tinySprint
+
+    /// A sprint, small.
+    case smallSprint
+
+    /// A sprint, medium.
+    case mediumSprint
+
+    /// A sprint, large.
+    case largeSprint
+
+    /// A sprint, huge.
+    case hugeSprint
+
+    /// A slide, tiny.
+    case tinySlide
+
+    /// A slide, small.
+    case smallSlide
+
+    /// A slide, medium.
+    case mediumSlide
+
+    /// A slide, large.
+    case largeSlide
+
+    /// A slide, huge.
+    case hugeSlide
+
+    /// A roll, tiny.
+    case tinyRoll
+
+    /// A roll, small.
+    case smallRoll
+
+    /// A roll, medium.
+    case mediumRoll
+
+    /// A roll, large.
+    case largeRoll
+
+    /// A roll, huge.
+    case hugeRoll
+
+    /// Climbing a ledge, tiny.
+    case tinyLedgeClimb
+
+    /// Climbing a ledge, small.
+    case smallLedgeClimb
+
+    /// Climbing a ledge, medium.
+    case mediumLedgeClimb
+
+    /// Climbing a ledge, large.
+    case largeLedgeClimb
+
+    /// Climbing a ledge, huge.
+    case hugeLedgeClimb
+
+    /// A wall jump, tiny.
+    case tinyWallJump
+
+    /// A wall jump, small.
+    case smallWallJump
+
+    /// A wall jump, medium.
+    case mediumWallJump
+
+    /// A wall jump, large.
+    case largeWallJump
+
+    /// A wall jump, huge.
+    case hugeWallJump
+
+    /// A dodge, tiny.
+    case tinyDodge
+
+    /// A dodge, small.
+    case smallDodge
+
+    /// A dodge, medium.
+    case mediumDodge
+
+    /// A dodge, large.
+    case largeDodge
+
+    /// A dodge, huge.
+    case hugeDodge
+
+    /// A block, tiny.
+    case tinyBlock
+
+    /// A block, small.
+    case smallBlock
+
+    /// A block, medium.
+    case mediumBlock
+
+    /// A block, large.
+    case largeBlock
+
+    /// A block, huge.
+    case hugeBlock
+
+    /// A parry, tiny.
+    case tinyParry
+
+    /// A parry, small.
+    case smallParry
+
+    /// A parry, medium.
+    case mediumParry
+
+    /// A parry, large.
+    case largeParry
+
+    /// A parry, huge.
+    case hugeParry
+
+    /// A grapple, tiny.
+    case tinyGrapple
+
+    /// A grapple, small.
+    case smallGrapple
+
+    /// A grapple, medium.
+    case mediumGrapple
+
+    /// A grapple, large.
+    case largeGrapple
+
+    /// A grapple, huge.
+    case hugeGrapple
+
+    /// A crouch, tiny.
+    case tinyCrouch
+
+    /// A crouch, small.
+    case smallCrouch
+
+    /// A crouch, medium.
+    case mediumCrouch
+
+    /// A crouch, large.
+    case largeCrouch
+
+    /// A crouch, huge.
+    case hugeCrouch
+
+    // MARK: Game rewards: things collected, from once to five times
+
+    /// A gem collected, once.
+    case singleGem
+
+    /// A gem collected, twice.
+    case doubleGem
+
+    /// A gem collected, three times.
+    case tripleGem
+
+    /// A gem collected, four times.
+    case quadrupleGem
+
+    /// A gem collected, five times.
+    case quintupleGem
+
+    /// A star collected, once.
+    case singleStar
+
+    /// A star collected, twice.
+    case doubleStar
+
+    /// A star collected, three times.
+    case tripleStar
+
+    /// A star collected, four times.
+    case quadrupleStar
+
+    /// A star collected, five times.
+    case quintupleStar
+
+    /// A key collected, once.
+    case singleKey
+
+    /// A key collected, twice.
+    case doubleKey
+
+    /// A key collected, three times.
+    case tripleKey
+
+    /// A key collected, four times.
+    case quadrupleKey
+
+    /// A key collected, five times.
+    case quintupleKey
+
+    /// A chest opened, once.
+    case singleChest
+
+    /// A chest opened, twice.
+    case doubleChest
+
+    /// A chest opened, three times.
+    case tripleChest
+
+    /// A chest opened, four times.
+    case quadrupleChest
+
+    /// A chest opened, five times.
+    case quintupleChest
+
+    /// A heart collected, once.
+    case singleHeart
+
+    /// A heart collected, twice.
+    case doubleHeart
+
+    /// A heart collected, three times.
+    case tripleHeart
+
+    /// A heart collected, four times.
+    case quadrupleHeart
+
+    /// A heart collected, five times.
+    case quintupleHeart
+
+    /// A trophy won, once.
+    case singleTrophy
+
+    /// A trophy won, twice.
+    case doubleTrophy
+
+    /// A trophy won, three times.
+    case tripleTrophy
+
+    /// A trophy won, four times.
+    case quadrupleTrophy
+
+    /// A trophy won, five times.
+    case quintupleTrophy
+
+    /// A medal won, once.
+    case singleMedal
+
+    /// A medal won, twice.
+    case doubleMedal
+
+    /// A medal won, three times.
+    case tripleMedal
+
+    /// A medal won, four times.
+    case quadrupleMedal
+
+    /// A medal won, five times.
+    case quintupleMedal
+
+    /// A token collected, once.
+    case singleToken
+
+    /// A token collected, twice.
+    case doubleToken
+
+    /// A token collected, three times.
+    case tripleToken
+
+    /// A token collected, four times.
+    case quadrupleToken
+
+    /// A token collected, five times.
+    case quintupleToken
+
+    /// A crown won, once.
+    case singleCrown
+
+    /// A crown won, twice.
+    case doubleCrown
+
+    /// A crown won, three times.
+    case tripleCrown
+
+    /// A crown won, four times.
+    case quadrupleCrown
+
+    /// A crown won, five times.
+    case quintupleCrown
+
+    /// A scroll found, once.
+    case singleScroll
+
+    /// A scroll found, twice.
+    case doubleScroll
+
+    /// A scroll found, three times.
+    case tripleScroll
+
+    /// A scroll found, four times.
+    case quadrupleScroll
+
+    /// A scroll found, five times.
+    case quintupleScroll
     // END GENERATED PATTERNS
 
     /// How long the pattern plays, in seconds: from its first event to the end of its last. A single tap,
