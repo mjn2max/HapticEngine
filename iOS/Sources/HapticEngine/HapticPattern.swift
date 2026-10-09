@@ -14,8 +14,8 @@ import Foundation
 /// haptics.play(.success)
 /// ```
 ///
-/// The first ten patterns are also in the Android library. The rest are iOS only for now: ninety more built
-/// by hand, then 2,900 generated in families, each a variant at one of several levels: 900 in ten families
+/// Every pattern is also in the Android library, in the same order. The first ten came first, then ninety
+/// more built by hand, then 2,900 generated in families, each a variant at one of several levels: 900 in ten families
 /// of ninety, like ``heavyMetalHit`` or ``waltzAllegro``, then 2,000 in forty sets of fifty, like
 /// ``hugeBark``, ``firmButton`` or ``tripleGem``, then 1,000 drawn at random from a fixed seed, like
 /// ``emberNebula``.

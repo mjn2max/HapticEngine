@@ -1,116 +1,91 @@
 package dev.codepassion.hapticengine.demo
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.AdsClick
-import androidx.compose.material.icons.outlined.CheckCircle
-import androidx.compose.material.icons.outlined.Dangerous
-import androidx.compose.material.icons.outlined.DoorFront
-import androidx.compose.material.icons.outlined.FavoriteBorder
-import androidx.compose.material.icons.outlined.GraphicEq
-import androidx.compose.material.icons.outlined.Sensors
-import androidx.compose.material.icons.outlined.TouchApp
-import androidx.compose.material.icons.outlined.WarningAmber
-import androidx.compose.material.icons.outlined.Waves
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import dev.codepassion.hapticengine.HapticPattern
 import java.util.Locale
 
-/** Display text, icons and colors for the library's built-in patterns. Mirrors `HapticPattern+Display.swift`. */
-val HapticPattern.title: String
-    get() = when (this) {
-        HapticPattern.Simple -> "Simple"
-        HapticPattern.Complex -> "Complex"
-        HapticPattern.Tick -> "Tick"
-        HapticPattern.Success -> "Success"
-        HapticPattern.Warning -> "Warning"
-        HapticPattern.Error -> "Error"
-        HapticPattern.Heartbeat -> "Heartbeat"
-        HapticPattern.Knock -> "Knock"
-        HapticPattern.Rumble -> "Rumble"
-        HapticPattern.Pulse -> "Pulse"
-    }
-
-/** Written to fit two lines of the status card on a small phone. */
-val HapticPattern.subtitle: String
-    get() = when (this) {
-        HapticPattern.Simple -> "Sharp tap, then a rising ramp of taps"
-        HapticPattern.Complex -> "Medium, hard, soft, hard over 6 seconds"
-        HapticPattern.Tick -> "One light, crisp tap"
-        HapticPattern.Success -> "Soft tap, then a strong tap"
-        HapticPattern.Warning -> "Strong tap, then a weaker tap"
-        HapticPattern.Error -> "Three strong taps in quick succession"
-        HapticPattern.Heartbeat -> "Two lub-dub beats, like a pulse"
-        HapticPattern.Knock -> "Three firm, dull taps, like a door knock"
-        HapticPattern.Rumble -> "Low, strong vibration for 0.8 seconds"
-        HapticPattern.Pulse -> "Five short bursts over one second"
-    }
-
-val HapticPattern.icon: ImageVector
-    get() = when (this) {
-        HapticPattern.Simple -> Icons.Outlined.TouchApp
-        HapticPattern.Complex -> Icons.Outlined.GraphicEq
-        HapticPattern.Tick -> Icons.Outlined.AdsClick
-        HapticPattern.Success -> Icons.Outlined.CheckCircle
-        HapticPattern.Warning -> Icons.Outlined.WarningAmber
-        HapticPattern.Error -> Icons.Outlined.Dangerous
-        HapticPattern.Heartbeat -> Icons.Outlined.FavoriteBorder
-        HapticPattern.Knock -> Icons.Outlined.DoorFront
-        HapticPattern.Rumble -> Icons.Outlined.Waves
-        HapticPattern.Pulse -> Icons.Outlined.Sensors
-    }
-
-/** [durationMs] for display, such as "Instant", "250 ms" or "6 s". */
-val HapticPattern.durationText: String
-    get() = when {
-        durationMs < 50 -> "Instant"
-        durationMs < 1_000 -> "$durationMs ms"
-        durationMs % 1_000 == 0L -> "${durationMs / 1_000} s"
-        else -> String.format(Locale.getDefault(), "%.1f s", durationMs / 1_000f)
-    }
-
 /**
- * Groups related patterns by color: feedback in traffic-light colors, rhythms in warm tones. The same
- * colors as iOS, in their light and dark variants, so a pattern looks the same on both platforms.
+ * Display text, symbols and colors for the library's built-in patterns. Mirrors `HapticPattern+Display.swift`:
+ * the names and descriptions are the iOS demo's, copied into `PatternDetailsData.kt` by
+ * `Android/scripts/export-patterns.sh`.
  */
-val HapticPattern.tint: Color
-    @Composable @ReadOnlyComposable
-    get() {
-        val (light, dark) = when (this) {
-            HapticPattern.Simple -> 0xFF007AFF to 0xFF0A84FF
-            HapticPattern.Complex -> 0xFF5856D6 to 0xFF5E5CE6
-            HapticPattern.Tick -> 0xFF30B0C7 to 0xFF40C8E0
-            HapticPattern.Success -> 0xFF34C759 to 0xFF30D158
-            HapticPattern.Warning -> 0xFFFF9500 to 0xFFFF9F0A
-            HapticPattern.Error -> 0xFFFF3B30 to 0xFFFF453A
-            HapticPattern.Heartbeat -> 0xFFFF2D55 to 0xFFFF375F
-            HapticPattern.Knock -> 0xFFA2845E to 0xFFAC8E68
-            HapticPattern.Rumble -> 0xFFAF52DE to 0xFFBF5AF2
-            HapticPattern.Pulse -> 0xFF32ADE6 to 0xFF64D2FF
-        }
-        return Color(if (LocalDemoColors.current.isDark) dark else light)
-    }
+val HapticPattern.title: String get() = details.title
+
+/** Written to fit two lines of the now-playing bar on a small phone. */
+val HapticPattern.subtitle: String get() = details.subtitle
+
+/** The SF Symbols name iOS draws it with; [PatternSymbol] draws the Material icon for it. */
+val HapticPattern.symbol: String get() = details.symbol
 
 /** The section the demo lists the pattern under. */
-val HapticPattern.category: PatternCategory
+val HapticPattern.category: PatternCategory get() = details.category
+
+/** [HapticPattern.durationMs] for display, such as "Instant", "250 ms" or "1.5 s", as on iOS. */
+val HapticPattern.durationText: String
+    get() = formatDuration(durationMs)
+
+fun formatDuration(durationMs: Long): String {
+    if (durationMs < 50) return "Instant"
+    if (durationMs < 1_000) return "$durationMs ms"
+    // Tenths of a second from whole milliseconds, rounding half up, as on iOS: 1.45 s shows as 1.5 s, and
+    // 1.04 s as 1 s. Rounded in floating point, x.x5 went either way.
+    val tenths = (durationMs + 50) / 100
+    return if (tenths % 10 == 0L) "${tenths / 10} s" else String.format(Locale.getDefault(), "%d%s%d s", tenths / 10, decimalSeparator(), tenths % 10)
+}
+
+private fun decimalSeparator(): Char = java.text.DecimalFormatSymbols.getInstance().decimalSeparator
+
+/**
+ * The original ten keep their own colors, with feedback in traffic-light colors. The rest take their
+ * category's color, so related patterns read as a group.
+ */
+val HapticPattern.demoTint: DemoTint
     get() = when (this) {
-        HapticPattern.Tick, HapticPattern.Success, HapticPattern.Warning, HapticPattern.Error -> PatternCategory.Feedback
-        HapticPattern.Heartbeat, HapticPattern.Knock, HapticPattern.Pulse -> PatternCategory.Rhythm
-        HapticPattern.Simple, HapticPattern.Complex, HapticPattern.Rumble -> PatternCategory.Texture
+        HapticPattern.Simple -> DemoTint.Blue
+        HapticPattern.Complex -> DemoTint.Indigo
+        HapticPattern.Tick -> DemoTint.Teal
+        HapticPattern.Success -> DemoTint.Green
+        HapticPattern.Warning -> DemoTint.Orange
+        HapticPattern.Error -> DemoTint.Red
+        HapticPattern.Heartbeat -> DemoTint.Pink
+        HapticPattern.Knock -> DemoTint.Brown
+        HapticPattern.Rumble -> DemoTint.Purple
+        HapticPattern.Pulse -> DemoTint.Cyan
+        else -> category.tint
     }
 
-/** Groups the patterns on the home screen, so the list stays easy to scan as more are added. */
-enum class PatternCategory(val title: String) {
-    /** Short responses to something the user did. */
-    Feedback("Feedback"),
+val HapticPattern.tint: Color
+    @Composable @ReadOnlyComposable
+    get() = demoTint.color
 
-    /** Repeating beats. */
-    Rhythm("Rhythm"),
+/** The two groups the filter panel shows categories in. */
+enum class CategoryGroup(val title: String) {
+    /** The seven groups of patterns built by hand. */
+    BuiltIn("Built In"),
 
-    /** Longer vibrations that build or sustain. */
-    Texture("Texture");
-
-    val patterns: List<HapticPattern> get() = HapticPattern.entries.filter { it.category == this }
+    /** The generated families, each a motif at several levels. */
+    Families("Families"),
 }
+
+/** In the order the library declares them. Grouped once: screens ask on every recomposition. */
+val PatternCategory.patterns: List<HapticPattern>
+    get() = patternsByCategory.getValue(this)
+
+private val patternsByCategory: Map<PatternCategory, List<HapticPattern>> by lazy {
+    val grouped = HapticPattern.entries.groupBy { it.category }
+    PatternCategory.entries.associateWith { grouped[it].orEmpty() }
+}
+
+private class PatternDetails(val title: String, val subtitle: String, val symbol: String, val category: PatternCategory)
+
+/** Every pattern's details, read from their rows once, the first time any is asked for. */
+private val allDetails: Array<PatternDetails> by lazy {
+    Array(HapticPattern.entries.size) { ordinal ->
+        val (title, subtitle, symbol, category) = PatternDetailsData.row(ordinal).split('|')
+        PatternDetails(title, subtitle, symbol, PatternCategory.entries[category.toInt()])
+    }
+}
+
+private val HapticPattern.details: PatternDetails get() = allDetails[ordinal]

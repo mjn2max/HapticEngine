@@ -15,7 +15,8 @@ A small haptics library for **iOS** and **Android** with the same API on both pl
   - **Complex:** four 1.5 second segments: medium, hard, soft, hard.
   - **Feedback:** tick, success, warning and error.
   - **Rhythm and texture:** heartbeat, knock, rumble and pulse.
-- On iOS, 3,990 more patterns, for 4,000 in all. These are iOS only for now; play them with `play(_:)`.
+- 3,990 more patterns, for 4,000 in all, on both platforms. On Android each is named as on iOS with a
+  capital first letter: iOS's `heavyMetalHit` is `HapticPattern.HeavyMetalHit`.
   - **90 built by hand**, in seven groups: feedback (impacts, toggles, drag and drop…), alerts
     (notification, alarm, ring, SOS…), rhythm, texture, nature (rain, thunder, ocean wave…), mechanical
     (typewriter, lock, engine…) and game (coin, power up, explosion…).
@@ -42,6 +43,9 @@ A small haptics library for **iOS** and **Android** with the same API on both pl
   notification or media setting if you choose `HapticUsage.Notification` or `HapticUsage.Media`.
 - Recovers automatically after the app is backgrounded or the system resets the haptic engine (iOS).
 - Falls back to on/off vibration on Android phones that can't vary vibration strength.
+- On Android a phone has one vibrator, so any other vibration, such as your app's own
+  `performHapticFeedback` or the keyboard's, stops a pattern that's still playing. On iOS they play together.
+  Hold your own UI haptics until a pattern ends, using `HapticPattern.durationMs`, as the demo does.
 - A protocol / interface you can mock in tests and previews.
 
 ## Requirements
@@ -135,7 +139,7 @@ val alerts = HapticEngine(context, HapticUsage.Notification)
 | Tick, success, warning, error | `startTickHaptic()`, `startSuccessHaptic()`, `startWarningHaptic()`, `startErrorHaptic()` | Same |
 | Heartbeat, knock, rumble, pulse | `startHeartbeatHaptic()`, `startKnockHaptic()`, `startRumbleHaptic()`, `startPulseHaptic()` | Same |
 | How long a pattern plays | `HapticPattern.duration: TimeInterval` (seconds) | `HapticPattern.durationMs: Long` |
-| A pattern's taps and holds | `HapticPattern.events: [HapticPatternEvent]` | Not yet |
+| A pattern's taps and holds | `HapticPattern.events: [HapticPatternEvent]` (times in seconds) | `HapticPattern.events: List<HapticPatternEvent>` (times in milliseconds) |
 
 On both platforms an implementation only provides `isHapticsSupported` and `play`; `stop()` (which does
 nothing by default) and the `start…Haptic()` shorthands come from a protocol extension on iOS and default
@@ -149,10 +153,12 @@ Each platform has a demo app: every pattern in a grid or list, a now-playing car
 description and progress, and an activity history you can replay from, swipe to delete, or start from
 suggestions when it's empty.
 
-The iOS demo is built for its 4,000 patterns: search them all, filter by category from the
+Both demos are built for the 4,000 patterns: search them all, filter by category from the
 button beside search, and star favorites (touch and hold a pattern, or tap the star by the now-playing card) to
-find them again under **Favorites**. To try the UI in the Simulator, which has no haptic hardware, add
-`-MockHaptics YES` to the scheme's launch arguments.
+find them again under **Favorites**. To try the iOS UI in the Simulator, which has no haptic hardware, add
+`-MockHaptics YES` to the scheme's launch arguments. A debug build of the Android demo takes
+`--es haptics mock` to play nothing, or `--es haptics none` to show a phone without a vibrator, for example
+`adb shell am start -n dev.codepassion.hapticengine.demo/.MainActivity --es haptics none`.
 
 - **iOS:** open `iOS/Example/HapticEngineDemo.xcodeproj`. To run on an iPhone, copy
   `iOS/Example/Config/Signing.local.xcconfig.template` to `Signing.local.xcconfig` and set your Team ID.
@@ -190,15 +196,19 @@ xcodebuild test -project iOS/Example/HapticEngineDemo.xcodeproj -scheme HapticEn
 xcodebuild test -project iOS/Example/HapticEngineDemo.xcodeproj -scheme HapticEngineDemo \
   -destination 'platform=iOS Simulator,name=iPhone 17e'
 
-# Android (JDK 17+; Android Studio's bundled JDK works)
+# Android library and demo unit tests, lint and the API check (JDK 17+; Android Studio's bundled JDK works)
 cd Android && ./gradlew check :example:assembleDebug
 ```
 
-Pattern definitions live in `iOS/Sources/HapticEngine/HapticPatterns.swift` and
-`Android/hapticengine/src/main/kotlin/dev/codepassion/hapticengine/HapticPatterns.kt`. For the ten
-patterns on both platforms, change both together and update the tests on both sides so the platforms
-stay in step. The iOS-only patterns are held to shared rules in the iOS tests instead of exact specs. A change to how a pattern
-feels also needs the [device testing checklist](docs/device-testing.md).
+Patterns are defined once, on iOS, in `iOS/Sources/HapticEngine/HapticPatterns.swift` and the files
+described below. Android plays copies of them: after changing a pattern, run
+`Android/scripts/export-patterns.sh` from the repository root on a Mac, which writes the Android entries
+(`HapticPattern.kt`), their events (`HapticPatternData.kt`) and the Android demo's names, descriptions and
+categories (`PatternDetailsData.kt`), then run `./gradlew :hapticengine:apiDump` and commit it all.
+`AndroidParityTests` on iOS fails until the copies match. The first ten patterns are also held to exact
+specs in the tests on both sides; the rest to shared rules. How Android plays them, as haptic primitives
+or a waveform, is in `HapticPatterns.kt` and `VibratorHapticEngine.kt`. A change to how a pattern feels
+also needs the [device testing checklist](docs/device-testing.md).
 
 The 2,900 family patterns, and the 1,000 drawn at random, are generated. How each family feels is in
 `iOS/Sources/HapticEngine/PatternFamilies.swift` and `MotifFamilies.swift`, and changing it needs nothing

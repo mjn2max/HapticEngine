@@ -18,10 +18,16 @@ extension HapticPattern {
     /// `duration` for display, such as "Instant", "250 ms" or "6 s". Formatted as each row asks: the library
     /// keeps each pattern's duration once it's built, and formatting all thousand up front built them all.
     var durationText: String {
-        switch duration {
-        case ..<0.05: "Instant"
-        case ..<1: "\(Int((duration * 1000).rounded())) ms"
-        default: "\(duration.formatted(.number.precision(.fractionLength(0...1)))) s"
+        Self.durationText(milliseconds: Int((duration * 1000).rounded()))
+    }
+
+    /// From whole milliseconds, a tenth of a second rounding half up, as the Android demo does: rounded from
+    /// the duration itself, 1.45 s showed as 1.4 s and 1.65 s as 1.7 s, depending on floating-point noise.
+    static func durationText(milliseconds: Int) -> String {
+        switch milliseconds {
+        case ..<50: "Instant"
+        case ..<1000: "\(milliseconds) ms"
+        default: "\((Double((milliseconds + 50) / 100) / 10).formatted(.number.precision(.fractionLength(0...1)))) s"
         }
     }
 

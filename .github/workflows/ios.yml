@@ -6,6 +6,9 @@ on:
     paths: &paths
       - Package.swift
       - iOS/**
+      # `AndroidParityTests` checks Android's copy of the patterns against these, so a change there runs it too.
+      - Android/hapticengine/src/main/kotlin/dev/codepassion/hapticengine/HapticPattern.kt
+      - Android/hapticengine/src/main/kotlin/dev/codepassion/hapticengine/HapticPatternData.kt
       - .github/workflows/ios.yml
   pull_request:
     paths: *paths

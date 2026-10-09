@@ -6,6 +6,26 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+- Android: all 4,000 patterns, the same as on iOS and in the same order, named as there with a capital
+  first letter: `HapticPattern.HeavyMetalHit` is iOS's `.heavyMetalHit`. They're copied from the iOS
+  patterns by `Android/scripts/export-patterns.sh`, and an iOS test fails if the two ever differ.
+- Android: `HapticPattern.events`, the taps and holds that make up a pattern, as `HapticPatternEvent`s
+  with their time and length in milliseconds, strength and sharpness, as on iOS.
+- Android demo: rebuilt to match the iOS demo: every pattern in a grid or list, search, a filter panel with
+  Favorites, Recent and every category, a now-playing bar that opens to the pattern's description,
+  timeline, numbers, events and similar patterns, a menu page, and a history grouped by day. Favorites,
+  the filter, the layout and the history are saved between launches.
+
+### Fixed
+- Android: a pattern whose taps land on a hold, such as a doorbell's "ding" over its ring, played later and
+  longer than it should as a waveform: each event was queued after the one before. Overlapping events now
+  play together, each on time, and a tap over a hold stands out from it.
+
+### Changed
+- Android: each pattern's vibration is built the first time it plays, rather than all of them when the
+  engine is created.
+
 ## [1.0.0] - 2026-10-03
 
 ### Added

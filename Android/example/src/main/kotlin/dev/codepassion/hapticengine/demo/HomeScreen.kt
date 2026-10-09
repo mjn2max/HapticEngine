@@ -1,310 +1,343 @@
 package dev.codepassion.hapticengine.demo
 
-import android.content.Context
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.ExitTransition
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
-import androidx.compose.animation.shrinkHorizontally
+import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.List
-import androidx.compose.material.icons.rounded.Apps
-import androidx.compose.material.icons.rounded.GridView
-import androidx.compose.material.icons.rounded.History
+import androidx.compose.material.icons.rounded.Cancel
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.Menu
+import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.TransformOrigin
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.layout.onPlaced
-import androidx.compose.ui.layout.positionInParent
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.core.content.edit
-import dev.codepassion.hapticengine.HapticPattern
+import kotlinx.coroutines.launch
 
-/** How the patterns are laid out, ordered from quickest to tap to most detailed. Remembered between launches. */
-enum class PatternLayout(val title: String, val icon: ImageVector) {
-    /** Icon and name, three to a row: for tapping quickly. */
-    Grid("Grid", Icons.Rounded.Apps),
-
-    /** Two-column cards with description and length: for browsing. */
-    Cards("Cards", Icons.Rounded.GridView),
-
-    /** One row per pattern with description and length: for scanning details. */
-    List("List", Icons.AutoMirrored.Rounded.List);
-
-    companion object {
-        private const val PREFS = "demo"
-        private const val KEY = "patternLayout"
-
-        /** The layout saved last time, or the default. A saved value from a removed layout falls back too. */
-        fun saved(context: Context): PatternLayout =
-            context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(KEY, null)
-                ?.let { name -> entries.firstOrNull { it.name == name } } ?: Grid
-
-        fun save(context: Context, layout: PatternLayout) =
-            context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit { putString(KEY, layout.name) }
-    }
-}
-
-/** The home screen: what's playing pinned at the top, then every pattern. Mirrors `ContentView.swift`. */
+/**
+ * The home screen: every pattern, searched or filtered from the top bar, with the now-playing bar pinned at
+ * the bottom within thumb reach. Mirrors `ContentView.swift`.
+ */
 @Composable
-fun HomeScreen(viewModel: HapticDemoViewModel, onOpenActivity: () -> Unit) {
+fun HomeScreen(viewModel: HapticDemoViewModel, onOpenMenu: () -> Unit, modifier: Modifier = Modifier) {
     val colors = LocalDemoColors.current
-    Column(Modifier.fillMaxSize().background(colors.background)) {
-        // Pinned, so what's playing stays visible while scrolling to the lower patterns.
-        Row(
-            Modifier
-                .statusBarsPadding()
-                .padding(horizontal = 16.dp, vertical = 8.dp)
-                // Lets the history button match the card's height.
-                .height(IntrinsicSize.Min),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            val cardInteraction = remember { MutableInteractionSource() }
-            val lastPlayed = viewModel.lastPlayed
-            PlayerCard(
-                playback = viewModel.nowPlaying,
-                lastPlayed = lastPlayed,
-                isHapticsSupported = viewModel.isHapticsSupported,
-                modifier = Modifier
-                    .weight(1f)
-                    .pressScale(cardInteraction)
-                    .clip(RoundedCornerShape(CardRadius))
-                    // Nothing to replay until a pattern has been played.
-                    .clickable(
-                        enabled = lastPlayed != null,
-                        interactionSource = cardInteraction,
-                        indication = null,
-                        onClickLabel = "Play again",
-                    ) { lastPlayed?.let(viewModel::play) },
-            )
-            HistoryButton(enabled = viewModel.isHapticsSupported, onClick = onOpenActivity)
-        }
+    var query by rememberSaveable { mutableStateOf("") }
+    var isSearchOpen by rememberSaveable { mutableStateOf(false) }
+    var isFilterOpen by remember { mutableStateOf(false) }
+    var barOpenHeight by remember { mutableStateOf(0.dp) }
+    var barOpenness by remember { mutableFloatStateOf(0f) }
+    val gridState = rememberLazyGridState()
+    val keyboard = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
+    val scope = rememberCoroutineScope()
 
-        Column(
-            Modifier
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp)
-                .padding(top = 8.dp, bottom = 16.dp)
-                .navigationBarsPadding(),
-        ) {
-            PatternsSection(
-                playing = viewModel.nowPlaying?.pattern,
-                canPlay = viewModel.isHapticsSupported,
-                onPlay = viewModel::play,
-            )
+    val search = remember(query) { PatternSearch(query) }
+    val filter = viewModel.filter
+    // Worked out once per change, here, rather than in each place that needs them.
+    val sections = remember(filter, search, viewModel.favorites, viewModel.recentPatterns) {
+        PatternCatalog.sections(filter, search, viewModel.favorites, viewModel.recentPatterns)
+    }
+    // Results replace the browsing sections once something is typed; until then, the filter's patterns stay.
+    val footerCount = if (search.isEmpty && filter != PatternFilter.All && sections.isNotEmpty()) sections.sumOf { it.patterns.size } else null
+    val emptyState = when {
+        !search.isEmpty -> EmptyState.NoResults(query)
+        filter == PatternFilter.Recent -> EmptyState.NoRecent
+        else -> EmptyState.NoFavorites
+    }
+
+    fun closeSearch() {
+        focusManager.clearFocus()
+        query = ""
+        isSearchOpen = false
+    }
+
+    // A new filter, or a search, starts at the top, not partway down: the patterns are all new.
+    LaunchedEffect(filter, search) { gridState.scrollToItem(0) }
+    // Scrolling puts the keyboard away. With nothing typed, search simply closes.
+    LaunchedEffect(gridState) {
+        snapshotFlow { gridState.isScrollInProgress }.collect { scrolling ->
+            if (!scrolling) return@collect
+            keyboard?.hide()
+            if (isSearchOpen && search.isEmpty) isSearchOpen = false
         }
     }
-}
-
-@Composable
-private fun HistoryButton(enabled: Boolean, onClick: () -> Unit) {
-    val interaction = remember { MutableInteractionSource() }
-    Box(
-        Modifier
-            .width(56.dp)
-            .fillMaxHeight()
-            .pressScale(interaction)
-            // Nothing can be played without a vibrator, so there's no activity to show. Dimmed to match the patterns.
-            .alpha(if (enabled) 1f else 0.4f)
-            .clip(RoundedCornerShape(CardRadius))
-            .background(LocalDemoColors.current.card)
-            .clickable(enabled = enabled, interactionSource = interaction, indication = null, onClick = onClick)
-            .semantics { contentDescription = "Activity" },
-        contentAlignment = Alignment.Center,
-    ) {
-        Icon(Icons.Rounded.History, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(26.dp))
+    // Playing a result puts the keyboard away, so the now-playing bar can show it.
+    LaunchedEffect(viewModel.nowPlaying?.id) {
+        if (viewModel.nowPlaying != null) keyboard?.hide()
     }
-}
+    BackHandler(enabled = isSearchOpen) { closeSearch() }
 
-/** Every pattern, grouped by category, in the layout the user picked. Mirrors `PatternsView.swift`. */
-@Composable
-fun PatternsSection(playing: HapticPattern?, canPlay: Boolean, onPlay: (HapticPattern) -> Unit) {
-    val context = LocalContext.current
-    val haptics = LocalHapticFeedback.current
-    var layout by remember { mutableStateOf(PatternLayout.saved(context)) }
-
-    Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
-        Row(Modifier.padding(start = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text("Patterns", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-            Spacer(Modifier.weight(1f))
-            LayoutSwitcher(layout) {
-                layout = it
-                PatternLayout.save(context, it)
-                // A light tick on each change, fitting for a haptics demo.
-                haptics.performHapticFeedback(HapticFeedbackType.SegmentTick)
-            }
-        }
-
-        // All sections, headings included, change as one block: the old layout leaves at once and the new one
-        // fades in from slightly smaller. Every layout keeps the same order and colors, so the eye can follow
-        // a pattern across.
-        AnimatedContent(
-            targetState = layout,
-            transitionSpec = {
-                (fadeIn(tween(250)) + scaleIn(tween(250), initialScale = 0.98f, transformOrigin = TransformOrigin(0.5f, 0f)))
-                    .togetherWith(ExitTransition.None)
+    val isImeVisible = WindowInsets.ime.asPaddingValues().calculateBottomPadding() > 0.dp
+    Column(modifier.fillMaxSize().background(colors.background)) {
+        TopBar(
+            viewModel = viewModel,
+            query = query,
+            onQueryChange = { query = it },
+            isSearchOpen = isSearchOpen,
+            onOpenSearch = { isSearchOpen = true },
+            onCloseSearch = ::closeSearch,
+            onOpenFilter = { isFilterOpen = true },
+            onOpenMenu = {
+                focusManager.clearFocus()
+                onOpenMenu()
             },
-            label = "layout",
-        ) { shown ->
-            Column(
-                Modifier.alpha(if (canPlay) 1f else 0.4f),
-                verticalArrangement = Arrangement.spacedBy(20.dp),
+        )
+        BoxWithConstraints(Modifier.weight(1f).fillMaxWidth()) {
+            val navigationBar = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+            // The patterns leave room for the collapsed bar, and no more: opened, it grows over them as a sheet
+            // does. They gain only room to scroll past it.
+            val barRoom = BarCollapsedHeight + BarMargin * 2 + navigationBar
+            val barMaxHeight = maxHeight - navigationBar
+            // As the bar grows toward the top bar, the patterns recede, as the content behind a full-height
+            // sheet does.
+            val room = maxHeight - barRoom - barOpenHeight
+            val visibility by animateFloatAsState(((room - 80.dp) / 120.dp).coerceIn(0f, 1f), tween(300), label = "recede")
+            PatternsView(
+                viewModel = viewModel,
+                sections = sections,
+                emptyState = emptyState,
+                footerCount = footerCount,
+                gridState = gridState,
+                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = barRoom + barOpenHeight + 16.dp),
+                onShowAll = { viewModel.selectFilter(PatternFilter.All) },
+                modifier = Modifier.graphicsLayer { alpha = visibility },
+            )
+            // The keyboard covers the bar, which would only crowd the results, so it steps aside meanwhile.
+            androidx.compose.animation.AnimatedVisibility(
+                visible = !isImeVisible,
+                enter = fadeIn(tween(200)),
+                exit = fadeOut(tween(200)),
+                modifier = Modifier.align(Alignment.BottomCenter),
             ) {
-                PatternCategory.entries.forEach { category ->
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text(
-                            category.title,
-                            style = MaterialTheme.typography.titleSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(start = 4.dp),
-                        )
-                        when (shown) {
-                            PatternLayout.Grid -> PatternGrid(category.patterns, playing, onPlay, enabled = canPlay)
-                            PatternLayout.Cards -> PatternCards(category.patterns, playing, onPlay, enabled = canPlay)
-                            PatternLayout.List -> PatternList(category.patterns, playing, onPlay, enabled = canPlay)
-                        }
-                    }
-                }
+                NowPlayingBar(
+                    viewModel = viewModel,
+                    maxHeight = barMaxHeight,
+                    onOpenHeightChange = { barOpenHeight = it },
+                    onOpennessChange = { barOpenness = it },
+                    // Docks from below as the patterns land, like a mini player arriving.
+                    modifier = Modifier.navigationBarsPadding().launchRise(LaunchReveal.BAR_DELAY_MS, 60.dp),
+                )
             }
         }
     }
+    if (isFilterOpen) {
+        FilterPanel(viewModel, onDismiss = { isFilterOpen = false })
+    }
+    // Announces each pattern as it plays, for TalkBack.
+    val playing = viewModel.nowPlaying
+    Box(Modifier.size(0.dp).semantics { liveRegion = LiveRegionMode.Polite; contentDescription = playing?.let { "Playing ${it.pattern.title}" } ?: "" })
 }
 
 /**
- * Picks the layout. The selected option shows its icon and name, the others only their icon, and the
- * highlight slides between them, so it's always clear which layout is showing.
+ * The top bar: the menu at the start; the title, with what's showing beneath it; then the filter and search
+ * at the end, nearest the thumb. Opened, search widens into a field over the title and filter: results
+ * ignore the filter. Mirrors `HeaderTitle.swift` and `SearchControls.swift`.
  */
 @Composable
-private fun LayoutSwitcher(selection: PatternLayout, onSelect: (PatternLayout) -> Unit) {
+private fun TopBar(
+    viewModel: HapticDemoViewModel,
+    query: String,
+    onQueryChange: (String) -> Unit,
+    isSearchOpen: Boolean,
+    onOpenSearch: () -> Unit,
+    onCloseSearch: () -> Unit,
+    onOpenFilter: () -> Unit,
+    onOpenMenu: () -> Unit,
+) {
+    // The bar is one height, so its text stops growing where the system's own top bars do; past that, the
+    // title's second line was cut off. Mirrors `HeaderTitle.largestTypeSize` on iOS.
     val density = LocalDensity.current
-    // Where each option sits, so the highlight can slide to the selected one.
-    val bounds = remember { mutableStateMapOf<PatternLayout, Pair<Dp, Dp>>() }
-    val target = bounds[selection]
-    val highlightX by animateDpAsState(target?.first ?: 0.dp, snappy(), label = "x")
-    val highlightWidth by animateDpAsState(target?.second ?: 0.dp, snappy(), label = "width")
-
-    Box(
+    CompositionLocalProvider(LocalDensity provides Density(density.density, minOf(density.fontScale, MAX_HEADER_FONT_SCALE))) {
+    Row(
         Modifier
-            .clip(CircleShape)
-            .background(MaterialTheme.colorScheme.surfaceContainerHighest)
-            .padding(3.dp)
-            .selectableGroup()
-            .semantics { contentDescription = "Layout" },
+            .fillMaxWidth()
+            .statusBarsPadding()
+            .height(64.dp)
+            .padding(horizontal = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        if (target != null) {
-            Box(
-                Modifier
-                    .offset { IntOffset(highlightX.roundToPx(), 0) }
-                    .width(highlightWidth)
-                    .height(34.dp)
-                    .background(MaterialTheme.colorScheme.primary, CircleShape),
-            )
+        IconButton(onClick = onOpenMenu, modifier = Modifier.testTag("appMenu")) {
+            Icon(Icons.Rounded.Menu, contentDescription = "Menu")
         }
-        Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-            PatternLayout.entries.forEach { layout ->
-                val isSelected = layout == selection
-                val content by animateColorAsState(
-                    if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-                    snappy(),
-                    label = "content",
-                )
+        AnimatedContent(
+            targetState = isSearchOpen,
+            transitionSpec = { fadeIn(tween(200)) togetherWith fadeOut(tween(150)) },
+            modifier = Modifier.weight(1f),
+            label = "search",
+        ) { searching ->
+            if (searching) {
+                SearchField(query, onQueryChange, onCloseSearch)
+            } else {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    HeaderTitle(viewModel, Modifier.weight(1f))
+                    FilterButton(viewModel.filter, onOpenFilter)
+                    IconButton(onClick = onOpenSearch, modifier = Modifier.testTag("searchButton")) {
+                        Icon(Icons.Rounded.Search, contentDescription = "Search")
+                    }
+                }
+            }
+        }
+    }
+    }
+}
+
+/** The largest text the top bar draws, relative to the default. */
+private const val MAX_HEADER_FONT_SCALE = 1.3f
+
+/**
+ * The title, with what's showing beneath it. With a filter on, that line is a token in the filter's color
+ * that clears it in one tap: the filter and the way out of it, side by side.
+ */
+@Composable
+private fun HeaderTitle(viewModel: HapticDemoViewModel, modifier: Modifier = Modifier) {
+    val filter = viewModel.filter
+    val haptics = LocalHapticFeedback.current
+    val count = PatternCatalog.count(filter, viewModel.favorites, viewModel.recentPatterns)
+    // A tick when the filter changes, as iOS's `sensoryFeedback(.selection, trigger:)` gives: not each time the
+    // title comes back, as when search closes, nor on launch.
+    var shownFilter by remember { mutableStateOf(filter) }
+    LaunchedEffect(filter) {
+        if (filter != shownFilter) haptics.performHapticFeedback(HapticFeedbackType.SegmentTick)
+        shownFilter = filter
+    }
+    Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
+        Text("Haptic Engine", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, maxLines = 1, modifier = Modifier.semantics { heading() })
+        AnimatedContent(filter, transitionSpec = { (fadeIn() + scaleIn(initialScale = 0.8f)) togetherWith fadeOut() }, label = "token") { shown ->
+            if (shown == PatternFilter.All) {
+                Text("All · ${"%,d".format(count)}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
+            } else {
+                val tint = shown.tint?.color ?: MaterialTheme.colorScheme.primary
                 Row(
                     Modifier
-                        .height(34.dp)
                         .clip(CircleShape)
-                        .selectable(selected = isSelected, role = Role.Tab) { onSelect(layout) }
-                        .semantics { contentDescription = layout.title }
-                        .onPlaced { coordinates ->
-                            with(density) {
-                                bounds[layout] = coordinates.positionInParent().x.toDp() to coordinates.size.width.toDp()
-                            }
-                        }
-                        .padding(horizontal = if (isSelected) 14.dp else 11.dp),
+                        .background(tint.copy(alpha = 0.15f))
+                        .clickable(onClickLabel = "Clear the filter to show all patterns") { viewModel.selectFilter(PatternFilter.All) }
+                        .semantics(mergeDescendants = true) { contentDescription = "Showing ${shown.title}" }
+                        .padding(horizontal = 8.dp, vertical = 2.dp)
+                        .testTag("clearFilter"),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
-                    Icon(layout.icon, contentDescription = null, tint = content, modifier = Modifier.size(20.dp))
-                    AnimatedVisibility(
-                        visible = isSelected,
-                        enter = fadeIn() + expandHorizontally(expandFrom = Alignment.Start),
-                        exit = fadeOut() + shrinkHorizontally(shrinkTowards = Alignment.Start),
-                    ) {
-                        Text(layout.title, style = MaterialTheme.typography.labelLarge, color = content, maxLines = 1)
-                    }
+                    PatternSymbol(shown.symbol, tint, 12.dp)
+                    Text("${shown.title} · $count", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold, color = tint, maxLines = 1)
+                    Icon(Icons.Rounded.Close, contentDescription = null, tint = tint.copy(alpha = 0.7f), modifier = Modifier.size(12.dp))
                 }
             }
         }
     }
 }
 
-
-// A preview has nothing to scope a view model to, so it makes one directly.
-@Suppress("ViewModelConstructorInComposable")
-@Preview(name = "Supported")
+/** Opens the filter panel. Shows the selected filter's icon, in its color, so the bar says what's showing. */
 @Composable
-private fun HomePreview() {
-    DemoTheme { HomeScreen(HapticDemoViewModel(PreviewHapticEngine()), onOpenActivity = {}) }
+private fun FilterButton(filter: PatternFilter, onClick: () -> Unit) {
+    IconButton(
+        onClick = onClick,
+        modifier = Modifier
+            .testTag("filterButton")
+            .semantics { stateDescription = filter.title },
+    ) {
+        AnimatedContent(filter, transitionSpec = { fadeIn() togetherWith fadeOut() }, label = "filter") { shown ->
+            Box(Modifier.semantics { contentDescription = "Filter" }) {
+                PatternSymbol(shown.symbol, shown.tint?.color ?: MaterialTheme.colorScheme.onSurface, 24.dp)
+            }
+        }
+    }
 }
 
-// A preview has nothing to scope a view model to, so it makes one directly.
-@Suppress("ViewModelConstructorInComposable")
-@Preview(name = "No vibrator")
 @Composable
-private fun HomeUnsupportedPreview() {
-    DemoTheme { HomeScreen(HapticDemoViewModel(PreviewHapticEngine(isHapticsSupported = false)), onOpenActivity = {}) }
+private fun SearchField(query: String, onQueryChange: (String) -> Unit, onClose: () -> Unit) {
+    val focus = remember { FocusRequester() }
+    LaunchedEffect(Unit) { focus.requestFocus() }
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        TextField(
+            value = query,
+            onValueChange = onQueryChange,
+            placeholder = { Text("Search") },
+            leadingIcon = { Icon(Icons.Rounded.Search, contentDescription = null) },
+            trailingIcon = {
+                if (query.isNotEmpty()) {
+                    IconButton(onClick = { onQueryChange("") }) { Icon(Icons.Rounded.Cancel, contentDescription = "Clear Search") }
+                }
+            },
+            singleLine = true,
+            shape = CircleShape,
+            keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.None, autoCorrectEnabled = false, imeAction = ImeAction.Search),
+            keyboardActions = KeyboardActions(onSearch = { focus.freeFocus() }),
+            colors = TextFieldDefaults.colors(
+                focusedIndicatorColor = androidx.compose.ui.graphics.Color.Transparent,
+                unfocusedIndicatorColor = androidx.compose.ui.graphics.Color.Transparent,
+                focusedContainerColor = LocalDemoColors.current.card,
+                unfocusedContainerColor = LocalDemoColors.current.card,
+            ),
+            modifier = Modifier.weight(1f).height(52.dp).focusRequester(focus).testTag("searchField"),
+        )
+        IconButton(onClick = onClose) { Icon(Icons.Rounded.Close, contentDescription = "Cancel") }
+    }
 }

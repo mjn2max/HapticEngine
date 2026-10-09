@@ -53,6 +53,16 @@ struct PatternDisplayTests {
         #expect(HapticPattern.complex.durationText == 6.formatted(.number.precision(.fractionLength(0...1))) + " s")
     }
 
+    /// Half a tenth rounds up, whatever floating point makes of it, as on Android.
+    @Test func durationTextRoundsHalfUp() {
+        let tenths = { (value: Double) in value.formatted(.number.precision(.fractionLength(0...1))) + " s" }
+        #expect(HapticPattern.durationText(milliseconds: 1450) == tenths(1.5))
+        #expect(HapticPattern.durationText(milliseconds: 1150) == tenths(1.2))
+        #expect(HapticPattern.durationText(milliseconds: 1650) == tenths(1.7))
+        #expect(HapticPattern.durationText(milliseconds: 1040) == tenths(1))
+        #expect(HapticPattern.engineStart.durationText == tenths(1.5))
+    }
+
     /// The generator's descriptions give counts, tempos and lengths; each must match what plays.
     @Test(arguments: HapticPattern.allCases.filter { [.tapCounts, .meters, .dynamics].contains($0.category) })
     func familyDescriptionsMatchWhatPlays(pattern: HapticPattern) throws {

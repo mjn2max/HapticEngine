@@ -1,30 +1,7 @@
 package dev.codepassion.hapticengine
 
+import java.util.concurrent.atomic.AtomicReferenceArray
 import kotlin.math.roundToLong
-
-/**
- * One event in a pattern, as on iOS: [intensity] is strength and [sharpness] is how crisp it feels,
- * both 0..1. Kept free of Android types so patterns can be unit tested on the JVM.
- */
-internal sealed interface HapticEvent {
-    val atMs: Long
-    val intensity: Float
-    val sharpness: Float
-
-    /** When the event stops. A tap has no length, as in Core Haptics. */
-    val endMs: Long get() = if (this is Hold) atMs + durationMs else atMs
-
-    /** A momentary tap, like Core Haptics' transient event. */
-    data class Tap(override val intensity: Float, override val sharpness: Float, override val atMs: Long) : HapticEvent
-
-    /** A sustained vibration, like Core Haptics' continuous event. */
-    data class Hold(
-        override val intensity: Float,
-        override val sharpness: Float,
-        override val atMs: Long,
-        val durationMs: Long,
-    ) : HapticEvent
-}
 
 /**
  * A vibration waveform as alternating segments: each entry in [timingsMs] lasts that long
@@ -61,22 +38,11 @@ internal data class PrimitiveStep(val primitive: Primitive, val scale: Float, va
 /**
  * The events that make up each [HapticPattern], and how they're played on Android.
  *
- * Keep the events in step with `HapticPatterns.swift` in the iOS library; the tests hold both sides to
- * the same spec.
+ * The events come from the iOS library, through `HapticPatternData`, so both platforms play the same
+ * patterns: see `Android/scripts/export-patterns.sh`. Kept free of Android types so they can be unit tested
+ * on the JVM.
  */
 internal object HapticPatterns {
-    // Timings in milliseconds. Each pattern has its own, so tuning one can't change another.
-    private const val SIMPLE_TAP_INTERVAL_MS = 100L
-    private const val COMPLEX_SEGMENT_MS = 1_500L
-    private const val SUCCESS_GAP_MS = 150L
-    private const val WARNING_GAP_MS = 250L
-    private const val ERROR_TAP_INTERVAL_MS = 100L
-    private const val HEARTBEAT_INTERVAL_MS = 800L
-    private const val HEARTBEAT_DUB_DELAY_MS = 150L
-    private const val KNOCK_INTERVAL_MS = 250L
-    private const val RUMBLE_MS = 800L
-    private const val PULSE_BURST_MS = 100L
-
     /** How long a tap vibrates in a waveform: short for a sharp tap, longer for a dull one. */
     private const val SHARP_TAP_MS = 12L
     private const val DULL_TAP_MS = 36L
@@ -84,48 +50,34 @@ internal object HapticPatterns {
     /** Taps at least this sharp play as [Primitive.Click], softer ones as [Primitive.Thud]. */
     private const val CLICK_SHARPNESS = 0.5f
 
-    /** The only way in, so playback and tests always build patterns the same way. */
-    fun events(pattern: HapticPattern): List<HapticEvent> = when (pattern) {
-        HapticPattern.Simple -> simple()
-        HapticPattern.Complex -> complex()
-        HapticPattern.Tick -> listOf(tap(0.5f, 1f, 0))
-        HapticPattern.Success -> listOf(tap(0.6f, 0.5f, 0), tap(1f, 1f, SUCCESS_GAP_MS))
-        HapticPattern.Warning -> listOf(tap(1f, 0.6f, 0), tap(0.6f, 0.6f, WARNING_GAP_MS))
-        HapticPattern.Error -> (0L until 3L).map { tap(1f, 1f, it * ERROR_TAP_INTERVAL_MS) }
-        HapticPattern.Heartbeat -> heartbeat()
-        HapticPattern.Knock -> (0L until 3L).map { tap(0.8f, 0.2f, it * KNOCK_INTERVAL_MS) }
-        HapticPattern.Rumble -> listOf(HapticEvent.Hold(0.8f, 0.1f, 0, RUMBLE_MS))
-        // Each gap is as long as a burst.
-        HapticPattern.Pulse -> (0L until 5L).map { HapticEvent.Hold(1f, 0.5f, it * 2 * PULSE_BURST_MS, PULSE_BURST_MS) }
+    /**
+     * Each pattern's events, decoded the first time they're asked for, then kept: decoding all four
+     * thousand up front would cost an app that plays a few. Decoding is pure, so two threads racing to
+     * decode one only do the work twice.
+     */
+    private val cache = AtomicReferenceArray<List<HapticPatternEvent>>(HapticPatternData.COUNT)
+
+    /** The only way in, so playback, [HapticPattern.events] and tests always see the same events. */
+    fun events(pattern: HapticPattern): List<HapticPatternEvent> {
+        cache.get(pattern.ordinal)?.let { return it }
+        val events = decode(HapticPatternData.encoded(pattern.ordinal))
+        cache.set(pattern.ordinal, events)
+        return events
     }
 
-    /** How long each pattern plays, worked out once from its events so it can't drift from them. */
-    private val durations: Map<HapticPattern, Long> =
-        HapticPattern.entries.associateWith { pattern -> events(pattern).maxOf { it.endMs } }
+    fun durationMs(pattern: HapticPattern): Long = events(pattern).maxOf { it.endMs }
 
-    fun durationMs(pattern: HapticPattern): Long = durations.getValue(pattern)
-
-    /** A full-strength tap, then taps every 100 ms rising from 10% to 90% strength. */
-    private fun simple(): List<HapticEvent> =
-        listOf(tap(1f, 1f, 0)) + (1..9).map { step ->
-            val level = step / 10f
-            tap(level, level, step * SIMPLE_TAP_INTERVAL_MS)
+    /** Reads one pattern's events: see `HapticPatternData`. */
+    fun decode(encoded: String): List<HapticPatternEvent> =
+        encoded.split(';').map { event ->
+            val fields = event.split(',')
+            fun level(index: Int) = fields[index].toInt() / 1000f
+            when (fields[0]) {
+                "t" -> HapticPatternEvent(HapticPatternEvent.Kind.Tap, fields[1].toLong(), 0, level(2), level(3))
+                "h" -> HapticPatternEvent(HapticPatternEvent.Kind.Hold, fields[1].toLong(), fields[2].toLong(), level(3), level(4))
+                else -> error("Unknown event $event")
+            }
         }
-
-    /** Medium (0.5), hard (1.0), soft (0.2), hard (1.0); 1.5 seconds each. */
-    private fun complex(): List<HapticEvent> =
-        listOf(0.5f, 1f, 0.2f, 1f).mapIndexed { index, level ->
-            HapticEvent.Hold(level, level, index * COMPLEX_SEGMENT_MS, COMPLEX_SEGMENT_MS)
-        }
-
-    /** Two "lub-dub" beats 800 ms apart: a strong dull tap, then a softer one 150 ms later. */
-    private fun heartbeat(): List<HapticEvent> =
-        (0L until 2L).flatMap { beat ->
-            val start = beat * HEARTBEAT_INTERVAL_MS
-            listOf(tap(1f, 0.3f, start), tap(0.6f, 0.3f, start + HEARTBEAT_DUB_DELAY_MS))
-        }
-
-    private fun tap(intensity: Float, sharpness: Float, atMs: Long) = HapticEvent.Tap(intensity, sharpness, atMs)
 
     /**
      * The pattern as haptic primitives, which feel much closer to iOS taps than a raw vibration.
@@ -133,10 +85,10 @@ internal object HapticPatterns {
      */
     fun primitives(pattern: HapticPattern): List<PrimitiveStep>? {
         val events = events(pattern)
-        if (events.any { it is HapticEvent.Hold }) return null
+        if (events.any { it.kind == HapticPatternEvent.Kind.Hold }) return null
         return events.map { tap ->
             val primitive = if (tap.sharpness >= CLICK_SHARPNESS) Primitive.Click else Primitive.Thud
-            PrimitiveStep(primitive, tap.intensity, tap.atMs)
+            PrimitiveStep(primitive, tap.intensity, tap.timeMs)
         }
     }
 
@@ -158,31 +110,52 @@ internal object HapticPatterns {
         }
     }
 
-    /** The pattern as a plain waveform, which every vibrator can play. */
-    fun waveform(pattern: HapticPattern): Waveform {
-        val events = events(pattern)
+    /**
+     * The pattern as a plain waveform, which every vibrator can play.
+     *
+     * Events can overlap, as they do on iOS: a tap can land on a hold, as in a doorbell's "ding" over its
+     * ring. Core Haptics mixes them, so here a tap over a hold adds its strength to the hold's for as long
+     * as the tap lasts, and the tap still stands out from it. Holds never overlap each other, and taps are
+     * cut short where the next tap starts, so neither runs into the next of its kind.
+     */
+    fun waveform(pattern: HapticPattern): Waveform = waveform(events(pattern))
+
+    fun waveform(events: List<HapticPatternEvent>): Waveform {
+        val taps = events.filter { it.kind == HapticPatternEvent.Kind.Tap }.sortedBy { it.timeMs }
+        val tapSpans = taps.mapIndexed { index, tap ->
+            val next = taps.getOrNull(index + 1)?.timeMs
+            val length = if (next == null) tapMs(tap.sharpness) else minOf(tapMs(tap.sharpness), next - tap.timeMs)
+            Span(tap.timeMs, tap.timeMs + length, tap.intensity)
+        }
+        val holdSpans = events.filter { it.kind == HapticPatternEvent.Kind.Hold }.map { Span(it.timeMs, it.endMs, it.intensity) }
+
+        // Every moment the strength can change, then the strength between each and the next.
+        val edges = (tapSpans + holdSpans).flatMap { listOf(it.startMs, it.endMs) }.toSortedSet().toList()
         val timings = mutableListOf<Long>()
         val amplitudes = mutableListOf<Int>()
-        var cursor = 0L
-        events.forEachIndexed { index, event ->
-            if (event.atMs > cursor) {
-                timings += event.atMs - cursor
-                amplitudes += 0
+        // Silence before the first event, should a pattern ever start late.
+        if (edges.first() > 0) {
+            timings += edges.first()
+            amplitudes += 0
+        }
+        for ((start, end) in edges.zipWithNext()) {
+            val hold = holdSpans.filter { it.covers(start) }.maxOfOrNull { it.intensity } ?: 0f
+            val tap = tapSpans.filter { it.covers(start) }.maxOfOrNull { it.intensity } ?: 0f
+            val amplitude = if (hold == 0f && tap == 0f) 0 else amplitude(minOf(hold + tap, 1f))
+            // Runs of one strength play as one segment.
+            if (amplitudes.isNotEmpty() && amplitudes.last() == amplitude) {
+                timings[timings.lastIndex] += end - start
+            } else {
+                timings += end - start
+                amplitudes += amplitude
             }
-            val length = when (event) {
-                is HapticEvent.Hold -> event.durationMs
-                // A tap never runs into the next event.
-                is HapticEvent.Tap -> {
-                    val next = events.getOrNull(index + 1)?.atMs
-                    val tapMs = tapMs(event.sharpness)
-                    if (next == null) tapMs else minOf(tapMs, next - event.atMs)
-                }
-            }
-            timings += length
-            amplitudes += amplitude(event.intensity)
-            cursor = event.atMs + length
         }
         return Waveform(timings, amplitudes)
+    }
+
+    /** One event's place in a waveform, from [startMs] up to [endMs]. */
+    private data class Span(val startMs: Long, val endMs: Long, val intensity: Float) {
+        fun covers(timeMs: Long) = timeMs in startMs until endMs
     }
 
     /** How long a tap of [sharpness] vibrates in a waveform. */
