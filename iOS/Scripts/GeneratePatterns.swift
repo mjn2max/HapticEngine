@@ -2,7 +2,7 @@
 //
 // GeneratePatterns.swift
 //
-// Writes the 2,900 family patterns: their cases in `HapticPattern`, `HapticPattern.variant` in the library,
+// Writes the 2,900 family patterns and the 1,000 drawn at random: their cases in `HapticPattern`, `HapticPattern.variant` in the library,
 // and their names, descriptions, symbols and categories in the demo. How each one feels is in
 // `Sources/HapticEngine/PatternFamilies.swift`; this only names them.
 //
@@ -547,6 +547,10 @@ struct Pattern {
     let family: Family
     let variant: Int
     let level: Int
+    /// The demo category it's listed under.
+    var category: String
+    /// For a pattern drawn at random, its events, as `RandomPatterns.encoded` stores them.
+    var encoded: String? = nil
 }
 
 /// "Four-Four, Largo" gives "fourFourLargo".
@@ -557,7 +561,7 @@ func caseName(_ title: String) -> String {
     }.joined()
 }
 
-let patterns: [Pattern] = families.flatMap { family in
+var patterns: [Pattern] = families.flatMap { family in
     family.variants.enumerated().flatMap { variantIndex, variant in
         family.levels.enumerated().map { levelIndex, level in
             let title = family.title(variant, level)
@@ -568,9 +572,165 @@ let patterns: [Pattern] = families.flatMap { family in
                 symbol: variant.symbol,
                 family: family,
                 variant: variantIndex,
-                level: levelIndex
+                level: levelIndex,
+                category: family.category ?? family.id
             )
         }
+    }
+}
+
+
+// MARK: Drawn at random
+
+/// SplitMix64: small, fast, and the same everywhere, so a seed always gives the same patterns.
+struct SeededRandom {
+    var state: UInt64
+    init(seed: UInt64) { state = seed }
+    mutating func next() -> UInt64 {
+        state &+= 0x9E37_79B9_7F4A_7C15
+        var z = state
+        z = (z ^ (z >> 30)) &* 0xBF58_476D_1CE4_E5B9
+        z = (z ^ (z >> 27)) &* 0x94D0_49BB_1331_11EB
+        return z ^ (z >> 31)
+    }
+    mutating func double(_ range: ClosedRange<Double> = 0...1) -> Double {
+        range.lowerBound + Double(next() >> 11) / Double(1 << 53) * (range.upperBound - range.lowerBound)
+    }
+    mutating func int(_ range: ClosedRange<Int>) -> Int {
+        range.lowerBound + Int(next() % UInt64(range.count))
+    }
+}
+
+/// How a random pattern is drawn, and the built-in group it joins.
+struct Style {
+    let category: String
+    let weight: Double
+    let count: ClosedRange<Int>
+    /// Seconds after a tap before the next event.
+    let gap: ClosedRange<Double>
+    let holdChance: Double
+    let hold: ClosedRange<Double>
+    /// Seconds after a hold ends before the next event.
+    let holdGap: ClosedRange<Double>
+    let sharpness: ClosedRange<Double>
+    /// Evenly spaced, as a beat is, rather than scattered.
+    let regular: Bool
+    let symbols: [String]
+}
+
+let styles = [
+    Style(category: "feedback", weight: 0.2, count: 2...4, gap: 0.03...0.09, holdChance: 0.25, hold: 0.03...0.08,
+          holdGap: 0.005...0.03, sharpness: 0.5...1, regular: false, symbols: ["hand.tap", "hand.point.up", "app"]),
+    Style(category: "alerts", weight: 0.15, count: 3...7, gap: 0.06...0.2, holdChance: 0.4, hold: 0.08...0.22,
+          holdGap: 0.03...0.12, sharpness: 0.6...1, regular: false, symbols: ["bell", "bell.badge", "exclamationmark.triangle"]),
+    Style(category: "rhythm", weight: 0.15, count: 4...10, gap: 0.1...0.3, holdChance: 0.1, hold: 0.05...0.1,
+          holdGap: 0.05...0.15, sharpness: 0.3...0.9, regular: true, symbols: ["metronome", "music.note", "music.quarternote.3"]),
+    Style(category: "texture", weight: 0.15, count: 4...12, gap: 0.03...0.06, holdChance: 0.8, hold: 0.05...0.2,
+          holdGap: 0.005...0.02, sharpness: 0...1, regular: false, symbols: ["waveform", "waveform.path", "circle.grid.3x3"]),
+    Style(category: "nature", weight: 0.15, count: 3...9, gap: 0.04...0.25, holdChance: 0.4, hold: 0.06...0.3,
+          holdGap: 0.02...0.2, sharpness: 0...0.5, regular: false, symbols: ["leaf", "drop", "wind"]),
+    Style(category: "mechanical", weight: 0.1, count: 4...10, gap: 0.05...0.14, holdChance: 0.3, hold: 0.04...0.1,
+          holdGap: 0.02...0.06, sharpness: 0.3...0.8, regular: true, symbols: ["gearshape", "gearshape.2", "wrench"]),
+    Style(category: "game", weight: 0.1, count: 2...6, gap: 0.04...0.15, holdChance: 0.3, hold: 0.05...0.25,
+          holdGap: 0.01...0.08, sharpness: 0.5...1, regular: false, symbols: ["gamecontroller", "star", "diamond"]),
+]
+
+/// Patterns whose first draw felt too close to another, and how many times to draw again. Their seeds move
+/// on; every other pattern stays as it was.
+let rerolls: [Int: UInt64] = [:]
+
+let randomSeed: UInt64 = 2026_1007
+
+struct RandomEvent {
+    var time: Double
+    var intensity: Double
+    var sharpness: Double
+    var duration: Double
+}
+
+/// One pattern drawn from its own seed: its style, and its events, in order, starting at once.
+func drawPattern(_ index: Int) -> (Style, [RandomEvent]) {
+    var random = SeededRandom(seed: randomSeed &+ UInt64(index) &* 1_000_003 &+ (rerolls[index] ?? 0) &* 7_919)
+    var pick = random.double(0...styles.map(\.weight).reduce(0, +))
+    let style = styles.first { pick -= $0.weight; return pick <= 0 } ?? styles[0]
+    let count = random.int(style.count)
+    let beat = random.double(style.gap)
+    var time = 0.0
+    var events: [RandomEvent] = []
+    for _ in 0..<count {
+        let intensity = (random.double(0.35...1) * 100).rounded() / 100
+        let sharpness = (random.double(style.sharpness) * 100).rounded() / 100
+        if random.double() < style.holdChance {
+            let duration = (random.double(style.hold) * 1000).rounded() / 1000
+            events.append(RandomEvent(time: time, intensity: intensity, sharpness: sharpness, duration: duration))
+            time += duration + (style.regular ? beat * 0.3 : random.double(style.holdGap))
+        } else {
+            events.append(RandomEvent(time: time, intensity: intensity, sharpness: sharpness, duration: 0))
+            time += style.regular ? beat * random.double(0.85...1.15) : random.double(style.gap)
+        }
+        time = (time * 1000).rounded(.up) / 1000
+        if time > 2.4 { break }
+    }
+    // One event at the pattern's peak, so every one is strong enough to feel.
+    events[random.int(0...(events.count - 1))].intensity = (random.double(0.7...1) * 100).rounded() / 100
+    return (style, events)
+}
+
+func describe(_ events: [RandomEvent]) -> String {
+    let taps = events.filter { $0.duration == 0 }.count, holds = events.count - taps
+    func counted(_ count: Int, _ noun: String) -> String? {
+        count == 0 ? nil : count == 1 ? "a \(noun)" : "\(count) \(noun)s"
+    }
+    let end = events.map { $0.time + $0.duration }.max() ?? 0
+    let length = end < 1 ? "\(Int((end * 1000).rounded())) ms" : String(format: "%.1f s", end)
+    let parts = [counted(taps, "tap"), counted(holds, "hold")].compactMap { $0 }.joined(separator: " and ")
+    return (parts.prefix(1).uppercased() + parts.dropFirst()) + " over \(length)"
+}
+
+func encode(_ events: [RandomEvent]) -> String {
+    events.map { event in
+        let common = "\(String(format: "%.3f", event.time)):\(String(format: "%.2f", event.intensity)):\(String(format: "%.2f", event.sharpness))"
+        return event.duration > 0 ? "h:\(common):\(String(format: "%.3f", event.duration))" : "t:\(common)"
+    }.joined(separator: "|")
+}
+
+let adjectives = ["Amber", "Azure", "Cobalt", "Coral", "Crimson", "Dusky", "Ember", "Feral", "Frosty", "Gilded",
+                  "Hollow", "Ivory", "Jade", "Lunar", "Misty", "Neon", "Opal", "Pale", "Rustic", "Scarlet",
+                  "Silver", "Solar", "Stormy", "Swift", "Tidal", "Velvet", "Vivid", "Wild", "Woven", "Zesty",
+                  "Arctic", "Bronze", "Cosmic", "Dappled", "Electric", "Golden", "Hazy", "Indigo", "Jagged", "Lucky",
+                  "Mellow", "Noble", "Prism", "Sable", "Umber", "Wistful", "Copper", "Ochre", "Pastel", "Ruby",
+                  "Saffron", "Teal", "Violet", "Emerald", "Obsidian", "Sunlit", "Twilight", "Glacial Blue", "Mossy", "Ashen"]
+let nouns = ["Comet", "Lantern", "Meadow", "Harbor", "Orchid", "Pebble", "Quill", "Spire", "Thistle", "Willow",
+             "Zephyr", "Anchor", "Canyon", "Dune", "Fable", "Glacier", "Horizon", "Iris", "Jubilee", "Kite",
+             "Lagoon", "Mosaic", "Nebula", "Oasis", "Prairie", "Quartz", "Reef", "Sonnet", "Tundra", "Vortex",
+             "Whisper", "Yarrow", "Atlas", "Blossom", "Cascade", "Delta", "Fjord", "Galaxy", "Haven", "Juniper",
+             "Kestrel", "Lotus", "Mirage", "Nimbus", "Pinnacle", "Quasar", "Rhapsody", "Saga", "Talisman", "Utopia",
+             "Vale", "Wren", "Zenith", "Marble", "Ember Glow", "Driftwood", "Starling", "Lighthouse", "Sparrow", "Monsoon"]
+
+let randomFamily = Family(
+    id: "random",
+    heading: "Random: a thousand drawn at random from a fixed seed, each listed with the built-in group it suits",
+    variants: [], levels: [], title: { _, _ in "" }, subtitle: { _, _, _ in "" }
+)
+
+/// A thousand random patterns, each named with an unused pair of words.
+func drawRandomPatterns(avoidingNames takenNames: Set<String>, titles takenTitles: Set<String>) -> [Pattern] {
+    var names = SeededRandom(seed: randomSeed ^ 0x5EED)
+    var usedTitles = takenTitles, usedNames = takenNames
+    return (0..<1000).map { index in
+        let (style, events) = drawPattern(index)
+        var title = ""
+        repeat {
+            title = "\(adjectives[names.int(0...(adjectives.count - 1))]) \(nouns[names.int(0...(nouns.count - 1))])"
+        } while usedTitles.contains(title) || usedNames.contains(caseName(title))
+        usedTitles.insert(title)
+        usedNames.insert(caseName(title))
+        var symbolPick = SeededRandom(seed: randomSeed &+ UInt64(index))
+        return Pattern(
+            name: caseName(title), title: title, subtitle: describe(events),
+            symbol: style.symbols[symbolPick.int(0...(style.symbols.count - 1))],
+            family: randomFamily, variant: index, level: 0, category: style.category, encoded: encode(events)
+        )
     }
 }
 
@@ -612,17 +772,23 @@ guard handNames.count == 100, handTitles.count == 100 else {
     fail("Expected 100 hand-written patterns, found \(handNames.count) cases and \(handTitles.count) titles")
 }
 
+// The thousand drawn at random, named around every name already taken.
+patterns += drawRandomPatterns(
+    avoidingNames: handNames.union(patterns.map(\.name)),
+    titles: handTitles.union(patterns.map(\.title))
+)
+
 for (label, values, existing) in [("case name", patterns.map(\.name), handNames), ("title", patterns.map(\.title), handTitles)] {
     let repeated = Dictionary(grouping: values, by: { $0 }).filter { $0.value.count > 1 }.keys
     guard repeated.isEmpty else { fail("Repeated \(label)s: \(repeated.sorted())") }
     let clashes = Set(values).intersection(existing)
     guard clashes.isEmpty else { fail("\(label)s already used by hand-written patterns: \(clashes.sorted())") }
 }
-guard patterns.count == 2900 else { fail("Expected 2,900 patterns, made \(patterns.count)") }
+guard patterns.count == 3900 else { fail("Expected 3,900 patterns, made \(patterns.count)") }
 
 // The cases, after the hand-written ones.
 var cases = begin
-for family in families {
+for family in families + [randomFamily] {
     cases += "\n    // MARK: \(family.heading)\n"
     for pattern in patterns where pattern.family.id == family.id {
         cases += "\n    /// \(pattern.subtitle).\n    case \(pattern.name)\n"
@@ -676,7 +842,7 @@ extension HapticPattern {
 
 """
 for pattern in patterns {
-    demoSource += "        case .\(pattern.name): FamilyDetails(\"\(pattern.title)\", \"\(pattern.subtitle)\", \"\(pattern.symbol)\", .\(pattern.family.category ?? pattern.family.id))\n"
+    demoSource += "        case .\(pattern.name): FamilyDetails(\"\(pattern.title)\", \"\(pattern.subtitle)\", \"\(pattern.symbol)\", .\(pattern.category))\n"
 }
 demoSource += """
         default: nil
@@ -686,11 +852,34 @@ demoSource += """
 
 """
 
+var randomSource = """
+//
+// RandomPatterns+Data.swift
+// HapticEngine
+//
+// Written by iOS/Scripts/GeneratePatterns.swift. Don't edit by hand.
+//
+
+extension RandomPatterns {
+    /// The thousand random patterns' events, in case order: see `RandomPatterns`.
+    static let encoded: [String] = [
+
+"""
+for pattern in patterns where pattern.encoded != nil {
+    randomSource += "        \"\(pattern.encoded!)\",\n"
+}
+randomSource += """
+    ]
+}
+
+"""
+
 do {
+    try randomSource.write(to: path("iOS/Sources/HapticEngine/RandomPatterns+Data.swift"), atomically: true, encoding: .utf8)
     try enumSource.write(to: enumFile, atomically: true, encoding: .utf8)
     try variantSource.write(to: variantFile, atomically: true, encoding: .utf8)
     try demoSource.write(to: demoFile, atomically: true, encoding: .utf8)
 } catch {
     fail("Couldn't write: \(error)")
 }
-print("Wrote \(patterns.count) patterns in \(families.count) families.")
+print("Wrote \(patterns.count) patterns: \(families.count) families and 1,000 drawn at random.")

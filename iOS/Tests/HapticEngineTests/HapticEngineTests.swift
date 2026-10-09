@@ -142,23 +142,31 @@ struct HapticEngineProtocolTests {
 
     @Test func builtInGroupRawValuesAreStable() {
         // The last 1,000, shown with the hand-built groups in the demo, the same way again.
-        let names = HapticPattern.allCases.dropFirst(2000).map(\.rawValue).joined(separator: ",")
+        let names = HapticPattern.allCases.dropFirst(2000).prefix(1000).map(\.rawValue).joined(separator: ",")
         #expect(fingerprint(names) == 12_716_613_784_444_698_158)
-        let sets = Array(HapticPattern.allCases.dropFirst(2000)).chunked(into: 50)
+        let sets = Array(HapticPattern.allCases.dropFirst(2000).prefix(1000)).chunked(into: 50)
         #expect(sets.count == 20)
         #expect(sets.first.map { [$0.first!.rawValue, $0.last!.rawValue] } == ["faintButton", "intenseMenuItem"])
         #expect(sets.last.map { [$0.first!.rawValue, $0.last!.rawValue] } == ["singleGem", "quintupleScroll"])
     }
 
-    @Test func hasThreeThousandPatterns() {
-        #expect(HapticPattern.allCases.count == 3000)
+    @Test func randomRawValuesAreStable() {
+        // The thousand drawn at random: their names, and through `encoded`, their events, fixed for good.
+        let names = HapticPattern.allCases.dropFirst(3000).map(\.rawValue).joined(separator: ",")
+        #expect(fingerprint(names) == 6_843_678_918_354_534_162)
+        #expect(fingerprint(RandomPatterns.encoded.joined(separator: "\n")) == 13_282_491_639_123_566_019)
+        #expect(HapticPattern.allCases.dropFirst(3000).allSatisfy { $0.variant?.family == .random })
+    }
+
+    @Test func hasFourThousandPatterns() {
+        #expect(HapticPattern.allCases.count == 4000)
     }
 
     @Test func theHandWrittenHundredComeFirstThenTheFamiliesInOrder() {
         #expect(HapticPattern.allCases.prefix(100).allSatisfy { $0.variant == nil })
         // Family by family, each variant through its nine levels, as the generator writes them.
         let expected = PatternFamily.allCases.flatMap { family in
-            (0..<PatternFamily.variantCount).flatMap { variant in
+            (0..<family.variantCount).flatMap { variant in
                 (0..<family.levelCount).map { PatternVariant(family, variant, $0) }
             }
         }

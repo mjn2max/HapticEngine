@@ -53,10 +53,19 @@ enum PatternFamily: Int, CaseIterable, Sendable {
     case mechanicalParts, mechanicalDevices
     case gameMoves, gameRewards
 
-    static let variantCount = 10
+    /// A thousand drawn at random, once, from a fixed seed: see `RandomPatterns.swift`. Each one is its own
+    /// variant, at a single level.
+    case random
 
-    /// How many levels each variant comes in: nine in the first ten families, five in the rest.
-    var levelCount: Int { rawValue < PatternFamily.animals.rawValue ? 9 : 5 }
+    /// How many variants the family has: ten in each, and a thousand drawn at random.
+    var variantCount: Int { self == .random ? 1000 : 10 }
+
+    /// How many levels each variant comes in: nine in the first ten families, one for those drawn at
+    /// random, and five in the rest.
+    var levelCount: Int {
+        if self == .random { return 1 }
+        return rawValue < PatternFamily.animals.rawValue ? 9 : 5
+    }
 }
 
 /// Where a generated pattern sits in its family.
@@ -78,7 +87,7 @@ extension HapticPatterns {
     /// A generated pattern's events, in time order.
     static func events(for variant: PatternVariant) -> [CHHapticEvent] {
         // From 0 at the lowest level to 1 at the highest.
-        let level = Float(variant.level) / Float(variant.family.levelCount - 1)
+        let level = Float(variant.level) / Float(max(variant.family.levelCount - 1, 1))
         let events = switch variant.family {
         case .impacts: impact(material: variant.variant, weight: level)
         case .tapCounts: tapCount(variant.variant + 2, pace: variant.level)
@@ -90,6 +99,7 @@ extension HapticPatterns {
         case .weather: weather(variant.variant, strength: variant.level)
         case .machines: machine(variant.variant, speed: variant.level)
         case .arcade: arcade(variant.variant, power: level)
+        case .random: RandomPatterns.events(variant.variant)
         default: motifEvents(for: variant)
         }
         // The families mix taps and holds; Core Haptics wants them in time order.

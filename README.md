@@ -15,7 +15,7 @@ A small haptics library for **iOS** and **Android** with the same API on both pl
   - **Complex:** four 1.5 second segments: medium, hard, soft, hard.
   - **Feedback:** tick, success, warning and error.
   - **Rhythm and texture:** heartbeat, knock, rumble and pulse.
-- On iOS, 2,990 more patterns, for 3,000 in all. These are iOS only for now; play them with `play(_:)`.
+- On iOS, 3,990 more patterns, for 4,000 in all. These are iOS only for now; play them with `play(_:)`.
   - **90 built by hand**, in seven groups: feedback (impacts, toggles, drag and drop…), alerts
     (notification, alarm, ring, SOS…), rhythm, texture, nature (rain, thunder, ocean wave…), mechanical
     (typewriter, lock, engine…) and game (coin, power up, explosion…).
@@ -31,6 +31,9 @@ A small haptics library for **iOS** and **Android** with the same API on both pl
     gestures and results in feedback (`firmButton`), chimes, calls and warnings in alerts, beats, pulses
     and footwork in rhythm, grains, hums and swells in texture, creatures, water and sky in nature, parts
     and devices in mechanical, and moves and rewards in game (`tripleGem`). Tested the same way.
+  - **1,000 drawn at random**, once, from a fixed seed, so they never change: random taps and holds, each
+    named with a random pair of words (`emberNebula`) and listed with the built-in group its style suits.
+    Tested the same way.
 - On Android 12+ phones that support them, taps play as haptic primitives, which feel much closer to
   iOS than a plain vibration. Other phones get an equivalent waveform.
 - Safe to call anywhere: on devices without haptic hardware every call does nothing, and one engine can
@@ -146,7 +149,7 @@ Each platform has a demo app: every pattern in a grid or list, a now-playing car
 description and progress, and an activity history you can replay from, swipe to delete, or start from
 suggestions when it's empty.
 
-The iOS demo is built for its 3,000 patterns: search them all, filter by category from the
+The iOS demo is built for its 4,000 patterns: search them all, filter by category from the
 button beside search, and star favorites (touch and hold a pattern, or tap the star by the now-playing card) to
 find them again under **Favorites**. To try the UI in the Simulator, which has no haptic hardware, add
 `-MockHaptics YES` to the scheme's launch arguments.
@@ -197,7 +200,7 @@ patterns on both platforms, change both together and update the tests on both si
 stay in step. The iOS-only patterns are held to shared rules in the iOS tests instead of exact specs. A change to how a pattern
 feels also needs the [device testing checklist](docs/device-testing.md).
 
-The 2,900 family patterns are generated. How each family feels is in
+The 2,900 family patterns, and the 1,000 drawn at random, are generated. How each family feels is in
 `iOS/Sources/HapticEngine/PatternFamilies.swift` and `MotifFamilies.swift`, and changing it needs nothing
 else; the tests check every new pattern still feels distinct from all the others. Their cases, names,
 descriptions, symbols and demo categories come from `iOS/Scripts/GeneratePatterns.swift`: after changing a

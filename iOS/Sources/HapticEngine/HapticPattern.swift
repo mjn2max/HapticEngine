@@ -17,7 +17,8 @@ import Foundation
 /// The first ten patterns are also in the Android library. The rest are iOS only for now: ninety more built
 /// by hand, then 2,900 generated in families, each a variant at one of several levels: 900 in ten families
 /// of ninety, like ``heavyMetalHit`` or ``waltzAllegro``, then 2,000 in forty sets of fifty, like
-/// ``hugeBark``, ``firmButton`` or ``tripleGem``.
+/// ``hugeBark``, ``firmButton`` or ``tripleGem``, then 1,000 drawn at random from a fixed seed, like
+/// ``emberNebula``.
 public enum HapticPattern: String, CaseIterable, Sendable {
     // MARK: Shared with Android
 
@@ -9139,6 +9140,3008 @@ public enum HapticPattern: String, CaseIterable, Sendable {
 
     /// A scroll found, five times.
     case quintupleScroll
+
+    // MARK: Random: a thousand drawn at random from a fixed seed, each listed with the built-in group it suits
+
+    /// 4 taps over 217 ms.
+    case emberNebula
+
+    /// A tap and a hold over 91 ms.
+    case mellowRhapsody
+
+    /// 2 taps and 8 holds over 1.3 s.
+    case hollowComet
+
+    /// A tap and 7 holds over 831 ms.
+    case mellowZephyr
+
+    /// 7 taps and 2 holds over 897 ms.
+    case hazyWhisper
+
+    /// 2 taps and 3 holds over 763 ms.
+    case mossyHarbor
+
+    /// A tap and a hold over 94 ms.
+    case rubyBlossom
+
+    /// 8 taps and 2 holds over 1.2 s.
+    case stormyHaven
+
+    /// A tap and a hold over 88 ms.
+    case emberThistle
+
+    /// 2 taps and 5 holds over 1.2 s.
+    case goldenQuartz
+
+    /// 4 taps over 338 ms.
+    case cobaltLotus
+
+    /// 7 taps over 1.2 s.
+    case saffronEmberGlow
+
+    /// 6 taps and a hold over 1.8 s.
+    case crimsonDelta
+
+    /// 3 taps and 2 holds over 633 ms.
+    case cosmicHaven
+
+    /// 3 taps and a hold over 190 ms.
+    case lunarWren
+
+    /// 4 taps over 220 ms.
+    case cobaltStarling
+
+    /// 2 taps and 2 holds over 241 ms.
+    case ivoryMeadow
+
+    /// 3 taps and a hold over 182 ms.
+    case glacialBlueCascade
+
+    /// 4 taps over 219 ms.
+    case zestySaga
+
+    /// 8 taps over 1.2 s.
+    case zestyVortex
+
+    /// 2 taps and 2 holds over 238 ms.
+    case glacialBlueVortex
+
+    /// 3 taps and a hold over 181 ms.
+    case violetKite
+
+    /// 4 taps and 7 holds over 873 ms.
+    case cobaltFjord
+
+    /// 4 holds over 197 ms.
+    case mellowLighthouse
+
+    /// 2 taps and a hold over 545 ms.
+    case pastelOasis
+
+    /// 3 taps over 253 ms.
+    case wovenReef
+
+    /// 6 holds over 913 ms.
+    case obsidianVale
+
+    /// 9 taps over 2.2 s.
+    case obsidianFable
+
+    /// 6 taps over 356 ms.
+    case prismMonsoon
+
+    /// 5 taps and 2 holds over 826 ms.
+    case solarNimbus
+
+    /// A tap and 3 holds over 1.0 s.
+    case rusticLighthouse
+
+    /// 4 taps and 4 holds over 1.6 s.
+    case mistyVortex
+
+    /// 3 taps and a hold over 375 ms.
+    case ashenStarling
+
+    /// 6 holds over 731 ms.
+    case neonWillow
+
+    /// 2 taps and 2 holds over 1.0 s.
+    case velvetJuniper
+
+    /// 3 taps and 3 holds over 1.4 s.
+    case emeraldThistle
+
+    /// 4 taps and 2 holds over 605 ms.
+    case azureOasis
+
+    /// 4 taps and a hold over 349 ms.
+    case copperWhisper
+
+    /// 5 taps over 547 ms.
+    case twilightJuniper
+
+    /// 6 taps and 2 holds over 879 ms.
+    case solarQuasar
+
+    /// A tap and 2 holds over 368 ms.
+    case prismOrchid
+
+    /// 2 taps over 88 ms.
+    case velvetWhisper
+
+    /// 8 taps and a hold over 1.5 s.
+    case cosmicJuniper
+
+    /// A tap and 2 holds over 211 ms.
+    case hazyMarble
+
+    /// A tap and a hold over 241 ms.
+    case emberJubilee
+
+    /// 6 taps over 1.3 s.
+    case obsidianFjord
+
+    /// 5 taps and 2 holds over 863 ms.
+    case opalLagoon
+
+    /// 3 taps and 5 holds over 1.4 s.
+    case jaggedNimbus
+
+    /// 3 taps over 102 ms.
+    case dappledLantern
+
+    /// 5 taps over 835 ms.
+    case ochreSparrow
+
+    /// 4 taps over 163 ms.
+    case crimsonTalisman
+
+    /// 3 taps over 127 ms.
+    case wovenDune
+
+    /// 5 taps and a hold over 489 ms.
+    case amberNebula
+
+    /// 6 taps and 3 holds over 1.9 s.
+    case cosmicThistle
+
+    /// 3 taps and a hold over 746 ms.
+    case mellowAtlas
+
+    /// 5 taps and 4 holds over 1.1 s.
+    case hollowBlossom
+
+    /// 2 taps and 7 holds over 1.1 s.
+    case cobaltOasis
+
+    /// 4 taps over 588 ms.
+    case feralHarbor
+
+    /// 2 taps and 3 holds over 1.0 s.
+    case paleUtopia
+
+    /// 5 taps and a hold over 940 ms.
+    case feralWren
+
+    /// A tap and 3 holds over 827 ms.
+    case obsidianOrchid
+
+    /// 4 taps and 3 holds over 810 ms.
+    case azureZephyr
+
+    /// 3 taps and a hold over 152 ms.
+    case indigoWren
+
+    /// 2 holds over 122 ms.
+    case jadeVale
+
+    /// A tap and 10 holds over 1.3 s.
+    case mistyVale
+
+    /// 3 taps over 103 ms.
+    case saffronKite
+
+    /// 4 taps and 2 holds over 632 ms.
+    case wovenWren
+
+    /// 4 taps over 631 ms.
+    case bronzeHarbor
+
+    /// 6 taps and a hold over 908 ms.
+    case indigoOrchid
+
+    /// 5 taps and 4 holds over 2.0 s.
+    case scarletMarble
+
+    /// 3 taps and a hold over 654 ms.
+    case silverZephyr
+
+    /// 3 taps and 6 holds over 1.0 s.
+    case gildedOasis
+
+    /// 6 taps and 3 holds over 1.5 s.
+    case twilightWhisper
+
+    /// 5 taps and a hold over 942 ms.
+    case emeraldQuartz
+
+    /// 4 taps over 204 ms.
+    case bronzeQuartz
+
+    /// 3 taps and 3 holds over 886 ms.
+    case luckyMonsoon
+
+    /// 3 taps and 6 holds over 712 ms.
+    case cobaltLighthouse
+
+    /// A tap and 3 holds over 530 ms.
+    case rubyMarble
+
+    /// 7 taps and a hold over 746 ms.
+    case paleLagoon
+
+    /// 6 taps and 3 holds over 1.4 s.
+    case dappledLotus
+
+    /// 6 taps over 1.4 s.
+    case goldenQuill
+
+    /// 4 taps and 2 holds over 1.2 s.
+    case sableMirage
+
+    /// A tap and 2 holds over 521 ms.
+    case umberHorizon
+
+    /// 2 taps and a hold over 436 ms.
+    case paleDelta
+
+    /// 6 taps and 2 holds over 1.5 s.
+    case electricMirage
+
+    /// 6 taps over 519 ms.
+    case jadePinnacle
+
+    /// 2 taps over 86 ms.
+    case jadeNimbus
+
+    /// 5 taps and 2 holds over 1.1 s.
+    case hollowTundra
+
+    /// A tap and a hold over 331 ms.
+    case emberComet
+
+    /// 5 taps and a hold over 733 ms.
+    case mistyLotus
+
+    /// 2 taps and 7 holds over 1.1 s.
+    case nobleLotus
+
+    /// 3 taps over 107 ms.
+    case rubyHorizon
+
+    /// 4 taps and 7 holds over 1.1 s.
+    case copperThistle
+
+    /// 2 taps and 9 holds over 1.4 s.
+    case rubyTalisman
+
+    /// 2 taps over 85 ms.
+    case cobaltQuartz
+
+    /// 6 taps and 2 holds over 598 ms.
+    case dappledTundra
+
+    /// 5 taps and 2 holds over 1.2 s.
+    case wovenPrairie
+
+    /// 7 taps over 1.3 s.
+    case rubyWren
+
+    /// 4 taps and a hold over 401 ms.
+    case hazyHorizon
+
+    /// 2 taps and 3 holds over 511 ms.
+    case indigoUtopia
+
+    /// 3 taps and a hold over 184 ms.
+    case ashenLotus
+
+    /// A tap and 4 holds over 1.3 s.
+    case silverPinnacle
+
+    /// 2 taps and 7 holds over 1.1 s.
+    case pastelPrairie
+
+    /// 3 taps and a hold over 181 ms.
+    case goldenPebble
+
+    /// 2 taps and a hold over 173 ms.
+    case vividOrchid
+
+    /// 3 taps and 2 holds over 561 ms.
+    case gildedHarbor
+
+    /// 2 taps over 90 ms.
+    case zestyMosaic
+
+    /// 3 holds over 617 ms.
+    case azureQuartz
+
+    /// 2 taps and 10 holds over 1.6 s.
+    case pastelVale
+
+    /// 9 taps and a hold over 1.1 s.
+    case opalGalaxy
+
+    /// 4 taps over 212 ms.
+    case vividTalisman
+
+    /// 4 taps and 2 holds over 896 ms.
+    case lunarUtopia
+
+    /// 6 taps over 966 ms.
+    case emeraldLotus
+
+    /// 6 taps and 2 holds over 1.2 s.
+    case vividSonnet
+
+    /// 2 taps over 83 ms.
+    case mistyPebble
+
+    /// 4 holds over 738 ms.
+    case amberPinnacle
+
+    /// 12 holds over 1.7 s.
+    case sableLagoon
+
+    /// 3 taps over 124 ms.
+    case frostyMonsoon
+
+    /// 4 taps and 6 holds over 803 ms.
+    case violetQuill
+
+    /// 5 taps over 467 ms.
+    case electricOasis
+
+    /// 5 taps over 478 ms.
+    case opalFjord
+
+    /// 7 taps and 3 holds over 1.1 s.
+    case feralNimbus
+
+    /// A tap and 3 holds over 397 ms.
+    case vividIris
+
+    /// 7 taps and 3 holds over 991 ms.
+    case swiftPinnacle
+
+    /// 2 taps over 81 ms.
+    case rusticLagoon
+
+    /// 5 taps and 2 holds over 1.4 s.
+    case vividReef
+
+    /// 4 taps and 2 holds over 843 ms.
+    case vividSaga
+
+    /// 3 taps and 6 holds over 1.2 s.
+    case velvetSaga
+
+    /// 3 taps and a hold over 219 ms.
+    case feralFable
+
+    /// 4 taps over 645 ms.
+    case nobleSpire
+
+    /// 3 taps and 4 holds over 1.1 s.
+    case dappledHarbor
+
+    /// 7 taps over 1.2 s.
+    case stormyOrchid
+
+    /// 4 taps and 3 holds over 577 ms.
+    case tidalFable
+
+    /// 3 taps over 96 ms.
+    case opalHorizon
+
+    /// 4 taps and 3 holds over 1.2 s.
+    case paleLantern
+
+    /// 2 taps and 7 holds over 1.0 s.
+    case duskyMarble
+
+    /// 3 taps over 200 ms.
+    case emeraldTundra
+
+    /// 2 taps over 42 ms.
+    case saffronHaven
+
+    /// 6 taps over 1.5 s.
+    case wovenMirage
+
+    /// 8 taps and 2 holds over 1.4 s.
+    case obsidianQuasar
+
+    /// 2 taps over 93 ms.
+    case wovenLighthouse
+
+    /// 3 taps and a hold over 204 ms.
+    case electricLighthouse
+
+    /// 5 taps and a hold over 1.1 s.
+    case silverAtlas
+
+    /// A tap and 5 holds over 897 ms.
+    case mellowWren
+
+    /// 5 taps and a hold over 540 ms.
+    case dappledMarble
+
+    /// 6 taps and a hold over 957 ms.
+    case umberFable
+
+    /// A tap and 11 holds over 1.4 s.
+    case stormyTalisman
+
+    /// 2 taps and a hold over 377 ms.
+    case luckyStarling
+
+    /// A tap and a hold over 54 ms.
+    case silverAnchor
+
+    /// 4 taps and 3 holds over 939 ms.
+    case bronzeRhapsody
+
+    /// 4 taps over 415 ms.
+    case wildTalisman
+
+    /// 3 taps and a hold over 173 ms.
+    case feralSparrow
+
+    /// A tap and 9 holds over 1.3 s.
+    case mistyHarbor
+
+    /// 3 taps and 4 holds over 731 ms.
+    case mellowEmberGlow
+
+    /// 5 taps and a hold over 404 ms.
+    case cobaltZenith
+
+    /// A tap and 7 holds over 886 ms.
+    case twilightMarble
+
+    /// 6 taps and 2 holds over 1.6 s.
+    case dappledYarrow
+
+    /// 3 taps and 2 holds over 706 ms.
+    case hollowQuill
+
+    /// 3 taps and 5 holds over 706 ms.
+    case ashenEmberGlow
+
+    /// 3 taps and a hold over 442 ms.
+    case luckyWillow
+
+    /// A tap and 9 holds over 1.3 s.
+    case jaggedHaven
+
+    /// 3 taps and 2 holds over 832 ms.
+    case tidalTalisman
+
+    /// 5 taps and 5 holds over 753 ms.
+    case lunarMarble
+
+    /// 5 taps and 4 holds over 1.6 s.
+    case sunlitMonsoon
+
+    /// 4 holds over 770 ms.
+    case zestyAtlas
+
+    /// 3 taps and a hold over 287 ms.
+    case neonWren
+
+    /// 3 taps and a hold over 179 ms.
+    case rubyLighthouse
+
+    /// 7 taps and 3 holds over 588 ms.
+    case solarOasis
+
+    /// 10 taps over 882 ms.
+    case feralJuniper
+
+    /// 2 taps over 45 ms.
+    case emeraldGalaxy
+
+    /// 3 taps and 5 holds over 1.9 s.
+    case solarQuill
+
+    /// 2 taps and a hold over 570 ms.
+    case saffronPebble
+
+    /// 5 taps and a hold over 811 ms.
+    case cobaltZephyr
+
+    /// 6 taps and 6 holds over 954 ms.
+    case gildedMeadow
+
+    /// 5 taps and 7 holds over 1.0 s.
+    case violetYarrow
+
+    /// 3 taps and a hold over 495 ms.
+    case velvetHarbor
+
+    /// A tap and 2 holds over 658 ms.
+    case ivoryKite
+
+    /// 3 taps and 2 holds over 873 ms.
+    case umberGalaxy
+
+    /// 6 taps and 4 holds over 871 ms.
+    case emeraldEmberGlow
+
+    /// 2 taps and a hold over 338 ms.
+    case saffronLantern
+
+    /// 5 holds over 513 ms.
+    case mellowIris
+
+    /// 3 taps and 8 holds over 1.2 s.
+    case emeraldPrairie
+
+    /// 3 taps and a hold over 620 ms.
+    case twilightSpire
+
+    /// 5 taps over 1.0 s.
+    case bronzeVortex
+
+    /// 4 taps and 2 holds over 740 ms.
+    case electricLagoon
+
+    /// 2 taps and a hold over 164 ms.
+    case nobleMarble
+
+    /// 4 taps and 2 holds over 551 ms.
+    case wildPebble
+
+    /// A tap and 4 holds over 903 ms.
+    case violetLantern
+
+    /// 4 taps and 2 holds over 714 ms.
+    case hazyLotus
+
+    /// 6 taps and 2 holds over 1.2 s.
+    case saffronZephyr
+
+    /// 7 taps and 2 holds over 860 ms.
+    case jaggedGalaxy
+
+    /// 5 taps and 3 holds over 1.1 s.
+    case crimsonIris
+
+    /// 6 taps and 2 holds over 1.8 s.
+    case ashenPebble
+
+    /// 3 taps over 276 ms.
+    case frostyTalisman
+
+    /// 3 taps and a hold over 213 ms.
+    case cosmicGlacier
+
+    /// 6 holds over 818 ms.
+    case wildIris
+
+    /// 4 taps and a hold over 861 ms.
+    case arcticThistle
+
+    /// 4 taps and 2 holds over 804 ms.
+    case ivoryTundra
+
+    /// 5 taps over 549 ms.
+    case cobaltQuasar
+
+    /// A tap and a hold over 135 ms.
+    case pastelZenith
+
+    /// 2 taps and 8 holds over 1.1 s.
+    case velvetFable
+
+    /// 4 taps and 3 holds over 1.1 s.
+    case indigoKestrel
+
+    /// 4 taps and 3 holds over 1.1 s.
+    case feralKite
+
+    /// 2 taps over 58 ms.
+    case wildSpire
+
+    /// 2 taps over 40 ms.
+    case opalJubilee
+
+    /// 4 taps and 3 holds over 618 ms.
+    case ashenWillow
+
+    /// 2 taps and 10 holds over 1.4 s.
+    case mellowCascade
+
+    /// 2 taps and 3 holds over 607 ms.
+    case lunarLagoon
+
+    /// 3 taps over 448 ms.
+    case vividQuartz
+
+    /// 2 taps and 3 holds over 749 ms.
+    case mellowWhisper
+
+    /// 6 taps over 464 ms.
+    case mossySaga
+
+    /// 2 taps over 77 ms.
+    case tealOasis
+
+    /// 4 taps and a hold over 452 ms.
+    case neonHaven
+
+    /// A tap and 5 holds over 911 ms.
+    case sableZephyr
+
+    /// 7 taps and 2 holds over 734 ms.
+    case copperNimbus
+
+    /// 3 taps over 301 ms.
+    case sunlitWren
+
+    /// A tap and a hold over 49 ms.
+    case azureSonnet
+
+    /// 2 taps and 4 holds over 909 ms.
+    case prismQuasar
+
+    /// 9 taps over 1.4 s.
+    case electricYarrow
+
+    /// 4 taps and a hold over 487 ms.
+    case mistyKite
+
+    /// A tap and 4 holds over 450 ms.
+    case mossyLighthouse
+
+    /// 2 taps over 58 ms.
+    case hollowGlacier
+
+    /// 4 taps over 164 ms.
+    case amberLantern
+
+    /// 3 taps and 3 holds over 691 ms.
+    case ivoryMonsoon
+
+    /// 2 taps and 10 holds over 1.3 s.
+    case electricNimbus
+
+    /// 2 taps and 2 holds over 192 ms.
+    case twilightEmberGlow
+
+    /// 2 taps and 2 holds over 240 ms.
+    case umberHarbor
+
+    /// 8 taps and a hold over 1.3 s.
+    case cobaltRhapsody
+
+    /// 5 taps and a hold over 993 ms.
+    case prismNimbus
+
+    /// 2 taps and 2 holds over 676 ms.
+    case wildAnchor
+
+    /// 4 taps and a hold over 826 ms.
+    case azureTundra
+
+    /// 2 taps and a hold over 384 ms.
+    case neonGlacier
+
+    /// A tap and 7 holds over 1.0 s.
+    case umberMeadow
+
+    /// 9 taps and a hold over 984 ms.
+    case opalVortex
+
+    /// 4 taps and a hold over 566 ms.
+    case scarletCanyon
+
+    /// 5 taps and 2 holds over 1.1 s.
+    case arcticTundra
+
+    /// 2 taps and 3 holds over 876 ms.
+    case jaggedFjord
+
+    /// 4 taps and a hold over 456 ms.
+    case amberWhisper
+
+    /// 3 taps and a hold over 545 ms.
+    case paleThistle
+
+    /// 6 taps and 2 holds over 913 ms.
+    case hazyTundra
+
+    /// A tap and 5 holds over 971 ms.
+    case glacialBlueQuill
+
+    /// 3 taps and a hold over 388 ms.
+    case duskyYarrow
+
+    /// A tap and 7 holds over 922 ms.
+    case duskyMeadow
+
+    /// 5 taps and 4 holds over 810 ms.
+    case coralNebula
+
+    /// 4 taps and 5 holds over 1.8 s.
+    case copperSparrow
+
+    /// 8 taps over 856 ms.
+    case glacialBlueMosaic
+
+    /// 5 taps and 4 holds over 573 ms.
+    case electricMonsoon
+
+    /// 3 taps and a hold over 282 ms.
+    case paleMirage
+
+    /// 9 taps and a hold over 1.4 s.
+    case coralDriftwood
+
+    /// 4 taps over 352 ms.
+    case indigoLighthouse
+
+    /// 4 taps over 579 ms.
+    case sableAtlas
+
+    /// 6 taps and 2 holds over 815 ms.
+    case wistfulLantern
+
+    /// 5 taps and 2 holds over 667 ms.
+    case amberOrchid
+
+    /// 4 taps over 880 ms.
+    case mistyKestrel
+
+    /// A tap and 2 holds over 498 ms.
+    case dappledWren
+
+    /// 3 taps and a hold over 260 ms.
+    case glacialBlueLantern
+
+    /// 2 taps and 9 holds over 1.6 s.
+    case solarThistle
+
+    /// 3 taps and 3 holds over 1.2 s.
+    case amberZephyr
+
+    /// 3 taps and 9 holds over 1.3 s.
+    case solarDriftwood
+
+    /// 4 taps over 278 ms.
+    case hollowQuartz
+
+    /// 5 taps and a hold over 564 ms.
+    case ivoryNebula
+
+    /// A tap and 3 holds over 409 ms.
+    case emeraldKite
+
+    /// 2 taps and 7 holds over 1.2 s.
+    case frostyLighthouse
+
+    /// 5 taps and a hold over 994 ms.
+    case jadeGalaxy
+
+    /// 3 taps over 108 ms.
+    case rusticReef
+
+    /// 2 taps over 128 ms.
+    case swiftUtopia
+
+    /// 3 taps over 163 ms.
+    case violetHaven
+
+    /// 3 taps and a hold over 614 ms.
+    case mistyQuasar
+
+    /// 7 taps and 3 holds over 1.3 s.
+    case scarletSparrow
+
+    /// 2 taps and 3 holds over 375 ms.
+    case wistfulComet
+
+    /// A tap and 8 holds over 1.1 s.
+    case scarletBlossom
+
+    /// 7 taps and 2 holds over 2.1 s.
+    case saffronComet
+
+    /// A tap and 2 holds over 233 ms.
+    case tidalPrairie
+
+    /// 2 taps and 2 holds over 643 ms.
+    case coralStarling
+
+    /// 6 taps over 1.5 s.
+    case jaggedDune
+
+    /// 4 taps and 2 holds over 946 ms.
+    case copperRhapsody
+
+    /// 5 taps and 5 holds over 947 ms.
+    case rusticHorizon
+
+    /// 5 taps over 538 ms.
+    case crimsonDriftwood
+
+    /// 2 taps and a hold over 143 ms.
+    case prismTalisman
+
+    /// 3 taps and 5 holds over 634 ms.
+    case neonReef
+
+    /// 2 taps and a hold over 547 ms.
+    case rusticUtopia
+
+    /// 8 taps over 1.4 s.
+    case nobleQuartz
+
+    /// A tap and 2 holds over 205 ms.
+    case electricFable
+
+    /// 2 taps and 5 holds over 729 ms.
+    case stormyCanyon
+
+    /// 2 taps and a hold over 183 ms.
+    case frostyLotus
+
+    /// 3 taps and 4 holds over 1.1 s.
+    case gildedQuartz
+
+    /// 4 taps over 159 ms.
+    case bronzeWren
+
+    /// 4 taps over 882 ms.
+    case gildedQuill
+
+    /// A tap and 3 holds over 749 ms.
+    case pastelGlacier
+
+    /// 5 taps over 472 ms.
+    case nobleFjord
+
+    /// 2 taps and 2 holds over 503 ms.
+    case arcticJuniper
+
+    /// 5 taps and 2 holds over 1.2 s.
+    case twilightPinnacle
+
+    /// 2 taps and 2 holds over 249 ms.
+    case sableJuniper
+
+    /// 4 taps and 2 holds over 929 ms.
+    case jadeCascade
+
+    /// 2 taps and 2 holds over 234 ms.
+    case scarletQuartz
+
+    /// 4 taps and a hold over 428 ms.
+    case arcticIris
+
+    /// 2 taps over 65 ms.
+    case mellowZenith
+
+    /// 3 taps and 2 holds over 1.2 s.
+    case mellowAnchor
+
+    /// 3 taps and 3 holds over 603 ms.
+    case feralIris
+
+    /// A tap and a hold over 149 ms.
+    case prismLighthouse
+
+    /// 4 taps and 3 holds over 531 ms.
+    case prismOasis
+
+    /// 4 taps and 2 holds over 1.0 s.
+    case tidalEmberGlow
+
+    /// 4 taps over 294 ms.
+    case goldenIris
+
+    /// A tap and 2 holds over 326 ms.
+    case ivoryDune
+
+    /// A tap and 9 holds over 1.5 s.
+    case jaggedSaga
+
+    /// 3 taps and a hold over 621 ms.
+    case wistfulFable
+
+    /// 8 taps over 1.3 s.
+    case emberVale
+
+    /// 7 taps over 904 ms.
+    case duskyLotus
+
+    /// 5 taps and a hold over 785 ms.
+    case glacialBlueGalaxy
+
+    /// A tap and 3 holds over 898 ms.
+    case sableHaven
+
+    /// 3 taps and 2 holds over 712 ms.
+    case sablePrairie
+
+    /// 3 taps and a hold over 182 ms.
+    case umberThistle
+
+    /// A tap and 9 holds over 1.3 s.
+    case wovenKestrel
+
+    /// 5 taps and 5 holds over 774 ms.
+    case tidalDelta
+
+    /// 5 taps and 3 holds over 1.4 s.
+    case sunlitHaven
+
+    /// 3 taps and a hold over 179 ms.
+    case emberFable
+
+    /// 2 taps over 38 ms.
+    case bronzeMeadow
+
+    /// 3 taps over 110 ms.
+    case nobleAnchor
+
+    /// 2 taps and 2 holds over 694 ms.
+    case sableReef
+
+    /// 6 taps over 729 ms.
+    case pastelRhapsody
+
+    /// 2 taps and a hold over 437 ms.
+    case feralVortex
+
+    /// 3 taps over 223 ms.
+    case cosmicFjord
+
+    /// 2 taps and a hold over 403 ms.
+    case twilightQuasar
+
+    /// 3 taps over 124 ms.
+    case jadeSaga
+
+    /// 6 taps and a hold over 961 ms.
+    case vividWillow
+
+    /// 3 taps over 80 ms.
+    case opalOasis
+
+    /// 3 taps and 7 holds over 903 ms.
+    case swiftNebula
+
+    /// 9 holds over 1.1 s.
+    case copperMeadow
+
+    /// 2 taps and 4 holds over 433 ms.
+    case duskyGalaxy
+
+    /// A tap and 2 holds over 322 ms.
+    case prismMosaic
+
+    /// A tap and 3 holds over 431 ms.
+    case emberSparrow
+
+    /// 5 taps and 5 holds over 1.0 s.
+    case copperJubilee
+
+    /// 3 taps and 2 holds over 486 ms.
+    case wistfulTalisman
+
+    /// 4 taps and a hold over 243 ms.
+    case rusticHarbor
+
+    /// 2 taps and 2 holds over 392 ms.
+    case azurePebble
+
+    /// 2 holds over 319 ms.
+    case obsidianSparrow
+
+    /// A tap and 10 holds over 1.5 s.
+    case tealMosaic
+
+    /// 5 taps and 4 holds over 1.7 s.
+    case mossyJuniper
+
+    /// 8 taps and 2 holds over 1.0 s.
+    case sunlitZephyr
+
+    /// 4 taps and 4 holds over 2.0 s.
+    case velvetSparrow
+
+    /// 3 taps and a hold over 262 ms.
+    case violetCascade
+
+    /// 9 taps and a hold over 1.3 s.
+    case violetWren
+
+    /// A tap and 3 holds over 525 ms.
+    case cosmicWren
+
+    /// 2 holds over 127 ms.
+    case sunlitWhisper
+
+    /// 2 taps and a hold over 142 ms.
+    case violetPebble
+
+    /// 5 taps over 634 ms.
+    case lunarOasis
+
+    /// 3 holds over 241 ms.
+    case nobleEmberGlow
+
+    /// 6 taps and 3 holds over 1.8 s.
+    case ashenVortex
+
+    /// A tap and a hold over 157 ms.
+    case electricZenith
+
+    /// 5 taps and 2 holds over 1.0 s.
+    case lunarFable
+
+    /// 5 taps and 5 holds over 923 ms.
+    case ashenJubilee
+
+    /// 5 taps and 2 holds over 468 ms.
+    case neonZenith
+
+    /// 7 taps and 2 holds over 1.2 s.
+    case rubyPebble
+
+    /// A tap and 4 holds over 562 ms.
+    case ashenHarbor
+
+    /// 4 taps and 5 holds over 796 ms.
+    case glacialBlueThistle
+
+    /// 3 taps over 89 ms.
+    case sunlitFable
+
+    /// 2 taps and 10 holds over 1.5 s.
+    case ochrePrairie
+
+    /// 3 taps and a hold over 191 ms.
+    case electricAnchor
+
+    /// 2 taps and a hold over 362 ms.
+    case goldenSparrow
+
+    /// A tap and a hold over 141 ms.
+    case saffronWhisper
+
+    /// 2 taps and 3 holds over 1.2 s.
+    case twilightNebula
+
+    /// 5 taps and a hold over 635 ms.
+    case gildedKestrel
+
+    /// 2 taps and a hold over 129 ms.
+    case mellowFable
+
+    /// A tap and a hold over 114 ms.
+    case wistfulCanyon
+
+    /// 2 taps and 3 holds over 1.2 s.
+    case sunlitLighthouse
+
+    /// 4 taps and 3 holds over 1.2 s.
+    case emberDelta
+
+    /// A tap and 3 holds over 502 ms.
+    case feralDriftwood
+
+    /// 3 taps and 6 holds over 2.1 s.
+    case vividKite
+
+    /// 4 taps over 537 ms.
+    case vividTundra
+
+    /// A tap and 9 holds over 1.4 s.
+    case azureMarble
+
+    /// A tap and 2 holds over 163 ms.
+    case jadeZenith
+
+    /// 2 holds over 112 ms.
+    case ivorySparrow
+
+    /// 3 taps over 220 ms.
+    case velvetQuasar
+
+    /// 2 taps and 4 holds over 704 ms.
+    case bronzeEmberGlow
+
+    /// 4 taps and 3 holds over 1.2 s.
+    case bronzeLantern
+
+    /// 7 taps and 2 holds over 1.3 s.
+    case gildedDriftwood
+
+    /// 7 taps and a hold over 1.8 s.
+    case jaggedStarling
+
+    /// 3 taps over 86 ms.
+    case indigoMonsoon
+
+    /// 3 taps and a hold over 697 ms.
+    case gildedJuniper
+
+    /// 2 taps and 4 holds over 655 ms.
+    case amberCanyon
+
+    /// 3 taps and 2 holds over 710 ms.
+    case hazyPrairie
+
+    /// 4 taps over 557 ms.
+    case ashenWhisper
+
+    /// 4 taps and 2 holds over 959 ms.
+    case electricHaven
+
+    /// 7 taps over 1.4 s.
+    case wovenQuill
+
+    /// A tap and 4 holds over 861 ms.
+    case luckyLantern
+
+    /// 4 taps and a hold over 384 ms.
+    case stormySonnet
+
+    /// 2 taps and 3 holds over 848 ms.
+    case lunarSpire
+
+    /// A tap and 4 holds over 600 ms.
+    case hazyQuasar
+
+    /// 8 taps and a hold over 619 ms.
+    case prismZephyr
+
+    /// 5 taps and 2 holds over 1.1 s.
+    case wistfulMosaic
+
+    /// 8 taps over 789 ms.
+    case bronzeHorizon
+
+    /// 4 taps and a hold over 467 ms.
+    case tidalWhisper
+
+    /// 2 taps and 2 holds over 547 ms.
+    case vividMarble
+
+    /// 3 taps and 3 holds over 1.1 s.
+    case neonAtlas
+
+    /// 2 taps and 4 holds over 1.0 s.
+    case tidalNimbus
+
+    /// 5 taps over 657 ms.
+    case wovenCanyon
+
+    /// 3 taps over 130 ms.
+    case pastelSaga
+
+    /// A tap and a hold over 119 ms.
+    case feralNebula
+
+    /// 2 taps and a hold over 375 ms.
+    case wildWhisper
+
+    /// 2 taps and 10 holds over 1.3 s.
+    case saffronOasis
+
+    /// 8 taps over 1.2 s.
+    case wistfulVortex
+
+    /// 6 taps and a hold over 398 ms.
+    case mossyCanyon
+
+    /// 2 taps and a hold over 217 ms.
+    case hazyEmberGlow
+
+    /// 2 taps and 7 holds over 713 ms.
+    case hazyMirage
+
+    /// 3 taps and 4 holds over 1.1 s.
+    case emberWhisper
+
+    /// 2 taps and a hold over 410 ms.
+    case prismRhapsody
+
+    /// 7 taps over 1.1 s.
+    case scarletSpire
+
+    /// 7 taps over 475 ms.
+    case sableOasis
+
+    /// 2 taps and a hold over 458 ms.
+    case ivoryGlacier
+
+    /// 3 taps over 85 ms.
+    case swiftSpire
+
+    /// 7 taps and a hold over 845 ms.
+    case silverBlossom
+
+    /// 3 taps and 2 holds over 275 ms.
+    case sableTalisman
+
+    /// 2 taps and 10 holds over 1.6 s.
+    case ivoryPrairie
+
+    /// 6 taps and a hold over 858 ms.
+    case goldenLantern
+
+    /// 5 taps and a hold over 568 ms.
+    case emberLantern
+
+    /// 4 taps and 2 holds over 583 ms.
+    case crimsonAnchor
+
+    /// 3 taps and a hold over 879 ms.
+    case wildMonsoon
+
+    /// 2 taps and 2 holds over 770 ms.
+    case stormyQuartz
+
+    /// 4 taps and a hold over 542 ms.
+    case gildedIris
+
+    /// 2 taps and 5 holds over 993 ms.
+    case frostyMosaic
+
+    /// 4 taps and 2 holds over 1.2 s.
+    case jaggedKestrel
+
+    /// A tap and 6 holds over 743 ms.
+    case rusticSpire
+
+    /// 3 taps and a hold over 318 ms.
+    case obsidianUtopia
+
+    /// 4 taps and 5 holds over 1.9 s.
+    case sunlitTundra
+
+    /// 4 taps and a hold over 496 ms.
+    case coralCanyon
+
+    /// 11 holds over 1.5 s.
+    case copperGalaxy
+
+    /// 4 taps and 4 holds over 781 ms.
+    case mistyYarrow
+
+    /// 5 taps and a hold over 839 ms.
+    case vividHaven
+
+    /// 3 taps and 4 holds over 706 ms.
+    case mossyHaven
+
+    /// 5 taps and 4 holds over 737 ms.
+    case silverUtopia
+
+    /// 4 taps over 723 ms.
+    case prismUtopia
+
+    /// 5 taps and 3 holds over 1.4 s.
+    case scarletNimbus
+
+    /// A tap and 2 holds over 218 ms.
+    case pastelComet
+
+    /// 2 taps and 2 holds over 228 ms.
+    case umberIris
+
+    /// 2 taps over 89 ms.
+    case frostyNimbus
+
+    /// 3 taps and a hold over 599 ms.
+    case pastelSparrow
+
+    /// 3 taps over 157 ms.
+    case umberHaven
+
+    /// 3 taps over 106 ms.
+    case ivoryLotus
+
+    /// 4 taps and a hold over 631 ms.
+    case cobaltWhisper
+
+    /// 2 taps over 65 ms.
+    case neonVale
+
+    /// 3 taps and a hold over 570 ms.
+    case opalTundra
+
+    /// 7 taps and 2 holds over 634 ms.
+    case solarIris
+
+    /// 2 taps and 7 holds over 1.2 s.
+    case azureUtopia
+
+    /// 11 holds over 1.6 s.
+    case duskyVale
+
+    /// 5 taps and a hold over 955 ms.
+    case jadeAtlas
+
+    /// A tap and 3 holds over 219 ms.
+    case prismPinnacle
+
+    /// 8 taps and 2 holds over 1.2 s.
+    case nobleYarrow
+
+    /// A tap and 2 holds over 364 ms.
+    case velvetYarrow
+
+    /// 3 taps and a hold over 654 ms.
+    case hazyFable
+
+    /// 5 taps and a hold over 916 ms.
+    case tidalHaven
+
+    /// 3 taps over 288 ms.
+    case mistyUtopia
+
+    /// 2 taps and 2 holds over 270 ms.
+    case rusticPinnacle
+
+    /// 6 taps over 457 ms.
+    case ochreNimbus
+
+    /// 5 taps and 2 holds over 873 ms.
+    case twilightZephyr
+
+    /// A tap and 2 holds over 208 ms.
+    case mistySaga
+
+    /// 2 taps and 7 holds over 921 ms.
+    case hollowLantern
+
+    /// 2 taps and a hold over 113 ms.
+    case sableIris
+
+    /// 4 taps over 697 ms.
+    case lunarHarbor
+
+    /// 2 taps over 118 ms.
+    case luckyDriftwood
+
+    /// 3 taps and 2 holds over 941 ms.
+    case wistfulLagoon
+
+    /// 4 taps and a hold over 475 ms.
+    case copperOrchid
+
+    /// 2 taps over 88 ms.
+    case neonLotus
+
+    /// 2 taps over 41 ms.
+    case scarletGalaxy
+
+    /// 5 holds over 712 ms.
+    case vividJubilee
+
+    /// 2 taps over 37 ms.
+    case wildLantern
+
+    /// 5 taps and 3 holds over 676 ms.
+    case opalBlossom
+
+    /// A tap and 9 holds over 1.3 s.
+    case saffronOrchid
+
+    /// 4 taps and 3 holds over 1.3 s.
+    case velvetLantern
+
+    /// 3 taps and 3 holds over 431 ms.
+    case bronzeQuill
+
+    /// 5 taps and 3 holds over 672 ms.
+    case solarSparrow
+
+    /// 4 taps over 206 ms.
+    case mellowJubilee
+
+    /// 2 taps and 3 holds over 428 ms.
+    case frostyPebble
+
+    /// 4 taps and a hold over 632 ms.
+    case zestyHarbor
+
+    /// 8 taps over 1.3 s.
+    case saffronGalaxy
+
+    /// 2 taps and a hold over 110 ms.
+    case zestyLantern
+
+    /// A tap and 3 holds over 665 ms.
+    case duskyJubilee
+
+    /// 4 taps and 2 holds over 814 ms.
+    case gildedTalisman
+
+    /// 7 taps and 2 holds over 1.3 s.
+    case rubyFjord
+
+    /// 2 taps and 4 holds over 1.4 s.
+    case sunlitRhapsody
+
+    /// 3 taps and 4 holds over 1.4 s.
+    case tidalYarrow
+
+    /// 4 taps and 2 holds over 844 ms.
+    case twilightDelta
+
+    /// 2 taps over 54 ms.
+    case sableZenith
+
+    /// 5 taps and a hold over 508 ms.
+    case jaggedQuasar
+
+    /// A tap and 4 holds over 574 ms.
+    case jadeUtopia
+
+    /// 4 holds over 597 ms.
+    case neonDriftwood
+
+    /// 8 taps and 2 holds over 1.1 s.
+    case indigoThistle
+
+    /// 5 taps and a hold over 625 ms.
+    case gildedEmberGlow
+
+    /// 2 taps and 2 holds over 546 ms.
+    case violetRhapsody
+
+    /// 4 taps and 2 holds over 911 ms.
+    case sableJubilee
+
+    /// 5 taps and 4 holds over 1.5 s.
+    case hollowSparrow
+
+    /// 2 taps and 5 holds over 1.4 s.
+    case ashenCanyon
+
+    /// 3 taps and 2 holds over 687 ms.
+    case zestyJuniper
+
+    /// 6 taps and a hold over 1.2 s.
+    case neonGalaxy
+
+    /// 3 taps over 261 ms.
+    case nobleOrchid
+
+    /// 3 taps and 2 holds over 626 ms.
+    case cosmicQuasar
+
+    /// 2 taps and a hold over 141 ms.
+    case umberTundra
+
+    /// 3 taps and a hold over 299 ms.
+    case rusticFjord
+
+    /// 2 taps and 2 holds over 866 ms.
+    case obsidianLantern
+
+    /// A tap and a hold over 105 ms.
+    case wovenFable
+
+    /// 3 taps and 2 holds over 807 ms.
+    case mossyQuasar
+
+    /// 6 taps and 3 holds over 696 ms.
+    case wovenAtlas
+
+    /// 2 taps over 68 ms.
+    case cobaltHorizon
+
+    /// 9 taps over 1.2 s.
+    case emberQuartz
+
+    /// 3 taps and a hold over 554 ms.
+    case sableDune
+
+    /// 4 taps over 371 ms.
+    case lunarHorizon
+
+    /// 6 taps and 3 holds over 1.4 s.
+    case jadeJubilee
+
+    /// 8 taps and a hold over 1.2 s.
+    case tealNimbus
+
+    /// 9 taps over 1.4 s.
+    case sunlitComet
+
+    /// 3 taps over 276 ms.
+    case silverOasis
+
+    /// 2 taps and 4 holds over 1.1 s.
+    case copperYarrow
+
+    /// 2 taps and a hold over 303 ms.
+    case obsidianLagoon
+
+    /// 4 taps and a hold over 618 ms.
+    case ochreMosaic
+
+    /// 4 taps and a hold over 968 ms.
+    case cosmicPebble
+
+    /// A tap and 5 holds over 557 ms.
+    case dappledTalisman
+
+    /// 6 taps and a hold over 1.4 s.
+    case mistyWillow
+
+    /// 8 taps and a hold over 2.1 s.
+    case mossyFjord
+
+    /// 5 taps and 4 holds over 1.6 s.
+    case nobleLagoon
+
+    /// 2 taps and a hold over 390 ms.
+    case stormyDelta
+
+    /// 5 taps and a hold over 445 ms.
+    case mossyDune
+
+    /// 5 taps and a hold over 805 ms.
+    case umberNimbus
+
+    /// A tap and 8 holds over 1.1 s.
+    case copperSpire
+
+    /// 5 taps and a hold over 708 ms.
+    case feralSaga
+
+    /// 2 taps and 9 holds over 1.2 s.
+    case luckyIris
+
+    /// 5 taps and 6 holds over 1.2 s.
+    case umberSonnet
+
+    /// 4 taps and 2 holds over 778 ms.
+    case wovenPebble
+
+    /// 4 taps and 3 holds over 1.0 s.
+    case solarSaga
+
+    /// 8 taps and a hold over 713 ms.
+    case scarletMonsoon
+
+    /// 4 taps and a hold over 742 ms.
+    case obsidianHorizon
+
+    /// 3 taps and 3 holds over 1.3 s.
+    case cosmicHarbor
+
+    /// A tap and 2 holds over 498 ms.
+    case emeraldHorizon
+
+    /// 2 taps and 2 holds over 540 ms.
+    case lunarAnchor
+
+    /// 3 taps and 2 holds over 607 ms.
+    case frostyNebula
+
+    /// 2 taps and a hold over 150 ms.
+    case ashenTalisman
+
+    /// A tap and a hold over 138 ms.
+    case rusticTundra
+
+    /// 2 taps over 78 ms.
+    case zestyHaven
+
+    /// 3 taps over 200 ms.
+    case nobleQuasar
+
+    /// 3 taps and 2 holds over 570 ms.
+    case silverMeadow
+
+    /// 3 taps and a hold over 622 ms.
+    case sableRhapsody
+
+    /// 2 taps and 2 holds over 569 ms.
+    case goldenMeadow
+
+    /// 4 taps and a hold over 427 ms.
+    case rubyMirage
+
+    /// 3 holds over 240 ms.
+    case emeraldFable
+
+    /// A tap and 5 holds over 1.5 s.
+    case twilightZenith
+
+    /// 4 taps and 2 holds over 1.0 s.
+    case opalMarble
+
+    /// 5 taps over 509 ms.
+    case mossyYarrow
+
+    /// 3 taps and 9 holds over 1.5 s.
+    case bronzeTalisman
+
+    /// 7 taps over 945 ms.
+    case mistyAnchor
+
+    /// 8 taps over 1.2 s.
+    case opalCanyon
+
+    /// 7 taps over 1.8 s.
+    case sunlitSparrow
+
+    /// 7 taps over 1.2 s.
+    case pastelWhisper
+
+    /// 4 taps and 4 holds over 1.5 s.
+    case tealComet
+
+    /// 2 taps over 104 ms.
+    case emeraldAtlas
+
+    /// 5 taps and a hold over 904 ms.
+    case mellowThistle
+
+    /// 3 taps and 9 holds over 1.4 s.
+    case opalDelta
+
+    /// 7 taps over 1.6 s.
+    case copperComet
+
+    /// 7 taps and 3 holds over 1.1 s.
+    case jadePebble
+
+    /// 3 taps and 7 holds over 1.1 s.
+    case wovenGalaxy
+
+    /// 4 taps and 3 holds over 1.2 s.
+    case luckyMosaic
+
+    /// A tap and 2 holds over 188 ms.
+    case zestyNebula
+
+    /// 3 holds over 555 ms.
+    case pastelWren
+
+    /// 8 taps and a hold over 1.2 s.
+    case mellowHaven
+
+    /// 3 taps and a hold over 464 ms.
+    case luckyUtopia
+
+    /// 3 taps over 162 ms.
+    case glacialBlueKite
+
+    /// 4 holds over 1.0 s.
+    case neonNimbus
+
+    /// 4 taps and a hold over 522 ms.
+    case ochreTalisman
+
+    /// A tap and 8 holds over 1.3 s.
+    case indigoYarrow
+
+    /// 3 taps and 2 holds over 887 ms.
+    case ashenReef
+
+    /// 2 taps and 5 holds over 845 ms.
+    case emberRhapsody
+
+    /// 6 holds over 788 ms.
+    case emberOasis
+
+    /// 4 taps and a hold over 440 ms.
+    case emberMonsoon
+
+    /// 3 taps over 173 ms.
+    case pastelKestrel
+
+    /// 3 taps and a hold over 353 ms.
+    case vividComet
+
+    /// 9 taps and a hold over 1.4 s.
+    case nobleDriftwood
+
+    /// 4 taps and 3 holds over 673 ms.
+    case wildHarbor
+
+    /// 2 taps and 10 holds over 1.5 s.
+    case cosmicDune
+
+    /// A tap and 4 holds over 581 ms.
+    case stormyStarling
+
+    /// 3 taps and a hold over 501 ms.
+    case silverMarble
+
+    /// 5 taps and a hold over 1.1 s.
+    case gildedFjord
+
+    /// 2 taps and a hold over 456 ms.
+    case gildedGalaxy
+
+    /// 9 taps and a hold over 494 ms.
+    case copperMirage
+
+    /// 8 taps over 1.9 s.
+    case sableQuartz
+
+    /// 9 taps and a hold over 1.2 s.
+    case lunarNimbus
+
+    /// 4 taps and a hold over 311 ms.
+    case frostyKestrel
+
+    /// 5 taps and 2 holds over 1.4 s.
+    case hollowDelta
+
+    /// 8 taps over 925 ms.
+    case jaggedDriftwood
+
+    /// A tap and a hold over 107 ms.
+    case tealDriftwood
+
+    /// 2 taps and a hold over 153 ms.
+    case ashenVale
+
+    /// A tap and 8 holds over 1.0 s.
+    case arcticHarbor
+
+    /// 3 taps over 154 ms.
+    case goldenJuniper
+
+    /// 2 taps and 2 holds over 701 ms.
+    case lunarJuniper
+
+    /// 6 taps and 3 holds over 1.6 s.
+    case luckyNebula
+
+    /// 3 taps over 158 ms.
+    case mellowGlacier
+
+    /// 5 taps and a hold over 751 ms.
+    case ashenPinnacle
+
+    /// 2 taps and a hold over 597 ms.
+    case indigoVortex
+
+    /// A tap and 5 holds over 807 ms.
+    case mistyDelta
+
+    /// 2 taps and 2 holds over 647 ms.
+    case ochreDelta
+
+    /// 3 taps and a hold over 492 ms.
+    case paleHarbor
+
+    /// 3 taps and 5 holds over 1.0 s.
+    case paleJuniper
+
+    /// 4 taps over 776 ms.
+    case swiftReef
+
+    /// 5 taps and 4 holds over 1.6 s.
+    case pastelPinnacle
+
+    /// 2 taps over 78 ms.
+    case rubyLotus
+
+    /// 3 taps and 6 holds over 942 ms.
+    case paleVortex
+
+    /// 4 taps and 4 holds over 1.1 s.
+    case zestySparrow
+
+    /// 7 taps over 1.1 s.
+    case azureLotus
+
+    /// 2 taps and a hold over 149 ms.
+    case silverGalaxy
+
+    /// A tap and 3 holds over 267 ms.
+    case cosmicKite
+
+    /// 7 taps over 1.3 s.
+    case sableHorizon
+
+    /// 9 holds over 1.2 s.
+    case amberMirage
+
+    /// 5 taps and 2 holds over 1.0 s.
+    case gildedSpire
+
+    /// A tap and 7 holds over 910 ms.
+    case zestyOrchid
+
+    /// 6 holds over 815 ms.
+    case cosmicFable
+
+    /// 2 taps over 89 ms.
+    case opalHarbor
+
+    /// A tap and 6 holds over 883 ms.
+    case arcticQuasar
+
+    /// 9 taps over 2.3 s.
+    case crimsonBlossom
+
+    /// 5 taps and 3 holds over 1.6 s.
+    case indigoPinnacle
+
+    /// 2 taps over 36 ms.
+    case emberStarling
+
+    /// 7 taps over 1.6 s.
+    case amberTundra
+
+    /// 3 taps and a hold over 391 ms.
+    case crimsonLagoon
+
+    /// 2 taps and a hold over 149 ms.
+    case duskyReef
+
+    /// A tap and 9 holds over 1.0 s.
+    case wistfulSaga
+
+    /// 7 taps and 2 holds over 1.2 s.
+    case scarletVortex
+
+    /// 4 taps and 2 holds over 609 ms.
+    case solarWillow
+
+    /// 2 taps and a hold over 396 ms.
+    case cosmicLighthouse
+
+    /// 2 taps and 2 holds over 593 ms.
+    case stormyComet
+
+    /// 2 taps and 6 holds over 1.0 s.
+    case glacialBlueJubilee
+
+    /// 3 taps over 197 ms.
+    case twilightReef
+
+    /// 2 taps and a hold over 372 ms.
+    case violetTalisman
+
+    /// 3 taps and 2 holds over 670 ms.
+    case stormyDriftwood
+
+    /// 2 taps and 3 holds over 434 ms.
+    case goldenCascade
+
+    /// 2 taps over 42 ms.
+    case bronzeFjord
+
+    /// 5 taps over 1.1 s.
+    case umberLotus
+
+    /// 2 taps and a hold over 399 ms.
+    case azureJuniper
+
+    /// 5 taps and 2 holds over 1.1 s.
+    case emberZenith
+
+    /// 5 taps over 1.2 s.
+    case feralOasis
+
+    /// 2 holds over 116 ms.
+    case hollowDriftwood
+
+    /// 4 taps and a hold over 695 ms.
+    case arcticTalisman
+
+    /// 6 taps over 766 ms.
+    case nobleOasis
+
+    /// 4 taps over 340 ms.
+    case azureCanyon
+
+    /// 4 taps and 4 holds over 1.3 s.
+    case indigoSparrow
+
+    /// 3 taps and 2 holds over 402 ms.
+    case neonComet
+
+    /// 2 taps and a hold over 117 ms.
+    case frostyHarbor
+
+    /// A tap and 5 holds over 699 ms.
+    case silverMonsoon
+
+    /// 3 taps and 9 holds over 1.6 s.
+    case pastelSonnet
+
+    /// 4 taps and a hold over 827 ms.
+    case scarletKestrel
+
+    /// 2 holds over 247 ms.
+    case mistyOasis
+
+    /// 2 taps and 2 holds over 188 ms.
+    case violetGlacier
+
+    /// 3 taps and a hold over 119 ms.
+    case umberSparrow
+
+    /// A tap and 11 holds over 1.5 s.
+    case gildedGlacier
+
+    /// 3 taps over 115 ms.
+    case arcticDriftwood
+
+    /// 5 taps and 4 holds over 2.2 s.
+    case bronzeLighthouse
+
+    /// 2 taps over 89 ms.
+    case violetOrchid
+
+    /// 3 taps and a hold over 173 ms.
+    case cobaltDriftwood
+
+    /// 6 taps over 644 ms.
+    case ashenMosaic
+
+    /// A tap and 7 holds over 1.1 s.
+    case tealThistle
+
+    /// 4 taps and 3 holds over 1.1 s.
+    case tealDune
+
+    /// 3 taps and 9 holds over 1.4 s.
+    case coralMarble
+
+    /// 7 taps and 2 holds over 1.0 s.
+    case jaggedOrchid
+
+    /// A tap and 11 holds over 1.6 s.
+    case luckyRhapsody
+
+    /// 9 taps and a hold over 1.1 s.
+    case prismMirage
+
+    /// 5 taps and a hold over 968 ms.
+    case glacialBlueBlossom
+
+    /// 3 taps and a hold over 663 ms.
+    case gildedMirage
+
+    /// 8 holds over 1.2 s.
+    case mellowNimbus
+
+    /// 4 taps over 205 ms.
+    case lunarWhisper
+
+    /// 3 taps and 3 holds over 1.1 s.
+    case wovenKite
+
+    /// 3 taps and 3 holds over 1.1 s.
+    case saffronSparrow
+
+    /// 3 taps and 7 holds over 1.1 s.
+    case indigoDriftwood
+
+    /// A tap and 2 holds over 757 ms.
+    case obsidianIris
+
+    /// 3 taps and a hold over 429 ms.
+    case feralDune
+
+    /// 2 taps over 41 ms.
+    case pastelMeadow
+
+    /// 3 taps and 3 holds over 1.0 s.
+    case opalSpire
+
+    /// 6 taps and a hold over 1.6 s.
+    case wovenWhisper
+
+    /// 3 taps over 120 ms.
+    case vividMeadow
+
+    /// 3 taps and 2 holds over 1.0 s.
+    case cosmicZenith
+
+    /// 2 taps and 10 holds over 1.6 s.
+    case tealFjord
+
+    /// 5 holds over 849 ms.
+    case wovenQuasar
+
+    /// 11 holds over 1.3 s.
+    case indigoNebula
+
+    /// 2 taps and 8 holds over 1.1 s.
+    case velvetRhapsody
+
+    /// 2 taps over 81 ms.
+    case mossyTalisman
+
+    /// 2 taps and a hold over 389 ms.
+    case scarletPinnacle
+
+    /// 2 taps over 87 ms.
+    case rubyMonsoon
+
+    /// 9 taps and a hold over 1.6 s.
+    case obsidianHarbor
+
+    /// 3 taps and 6 holds over 840 ms.
+    case stormyNimbus
+
+    /// A tap and 6 holds over 791 ms.
+    case swiftStarling
+
+    /// 2 taps and 2 holds over 416 ms.
+    case scarletKite
+
+    /// 6 taps and a hold over 492 ms.
+    case emberTundra
+
+    /// 4 taps and 3 holds over 402 ms.
+    case zestyOasis
+
+    /// A tap and a hold over 82 ms.
+    case prismSaga
+
+    /// 3 taps and 3 holds over 1.3 s.
+    case rubySparrow
+
+    /// 4 taps and a hold over 1.3 s.
+    case jadeQuasar
+
+    /// 3 taps and a hold over 490 ms.
+    case swiftFjord
+
+    /// 2 taps and 5 holds over 846 ms.
+    case pastelTalisman
+
+    /// 7 taps and a hold over 779 ms.
+    case cobaltLantern
+
+    /// 3 taps and 3 holds over 1.3 s.
+    case velvetVortex
+
+    /// 5 taps and 2 holds over 1.0 s.
+    case cobaltNebula
+
+    /// A tap and 5 holds over 721 ms.
+    case azureGlacier
+
+    /// 5 taps and a hold over 1.3 s.
+    case wovenComet
+
+    /// 6 taps and a hold over 1.1 s.
+    case prismSparrow
+
+    /// 2 taps over 42 ms.
+    case rusticTalisman
+
+    /// 4 taps over 430 ms.
+    case neonStarling
+
+    /// 3 taps and 2 holds over 645 ms.
+    case rubyGlacier
+
+    /// 6 taps over 884 ms.
+    case indigoPebble
+
+    /// 3 taps and 4 holds over 1.2 s.
+    case hollowReef
+
+    /// 6 taps over 451 ms.
+    case dappledAtlas
+
+    /// 2 taps and a hold over 469 ms.
+    case tidalHarbor
+
+    /// 4 taps over 678 ms.
+    case jadeIris
+
+    /// A tap and 8 holds over 1.2 s.
+    case solarWhisper
+
+    /// 2 taps and 2 holds over 538 ms.
+    case cobaltQuill
+
+    /// 3 taps and 3 holds over 806 ms.
+    case indigoWhisper
+
+    /// 2 taps and 5 holds over 1.3 s.
+    case umberNebula
+
+    /// 2 taps and 2 holds over 554 ms.
+    case duskyStarling
+
+    /// 3 taps over 153 ms.
+    case goldenDelta
+
+    /// 5 taps and a hold over 471 ms.
+    case obsidianThistle
+
+    /// 8 taps and a hold over 1.3 s.
+    case jadePrairie
+
+    /// 2 taps and a hold over 248 ms.
+    case wildOasis
+
+    /// A tap and 4 holds over 1.0 s.
+    case coralJuniper
+
+    /// 7 taps and 3 holds over 827 ms.
+    case saffronMosaic
+
+    /// A tap and a hold over 226 ms.
+    case indigoLotus
+
+    /// 2 taps and 2 holds over 225 ms.
+    case nobleHaven
+
+    /// 7 taps over 971 ms.
+    case luckyVortex
+
+    /// 3 taps and 3 holds over 968 ms.
+    case nobleFable
+
+    /// 2 taps and 3 holds over 839 ms.
+    case copperQuasar
+
+    /// 6 taps over 464 ms.
+    case sunlitQuartz
+
+    /// 4 taps and a hold over 1.1 s.
+    case hollowEmberGlow
+
+    /// A tap and 3 holds over 387 ms.
+    case emeraldHaven
+
+    /// 3 taps and a hold over 611 ms.
+    case lunarMosaic
+
+    /// 3 taps and a hold over 467 ms.
+    case glacialBlueReef
+
+    /// 2 taps and 2 holds over 1.1 s.
+    case zestyCanyon
+
+    /// 3 taps over 149 ms.
+    case lunarSparrow
+
+    /// 3 taps and 2 holds over 617 ms.
+    case silverTundra
+
+    /// 2 taps and 7 holds over 1.1 s.
+    case umberLagoon
+
+    /// 9 taps over 1.9 s.
+    case solarAnchor
+
+    /// 6 taps over 1.2 s.
+    case indigoMarble
+
+    /// 2 taps and a hold over 347 ms.
+    case gildedCanyon
+
+    /// A tap and 8 holds over 1.2 s.
+    case ochreFjord
+
+    /// 10 taps over 1.6 s.
+    case ochreJuniper
+
+    /// 3 taps and a hold over 469 ms.
+    case ochreMarble
+
+    /// 2 taps and 2 holds over 296 ms.
+    case stormyVale
+
+    /// 4 taps and 3 holds over 568 ms.
+    case ochreKestrel
+
+    /// 2 taps over 37 ms.
+    case coralOrchid
+
+    /// 2 taps and a hold over 326 ms.
+    case indigoIris
+
+    /// 6 holds over 788 ms.
+    case stormyMonsoon
+
+    /// 5 taps and 4 holds over 1.5 s.
+    case silverYarrow
+
+    /// 3 taps and a hold over 370 ms.
+    case violetZenith
+
+    /// 2 taps and 6 holds over 861 ms.
+    case saffronUtopia
+
+    /// A tap and 3 holds over 259 ms.
+    case luckyBlossom
+
+    /// 2 taps and a hold over 86 ms.
+    case mistyFable
+
+    /// 3 taps and 2 holds over 559 ms.
+    case gildedHaven
+
+    /// 4 taps and 2 holds over 432 ms.
+    case electricHorizon
+
+    /// A tap and a hold over 115 ms.
+    case bronzeSpire
+
+    /// A tap and 3 holds over 855 ms.
+    case cobaltPinnacle
+
+    /// 2 taps and 10 holds over 1.6 s.
+    case rubyWillow
+
+    /// 6 taps over 824 ms.
+    case bronzeWhisper
+
+    /// 7 taps and a hold over 638 ms.
+    case swiftGlacier
+
+    /// 4 taps and a hold over 603 ms.
+    case opalSparrow
+
+    /// 6 taps and a hold over 328 ms.
+    case twilightCanyon
+
+    /// A tap and 2 holds over 368 ms.
+    case gildedHorizon
+
+    /// 3 taps over 132 ms.
+    case azureQuasar
+
+    /// 4 holds over 1.2 s.
+    case pastelDune
+
+    /// 2 taps and 2 holds over 777 ms.
+    case prismDelta
+
+    /// 2 taps and a hold over 118 ms.
+    case stormyFable
+
+    /// 2 taps over 85 ms.
+    case sunlitPebble
+
+    /// 3 taps and 8 holds over 1.1 s.
+    case emeraldZenith
+
+    /// 3 taps and 2 holds over 807 ms.
+    case paleWren
+
+    /// 4 taps and 3 holds over 1.4 s.
+    case sableHarbor
+
+    /// A tap and 6 holds over 1.4 s.
+    case violetIris
+
+    /// 3 taps and a hold over 621 ms.
+    case pastelNebula
+
+    /// A tap and 7 holds over 1.1 s.
+    case mistyLighthouse
+
+    /// 3 taps over 210 ms.
+    case amberQuartz
+
+    /// 4 holds over 572 ms.
+    case sunlitAtlas
+
+    /// 5 taps over 742 ms.
+    case wildDriftwood
+
+    /// 3 taps and a hold over 438 ms.
+    case rubyNimbus
+
+    /// 5 taps over 629 ms.
+    case wistfulUtopia
+
+    /// 4 taps over 380 ms.
+    case ochreHarbor
+
+    /// 9 taps over 1.6 s.
+    case mistyAtlas
+
+    /// 3 taps over 128 ms.
+    case solarPinnacle
+
+    /// 7 taps over 1.2 s.
+    case silverJubilee
+
+    /// 6 taps over 1.4 s.
+    case amberFjord
+
+    /// 3 taps over 156 ms.
+    case jaggedMarble
+
+    /// 2 taps and 5 holds over 829 ms.
+    case swiftGalaxy
+
+    /// 2 taps and 2 holds over 763 ms.
+    case scarletGlacier
+
+    /// 2 taps over 63 ms.
+    case wistfulThistle
+
+    /// A tap and 2 holds over 459 ms.
+    case umberLighthouse
+
+    /// 7 taps and a hold over 1.5 s.
+    case lunarPinnacle
+
+    /// 6 taps over 1.2 s.
+    case copperKestrel
+
+    /// 4 taps and a hold over 679 ms.
+    case scarletAnchor
+
+    /// 4 taps over 429 ms.
+    case nobleLighthouse
+
+    /// 3 taps over 347 ms.
+    case bronzeGalaxy
+
+    /// 3 taps and 3 holds over 942 ms.
+    case copperHorizon
+
+    /// 4 taps and 3 holds over 1.2 s.
+    case hollowMarble
+
+    /// 7 taps and a hold over 644 ms.
+    case emberKite
+
+    /// 4 taps over 487 ms.
+    case sunlitWillow
+
+    /// A tap and 7 holds over 1.2 s.
+    case sableMarble
+
+    /// A tap and 11 holds over 1.7 s.
+    case dappledAnchor
+
+    /// 2 taps and a hold over 129 ms.
+    case paleLotus
+
+    /// 2 taps over 47 ms.
+    case jadeMeadow
+
+    /// 2 taps and 4 holds over 657 ms.
+    case pastelQuasar
+
+    /// 2 taps over 84 ms.
+    case saffronQuasar
+
+    /// 2 taps and 3 holds over 961 ms.
+    case coralMonsoon
+
+    /// 3 taps and a hold over 467 ms.
+    case velvetPinnacle
+
+    /// 5 taps and 2 holds over 1.0 s.
+    case sunlitIris
+
+    /// 4 taps and 2 holds over 830 ms.
+    case wildVortex
+
+    /// 8 taps over 2.2 s.
+    case silverKestrel
+
+    /// 4 taps and a hold over 881 ms.
+    case silverDelta
+
+    /// 6 taps and 2 holds over 1.2 s.
+    case luckyCascade
+
+    /// 2 taps and a hold over 472 ms.
+    case tidalLighthouse
+
+    /// 5 taps and 2 holds over 954 ms.
+    case glacialBlueFable
+
+    /// A tap and 3 holds over 428 ms.
+    case glacialBlueDriftwood
+
+    /// 5 taps and a hold over 983 ms.
+    case gildedCascade
+
+    /// 4 taps over 305 ms.
+    case sunlitReef
+
+    /// 2 taps and 3 holds over 770 ms.
+    case hazyWillow
+
+    /// 4 taps and 5 holds over 818 ms.
+    case silverNebula
+
+    /// 3 taps and 2 holds over 964 ms.
+    case jadeMonsoon
+
+    /// 4 taps and 2 holds over 553 ms.
+    case swiftWhisper
+
+    /// 4 taps and 7 holds over 1.1 s.
+    case hollowSpire
+
+    /// 6 taps over 737 ms.
+    case velvetZenith
+
+    /// A tap and 9 holds over 1.1 s.
+    case hazyReef
+
+    /// 6 taps over 648 ms.
+    case jaggedQuartz
+
+    /// 7 taps and a hold over 1.6 s.
+    case jaggedSparrow
+
+    /// A tap and 4 holds over 1.1 s.
+    case twilightKite
+
+    /// 5 taps over 730 ms.
+    case wovenHorizon
+
+    /// A tap and 5 holds over 1.3 s.
+    case frostyLagoon
+
+    /// 4 taps and 3 holds over 1.1 s.
+    case wildMarble
+
+    /// 8 taps over 1.4 s.
+    case vividPinnacle
+
+    /// 4 taps and 2 holds over 600 ms.
+    case hazyHarbor
+
+    /// 5 taps and 4 holds over 1.0 s.
+    case dappledQuartz
+
+    /// 4 taps and a hold over 719 ms.
+    case rubyThistle
+
+    /// 6 taps over 1.4 s.
+    case velvetAnchor
+
+    /// 5 taps over 759 ms.
+    case mistySpire
+
+    /// A tap and 7 holds over 913 ms.
+    case bronzeCanyon
+
+    /// 3 taps and a hold over 265 ms.
+    case amberKestrel
+
+    /// 5 taps over 364 ms.
+    case emeraldSonnet
+
+    /// 2 taps and 5 holds over 1.0 s.
+    case crimsonLighthouse
+
+    /// 3 taps over 262 ms.
+    case sunlitHorizon
+
+    /// 4 taps and 3 holds over 1.4 s.
+    case coralTalisman
+
+    /// 4 taps over 624 ms.
+    case electricTalisman
+
+    /// 3 taps and a hold over 431 ms.
+    case arcticFjord
+
+    /// A tap and a hold over 265 ms.
+    case tealZenith
+
+    /// 2 taps over 84 ms.
+    case lunarCascade
+
+    /// 4 taps and a hold over 511 ms.
+    case paleJubilee
+
+    /// 4 taps over 141 ms.
+    case emeraldMonsoon
+
+    /// 6 taps and 2 holds over 795 ms.
+    case velvetWillow
+
+    /// 4 holds over 614 ms.
+    case bronzeJuniper
+
+    /// 2 taps and a hold over 679 ms.
+    case swiftZephyr
+
+    /// 2 taps and 3 holds over 574 ms.
+    case cobaltMeadow
+
+    /// 6 taps over 670 ms.
+    case umberVortex
+
+    /// 3 taps over 130 ms.
+    case opalYarrow
+
+    /// 4 taps and a hold over 674 ms.
+    case jadeNebula
+
+    /// 5 taps and a hold over 334 ms.
+    case tidalMonsoon
+
+    /// A tap and 11 holds over 1.8 s.
+    case sableEmberGlow
+
+    /// 3 taps and a hold over 168 ms.
+    case silverQuill
+
+    /// 2 taps and 3 holds over 469 ms.
+    case zestyLagoon
+
+    /// 4 taps over 608 ms.
+    case opalMosaic
+
+    /// 2 taps and 9 holds over 1.1 s.
+    case sableCascade
+
+    /// 5 taps and 2 holds over 1.2 s.
+    case neonMonsoon
+
+    /// A tap and 4 holds over 934 ms.
+    case cobaltComet
+
+    /// A tap and 3 holds over 233 ms.
+    case ochreSonnet
+
+    /// 5 taps over 896 ms.
+    case electricDelta
+
+    /// 5 taps and 4 holds over 1.7 s.
+    case vividQuasar
+
+    /// 3 taps and 4 holds over 1.5 s.
+    case rusticKite
+
+    /// 4 taps over 231 ms.
+    case lunarIris
+
+    /// A tap and a hold over 117 ms.
+    case duskyOrchid
+
+    /// A tap and 7 holds over 1.9 s.
+    case duskyComet
+
+    /// 5 taps and 2 holds over 657 ms.
+    case feralZenith
+
+    /// A tap and 2 holds over 159 ms.
+    case dappledDune
+
+    /// 4 taps and 3 holds over 1.0 s.
+    case zestyMarble
+
+    /// 4 taps and a hold over 418 ms.
+    case sunlitTalisman
+
+    /// 2 taps and 2 holds over 578 ms.
+    case pastelCanyon
+
+    /// 3 taps and 6 holds over 995 ms.
+    case saffronBlossom
+
+    /// A tap and 5 holds over 602 ms.
+    case feralHaven
+
+    /// 2 taps over 63 ms.
+    case dappledLighthouse
+
+    /// 3 taps and a hold over 708 ms.
+    case cosmicWhisper
+
+    /// 7 taps over 794 ms.
+    case velvetKite
+
+    /// 4 taps and a hold over 488 ms.
+    case ashenNimbus
+
+    /// 4 taps and 4 holds over 1.3 s.
+    case crimsonZephyr
+
+    /// 3 taps over 190 ms.
+    case copperQuartz
+
+    /// 6 taps and 2 holds over 1.5 s.
+    case luckyGlacier
+
+    /// 5 taps over 1.1 s.
+    case wistfulZenith
+
+    /// 4 taps and a hold over 413 ms.
+    case copperDune
+
+    /// 3 taps and a hold over 433 ms.
+    case indigoOasis
+
+    /// 3 taps and 6 holds over 782 ms.
+    case prismMarble
+
+    /// 3 taps and 2 holds over 656 ms.
+    case glacialBlueSpire
+
+    /// A tap and 10 holds over 1.7 s.
+    case indigoComet
+
+    /// 8 taps over 2.0 s.
+    case azureMeadow
+
+    /// 3 taps and a hold over 636 ms.
+    case azureYarrow
+
+    /// 8 taps over 1.4 s.
+    case crimsonLantern
+
+    /// 3 taps over 112 ms.
+    case nobleCascade
+
+    /// 2 taps and 10 holds over 1.4 s.
+    case electricSpire
+
+    /// A tap and 3 holds over 353 ms.
+    case paleCascade
+
+    /// 7 taps over 1.1 s.
+    case saffronPinnacle
+
+    /// 2 taps and 3 holds over 933 ms.
+    case zestyLotus
+
+    /// 7 taps and a hold over 1.4 s.
+    case duskyZenith
+
+    /// 4 taps and 3 holds over 1.0 s.
+    case solarMonsoon
+
+    /// A tap and a hold over 41 ms.
+    case wistfulPrairie
+
+    /// 2 taps and 2 holds over 191 ms.
+    case swiftMosaic
+
+    /// 2 taps and a hold over 293 ms.
+    case hollowHarbor
+
+    /// 5 taps and a hold over 718 ms.
+    case sunlitMeadow
+
+    /// A tap and 3 holds over 663 ms.
+    case luckyNimbus
+
+    /// 3 taps over 163 ms.
+    case coralFjord
+
+    /// 8 taps and a hold over 946 ms.
+    case cosmicLotus
+
+    /// 2 taps and 2 holds over 337 ms.
+    case bronzeMarble
+
+    /// 2 taps and 7 holds over 1.0 s.
+    case mossyMosaic
+
+    /// 2 taps and 3 holds over 312 ms.
+    case coralJubilee
+
+    /// 2 taps and a hold over 117 ms.
+    case ivoryNimbus
+
+    /// 6 taps and 6 holds over 864 ms.
+    case coralLotus
+
+    /// 2 taps and 10 holds over 1.4 s.
+    case twilightTundra
+
+    /// 8 taps over 1.2 s.
+    case nobleCanyon
+
+    /// 2 taps and 3 holds over 513 ms.
+    case emberGalaxy
+
+    /// 3 taps and 2 holds over 697 ms.
+    case lunarMonsoon
+
+    /// 4 taps over 191 ms.
+    case wildZephyr
+
+    /// 2 holds over 293 ms.
+    case rubyVale
+
+    /// 3 taps and 2 holds over 650 ms.
+    case emeraldJubilee
+
+    /// A tap and a hold over 142 ms.
+    case sableDriftwood
+
+    /// 4 taps and a hold over 528 ms.
+    case swiftHorizon
+
+    /// 3 taps over 275 ms.
+    case violetWillow
+
+    /// 4 taps and 2 holds over 717 ms.
+    case tealHarbor
+
+    /// 4 taps and a hold over 481 ms.
+    case amberEmberGlow
+
+    /// 2 taps and 2 holds over 279 ms.
+    case hazyGalaxy
+
+    /// 3 taps and a hold over 660 ms.
+    case prismLotus
+
+    /// 2 taps and 3 holds over 1.0 s.
+    case gildedOrchid
+
+    /// 2 taps and 8 holds over 1.2 s.
+    case velvetLagoon
+
+    /// 2 taps over 33 ms.
+    case gildedZenith
+
+    /// 6 taps over 457 ms.
+    case wistfulAtlas
+
+    /// 3 taps and 2 holds over 557 ms.
+    case scarletWren
+
+    /// 3 taps and 2 holds over 323 ms.
+    case gildedFable
+
+    /// 8 taps and a hold over 1.7 s.
+    case neonRhapsody
+
+    /// 3 taps over 251 ms.
+    case scarletMirage
+
+    /// 3 taps and 2 holds over 476 ms.
+    case luckyMeadow
+
+    /// 4 taps and a hold over 427 ms.
+    case mistyQuartz
+
+    /// 2 taps and a hold over 181 ms.
+    case wovenThistle
+
+    /// 7 taps over 1.6 s.
+    case crimsonGalaxy
+
+    /// 6 taps over 453 ms.
+    case pastelOrchid
+
+    /// 5 taps over 645 ms.
+    case sunlitCanyon
+
+    /// 3 taps and 4 holds over 481 ms.
+    case umberKestrel
+
+    /// A tap and 2 holds over 135 ms.
+    case ivoryCanyon
+
+    /// 6 taps and 4 holds over 1.1 s.
+    case indigoJuniper
+
+    /// 4 taps over 357 ms.
+    case wistfulCascade
+
+    /// 8 taps and a hold over 1.6 s.
+    case crimsonReef
+
+    /// 3 taps and 5 holds over 583 ms.
+    case rusticZenith
+
+    /// 5 taps and 2 holds over 1.4 s.
+    case mellowTundra
+
+    /// 3 taps and a hold over 507 ms.
+    case copperLighthouse
+
+    /// A tap and 2 holds over 547 ms.
+    case feralPinnacle
+
+    /// 2 taps and a hold over 92 ms.
+    case mossyJubilee
+
+    /// 2 taps and a hold over 136 ms.
+    case wovenTalisman
+
+    /// 2 taps over 36 ms.
+    case jadeComet
+
+    /// 8 taps and a hold over 1.3 s.
+    case goldenHarbor
+
+    /// A tap and 2 holds over 552 ms.
+    case violetFjord
+
+    /// 2 taps and a hold over 174 ms.
+    case crimsonQuill
+
+    /// 2 taps over 86 ms.
+    case velvetComet
+
+    /// 4 taps and 2 holds over 315 ms.
+    case velvetNebula
+
+    /// 2 taps and a hold over 102 ms.
+    case scarletZenith
+
+    /// 2 taps and 2 holds over 227 ms.
+    case emberZephyr
+
+    /// 2 taps and 2 holds over 681 ms.
+    case copperAtlas
+
+    /// 11 holds over 1.7 s.
+    case mossyOasis
+
+    /// 3 taps and 3 holds over 436 ms.
+    case noblePebble
+
+    /// A tap and a hold over 77 ms.
+    case scarletDune
+
+    /// A tap and 5 holds over 1.5 s.
+    case saffronCascade
+
+    /// 11 holds over 1.6 s.
+    case violetTundra
+
+    /// 6 taps and a hold over 1.3 s.
+    case copperWillow
+
+    /// 3 taps and 4 holds over 728 ms.
+    case hollowOrchid
+
+    /// 3 taps and 7 holds over 952 ms.
+    case stormyZephyr
+
+    /// 3 taps and a hold over 723 ms.
+    case ashenFjord
+
+    /// 3 taps and a hold over 174 ms.
+    case zestyKestrel
+
+    /// 9 taps and a hold over 1.5 s.
+    case feralEmberGlow
+
+    /// 3 taps and 4 holds over 642 ms.
+    case vividPebble
+
+    /// A tap and 5 holds over 605 ms.
+    case cosmicQuartz
+
+    /// 3 taps over 229 ms.
+    case obsidianLighthouse
+
+    /// 2 taps and a hold over 479 ms.
+    case cosmicSparrow
+
+    /// 4 taps over 388 ms.
+    case mistyHaven
+
+    /// 3 taps and a hold over 294 ms.
+    case twilightWren
+
+    /// 2 taps and 2 holds over 317 ms.
+    case coralMirage
+
+    /// 2 taps over 61 ms.
+    case arcticHaven
+
+    /// 3 taps and 4 holds over 1.6 s.
+    case duskyMirage
+
+    /// 6 taps and 3 holds over 1.0 s.
+    case rusticBlossom
+
+    /// 4 taps and 3 holds over 872 ms.
+    case gildedKite
+
+    /// 5 taps and 4 holds over 1.9 s.
+    case arcticVale
+
+    /// A tap and 7 holds over 923 ms.
+    case neonMirage
+
+    /// 4 taps and 3 holds over 909 ms.
+    case ochreWren
+
+    /// A tap and a hold over 149 ms.
+    case silverKite
+
+    /// 4 taps and a hold over 674 ms.
+    case ashenDriftwood
+
+    /// 3 holds over 681 ms.
+    case bronzeDune
+
+    /// 2 taps and 7 holds over 1.1 s.
+    case hollowWhisper
+
+    /// 6 taps over 754 ms.
+    case mossyGlacier
+
+    /// 5 taps and 3 holds over 1.7 s.
+    case electricDune
+
+    /// 2 taps and 5 holds over 604 ms.
+    case dappledQuasar
+
+    /// 5 taps and a hold over 951 ms.
+    case saffronThistle
+
+    /// 7 taps and 2 holds over 734 ms.
+    case hollowCascade
+
+    /// 3 taps and 3 holds over 897 ms.
+    case jadeHorizon
+
+    /// 2 taps and 2 holds over 142 ms.
+    case solarCanyon
+
+    /// 7 taps over 1.6 s.
+    case glacialBlueOrchid
+
+    /// 3 taps over 243 ms.
+    case mossyNebula
+
+    /// 7 taps over 1.3 s.
+    case duskySpire
+
+    /// 5 taps and 4 holds over 549 ms.
+    case neonHarbor
+
+    /// 7 taps over 1.2 s.
+    case scarletLighthouse
+
+    /// 3 taps over 137 ms.
+    case arcticCanyon
+
+    /// 2 taps and 3 holds over 582 ms.
+    case mistyBlossom
+
+    /// 3 taps and 6 holds over 847 ms.
+    case indigoDelta
+
+    /// 3 taps and a hold over 191 ms.
+    case emberCascade
+
+    /// 4 taps and 2 holds over 471 ms.
+    case pastelCascade
+
+    /// 2 taps over 67 ms.
+    case neonKite
+
+    /// 3 taps over 289 ms.
+    case duskyLantern
+
+    /// 2 taps over 62 ms.
+    case glacialBlueWren
     // END GENERATED PATTERNS
 
     /// How long the pattern plays, in seconds: from its first event to the end of its last. A single tap,
