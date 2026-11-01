@@ -3,16 +3,16 @@
 # below are the newest that still compile against 36.1; newer releases (Compose UI 1.12, activity 1.13,
 # lifecycle 2.11) need compileSdk 37. Dependabot skips AGP minor and major updates; see .github/dependabot.yml.
 agp = "9.4.1"
-kotlin = "2.4.20"
-composeBom = "2026.06.01"
+kotlin = "2.4.21"
+composeBom = "2026.09.00"
 activityCompose = "1.12.4"
 lifecycle = "2.10.0"
 junit = "4.13.2"
-coroutines = "1.9.0"
+coroutines = "1.11.0"
 annotation = "1.11.0"
 iconsExtended = "1.7.8"
 binaryCompatibilityValidator = "0.18.2"
-asm = "9.10.1"
+asm = "9.11.1"
 mavenPublish = "0.37.0"
 
 [libraries]
